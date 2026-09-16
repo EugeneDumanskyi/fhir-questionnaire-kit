@@ -472,6 +472,7 @@ Every row is already open in another document; none is new. The roadmap's contri
 | 12 | **A6 incremental mutation on PRs, full run nightly** | `05-architecture.md` §8 | M2's spike S2 and M11's release blocker |
 | 13 | **AT5 element form participation out of v1** | `05-architecture.md` §9 | M7 scope |
 | 14 | **NFR-I-06 translation extensions** — excluded, or in scope for an EU buyer | `03-nfr.md` N19 | If it moves in, it touches M2 (parse), M5 (text selection) and M10 (matrix row) |
+| 15 | **Default locale** — which locale the packages default to, and whether NFR-I-03's single built-in `en` serves a buyer outside English | `03-nfr.md` §12 #9 | M5's display text. ADR-0020 made the locale an explicit option, so this only chooses its default — but unchosen it stops M5 mid-build for a product answer |
 
 ---
 
