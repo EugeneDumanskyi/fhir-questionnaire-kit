@@ -34,7 +34,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 | **R4** | **Keyed DOM patching that never disturbs focus or caret.** ADR-0007 requires the element to patch, not rebuild; ADR-0014 forbids `<style>`, inline styles and `el.style`; `adoptedStyleSheets` must work at the iOS Safari 16.4 floor (A4). | Hand-written patching against a live, focused form is the classic source of subtle input bugs, and the CSP and shadow-DOM constraints remove the usual escape hatches. | The element's default UI, NFR-A-07, NFR-P-03, and A4's browser floor. | **M1** (thin proof), **M7** (full) |
 | **R5** | **React SSR with zero hydration warnings on 18 *and* 19,** with `useSyncExternalStore`, `useId`-prefixed ids and pending option state rendered identically on server and first client render (ADR-0015). | Two React majors, two id strategies to keep aligned, and a gate that fails the build on any console warning (AC-08.3.2). | NFR-C-08, AC-08.3.1/2, and ADR-0015's "SSR by construction" claim. | **M1** (thin proof), **M6** (full) |
 | **R6** | **Incremental evaluation correctness at scale.** Tarjan, topological ranks, scope-resolved edges inside repeat instances, single-writer queue, per-node object identity, and a recompute set asserted against an independent BFS closure (ADR-0009, NFR-P-09). | Hard, but *specified*. The unknown is only whether the performance figures (N2, themselves assumptions) survive contact with the scale ceiling. | Performance NFRs and the benchmark baselines — not the architecture. | **M2** |
-| **R7** | **The CI pipeline's own budget.** A dozen blocking gates, three browser engines, mutation testing, 1,000 property cases, six consumer environments, all inside 10 minutes p95 (NFR-M-07, A6). | Measurable only once real code and real suites exist. | NFR-M-07 (a target, not a gate) and the merge experience; the documented relief valve is moving WebKit to nightly (ADR-0018). | **M2** (first measurement), **M11** (full pipeline) |
+| **R7** | **The CI pipeline's own budget.** Twenty-one blocking gates (§5), three browser engines, mutation testing, 1,000 property cases, six consumer environments, all inside 10 minutes p95 (NFR-M-07, A6). | Measurable only once real code and real suites exist. | NFR-M-07 (a target, not a gate) and the merge experience; the documented relief valve is moving WebKit to nightly (ADR-0018). | **M2** (first measurement), **M11** (full pipeline) |
 | **R8** | **Accessibility at full breadth.** 0 violations across demo forms × 4 tiers × 2 themes × 2 viewports × 2 renderers, plus contrast, target size, reflow, forced-colors and RTL (NFR-A-01…09). | Automated tooling catches roughly a third of real issues (`03-nfr.md` §5), so the residue surfaces only in manual passes, which are late and manual. | Brief §6 principle 4 and the claim the primary user checks hardest. | **M1** (one control, both renderers), **M8** (full) |
 | **R9** | **Performance anchors are unvalidated.** NFR-P-04's 1,000-item / 500-condition / 50-instance ceiling is `ASSUMPTION` N2, and `03-nfr.md` says to challenge it first. | No survey of real instrument sizes has been done. | Benchmark design, heap budget NFR-P-08, and possibly NFR-P-01/02's anchors. | **M0** (spike S0) |
 
@@ -73,7 +73,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 - Close every open decision in §6: the effort budget (N24), the demo fixture shape (R9 of the requirements register, AC-15.1.3), the screen-reader pairs (N11), the scoring example's shape (R7), the reference-backend drop (R10), assumptions A3–A6, AT5's disposition, and ADR-0009's calculated-item ordering follow-up.
 - Move ADR-0008–0019 from Proposed to Accepted, or revise them. Update `docs/adr/README.md` statuses and dates.
 - Scaffold the workspace from `05-architecture.md` §6 and the layout in the repository instructions: pnpm workspaces; `packages/core`, `packages/react`, `packages/element`, `packages/themes`; `apps/playground`; `fixtures/`.
-- TypeScript strict with `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess`, target ES2022 (NFR-C-06); ESLint with the four NFR-M-06 architectural rules written but pointed at a near-empty tree; Vitest; Changesets in fixed mode; Apache-2.0 `LICENSE` and `NOTICE` (NFR-Z-04); PR template linking a story or ADR (NFR-M-08).
+- TypeScript strict with `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess`, target ES2022 (NFR-C-06); ESLint with the four NFR-M-06 architectural rules written but pointed at a near-empty tree; Vitest; Changesets in fixed mode; Apache-2.0 `LICENSE` and `NOTICE` (NFR-Z-04); PR template linking a story or ADR, and branch protection on the default branch turned on as the milestone closes (NFR-M-08).
 - CI fast lane only: install from cache, typecheck, lint, core unit tests in Node.
 - Spike S0 below.
 
@@ -86,6 +86,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 4. Every row in §6 has a recorded resolution with a date, in the document that owns it (`03-nfr.md` §11/§12, `02-requirements.md` §18, `05-architecture.md` §8/§9, or an ADR).
 5. The confirmed NFR-Z-01 figure is written into `03-nfr.md`, and §7's cut ladder is either invoked or explicitly declined, in writing.
 6. The four NFR-M-06 lint rules exist with unit tests over fixture files that must fail.
+7. Branch protection is on as the milestone closes: the default branch refuses direct pushes, a PR with a passing fast lane is required, and the PR template links a story or ADR (NFR-M-08). M0's own scaffolding commits land before this, since the fast lane cannot gate the commits that create it.
 
 **Spike.** **S0 — instrument-size survey.** Timebox 2 h, no code. Sample published FHIR Questionnaires from real instrument libraries and record item counts, condition counts, nesting depth and repeat usage. Output: either NFR-P-04's ceiling is confirmed, or N2 is re-anchored to observed sizes and NFR-P-01/02 move with it. Decision it unblocks: the shape of M2's benchmark fixtures, which get committed as baselines and are expensive to change later.
 
@@ -226,7 +227,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Goal.** Write every BC6 behaviour that is not markup, once, in a DOM-free module tested in Node under the core gates. This is where R2 is settled for real, having been proven in miniature by M1.
 
-**Scope.** Control choice including the `itemControl` hints and the option-count fallback (INV-P-05); path-derived ids; ARIA state per node; announcement text and its per-cycle coalescing, with resolver-driven cycles announced in their own right (INV-P-03, T12); the error summary and its ordering; focus targets after a new instance, a removal, a refused completion; the inert add control with its reason (INV-P-04); the unsupported-item placeholder (AC-01.3.2); per-node view identity so that only changed nodes get new objects; the exported `ControlProps` tier-3 contract of ADR-0013; the DOM contract document finalised.
+**Scope.** Control choice including the `itemControl` hints and the option-count fallback (INV-P-05); path-derived ids; ARIA state per node; announcement text and its per-cycle coalescing, with resolver-driven cycles announced in their own right (INV-P-03, T12); the error summary and its ordering; focus targets after a new instance, a removal, a refused completion; the inert add control with its reason (INV-P-04); the unsupported-item placeholder (AC-01.3.2); per-node view identity so that only changed nodes get new objects; the exported `ControlProps` tier-3 contract of ADR-0013; `Intl`-only formatting for any display text the view produces, with 0 hand-rolled date, number or unit formatting (NFR-I-04 — which layer formats and where the locale enters is `03-nfr.md` §12 #9, open); the DOM contract document finalised.
 
 **Out of scope.** Markup of any kind. React and element bindings (M6, M7). Theme tokens beyond the class and `part` names the contract fixes (M8).
 
@@ -239,7 +240,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 6. ADR-0007's review rule holds across the finished field list: no field names an element, an attribute literal or a CSS property.
 7. `@fhirq/core/view` is inside its budget (M1's figure), and its entry point is covered by the blocking budget gate.
 8. Core coverage and mutation gates hold with `view/` included (NFR-Q-01, NFR-Q-03).
-9. `docs/07-api.md`, the API report and a changeset reflect the new exports; the total public surface is re-counted against NFR-U-05's 60.
+9. Every row of the `05-architecture.md` §4.1 import table is enforced by lint — the table is complete once `view/` lands — with a fixture per row that must fail (NFR-M-06). M3 AC-3 already covers the `interchange/` row.
+10. `docs/07-api.md`, the API report and a changeset reflect the new exports; the total public surface is re-counted against NFR-U-05's 60.
 
 **Spike.** None — S1 already answered the open question; what remains is volume under a review rule.
 
@@ -352,7 +354,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Goal.** EVL's 15–40 minutes, and the pack that lets an adopting team start a dependency review without contacting anyone.
 
-**Scope.** README above the fold; the docs site generated at build time with samples imported from compiled, tested sources; ADRs rendered from the repository; the conformance matrix with every row's status, reason and test link; the regulated-adoption pack; the PHQ-9/GAD-7 scoring worked example; the not-a-medical-device statement; the NFR-M-09 non-commitment.
+**Scope.** README above the fold; the docs site generated at build time with samples imported from compiled, tested sources; ADRs rendered from the repository; the conformance matrix with every row's status, reason and test link; the regulated-adoption pack; the PHQ-9/GAD-7 scoring worked example; the not-a-medical-device statement; the NFR-M-09 non-commitment and the NFR-X-08 security-report windows it refers to.
 
 **Out of scope.** New library behaviour. A row's status may not be improved by writing documentation — only by a test (AC-13.4.2).
 
@@ -365,6 +367,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 6. The adoption pack contains the dependency inventory with licences, the SBOM, the no-PHI/no-network statement next to the test that enforces it, the accessibility record, the browser matrix, and the semver and deprecation policy (AC-13.5.1).
 7. Each ADR states context, options, decision and consequences including costs accepted, and every claim is arguable from first principles with no appeal to unverifiable behaviour of other systems (AC-13.3.1/2, NFR-Z-03).
 8. Published numbers in the README match the gates in CI, checked by a script rather than by eye (NFR-S-02/03, NFR-P-04/05).
+9. The README states the NFR-M-09 non-commitment together with the NFR-X-08 acknowledge and patch windows, and a reporting address, so the security response is the only published commitment and is published with its numbers.
 
 **Spike.** None.
 
@@ -415,8 +418,10 @@ A gate becomes blocking in the milestone that first produces its subject.
 
 | Gate | Blocking from | Source |
 |---|---|---|
+| Branch protection on the default branch: 0 direct pushes, PR required, PR links a story or ADR | M0 (from the end of the milestone) | NFR-M-08 |
 | Typecheck, lint, core unit tests (fast lane) | M0 | NFR-M-07 |
 | Architectural lint rules: no DOM in core, no network anywhere, no hard-coded strings, no deep imports | M0 (rules), tightened M2/M4/M5 as modules land | NFR-M-06 |
+| Cyclomatic complexity ≤ 15 per function, named exceptions carrying an inline justification | M0 (rule), real bite from M2 | NFR-M-02 |
 | Core coverage ≥ 95 / 90 | M2 | NFR-Q-01 |
 | Mutation ≥ 80 on engine modules, incremental on PRs | M2 | NFR-Q-03, A6 |
 | Bundle budgets per entry point | M2 core · M5 view · M6 react · M7 element and IIFE · M8 themes | NFR-S-02/03 |
@@ -425,6 +430,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Round-trip property tests, ≥ 1,000 cases | M3 | NFR-Q-06 |
 | Conformance: every `supported` row links a passing test | M3 (rows appear), enforced M10 | NFR-Q-04, AC-13.4.2 |
 | Throwing-stub no-network/no-storage test | M4 core · M6 react and themes · M7 element's single path | AC-14.6.1, NFR-X-01/02 |
+| `Intl`-only formatting: 0 hand-rolled date, number or unit formatting | M4 catalogue · M5 view text · M6/M7 renderers | NFR-I-04 |
 | SSR hydration, 0 warnings, React 18 and 19 | M6 | NFR-C-08 |
 | CSP render, no inline styles, 0 `eval`/`new Function` | M7 (M1 proves it) | NFR-C-07 |
 | Automated accessibility across tiers, themes, viewports, renderers | M8 (M1 proves it on a slice) | NFR-A-01 |
@@ -463,7 +469,7 @@ Every row is already open in another document; none is new. The roadmap's contri
 
 **The finding.** Summing §2 gives **ASSUMPTION: 184 hours**, excluding the recurring manual screen-reader passes and excluding decision time in M0. NFR-Z-01 assumes 40–60. At the assumed 12–15 hours per week, 184 hours is **13–15 weeks**, not the 3–4 weeks in Brief §8.
 
-The estimate is not padded for the usual reasons: nine blocking CI gates, a mutation-tested engine, two renderers, four tiers, a verified WCAG 2.2 AA surface, a playground and a docs site each carry real hours, and the requirements make all of them `Must`. It is also not a case for doing less carefully — Brief §5 is explicit that nothing ships partial, and `03-nfr.md` §10 says cutting docs, ADRs or accessibility would remove exactly the evidence adopters need.
+The estimate is not padded for the usual reasons: twenty-one blocking CI gates (§5), a mutation-tested engine, two renderers, four tiers, a verified WCAG 2.2 AA surface, a playground and a docs site each carry real hours, and the requirements make all of them `Must`. It is also not a case for doing less carefully — Brief §5 is explicit that nothing ships partial, and `03-nfr.md` §10 says cutting docs, ADRs or accessibility would remove exactly the evidence adopters need.
 
 **Three honest ways out, for the product owner to choose in M0.**
 

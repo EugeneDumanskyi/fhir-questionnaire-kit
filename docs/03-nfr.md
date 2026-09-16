@@ -186,7 +186,7 @@ Constraint: a project that must survive at maintenance pace after the initial re
 | NFR-M-03 | Source file length | ≤ 400 lines | Target |
 | NFR-M-04 | Public API changes without a report diff in the PR | 0 — API surface diff is a blocking check, `any` in the public surface is 0 | Gate |
 | NFR-M-05 | ADR coverage | ≥ 10 ADRs at v1.0, covering at minimum: answer retention on hide; zero-dependency constraint; resolver injection; core/adapter/element layering; state model vs emitted document; customization tier model; FHIRPath exclusion and its seam; R4-only; validation timing and ownership; shadow DOM in the element | Gate + Published |
-| NFR-M-06 | Lint rules encoding architectural constraints | ≥ 4 custom rules: no DOM in core, no network API anywhere, no hard-coded user-facing strings, no cross-package deep imports | Gate |
+| NFR-M-06 | Lint rules encoding architectural constraints | ≥ 4 custom rules: no DOM in core, no network API anywhere, no hard-coded user-facing strings, no cross-package deep imports — plus the intra-core module import table of `05-architecture.md` §4.1, row by row | Gate |
 | NFR-M-07 | CI wall-clock time for the blocking PR pipeline | ≤ 10 minutes p95; fast feedback subset (type-check + lint + core unit) ≤ 3 minutes | Target |
 | NFR-M-08 | Commit and PR hygiene | conventional commits; every PR links to a story or ADR; 0 direct pushes to the default branch | Published |
 | NFR-M-09 | Maintenance mode response commitment | **none stated publicly** — issues triaged monthly, security reports per NFR-X-08, no SLA on features or questions; stated in the README so no support expectation is created | Published |
@@ -205,7 +205,7 @@ These are not build gates but they bound every decision above.
 | NFR-Z-02 | Completeness | 0 layers shipped in a partial state; there is no phase two to defer to | Brief §5, §8 |
 | NFR-Z-03 | Defensibility | 100% of decisions arguable unaided by the maintainer | Brief §8 |
 | NFR-Z-04 | Licence | Apache-2.0, for the explicit patent grant the primary user's legal team looks for — **recommendation confirmed; Brief §9.2 asked for confirmation** | Brief §9.2 |
-**Effort reality check.** NFR-Z-01 is the riskiest number in either document. Taken at face value, 40–60 hours must absorb: a rules engine with mutation-tested correctness, four packages, a web component, four customization tiers, a WCAG 2.2 AA-verified default UI, a playground, a docs site, ten ADRs and a CI pipeline with nine blocking gates. If the confirmed budget is at the lower end, the honest cuts in priority order are: NFR-Q-03 mutation testing scope → E12 US-12.4/12.5 playground extras → the print stylesheet → NFR-A-02 reduced to two screen reader pairs. Cutting docs, ADRs or accessibility instead would remove the exact evidence adopters need to verify the principles in Brief §6.
+**Effort reality check.** NFR-Z-01 is the riskiest number in either document. Taken at face value, 40–60 hours must absorb: a rules engine with mutation-tested correctness, four packages, a web component, four customization tiers, a WCAG 2.2 AA-verified default UI, a playground, a docs site, ten ADRs and a CI pipeline with twenty-one blocking gates. If the confirmed budget is at the lower end, the honest cuts in priority order are: NFR-Q-03 mutation testing scope → E12 US-12.4/12.5 playground extras → the print stylesheet → NFR-A-02 reduced to two screen reader pairs. Cutting docs, ADRs or accessibility instead would remove the exact evidence adopters need to verify the principles in Brief §6.
 
 ---
 
@@ -244,7 +244,7 @@ Every number in this document that the brief did not fix. Correct these before m
 
 ## 12. Open questions returned to product
 
-Carried from Brief §9, with a BA position on each. All are decidable now and all block milestone planning.
+Carried from Brief §9, with a BA position on each; later additions are marked *New*. All are decidable now. Rows 1–8 block milestone planning; row 9 blocks M5.
 
 | # | Question | Position |
 |---|---|---|
@@ -256,3 +256,4 @@ Carried from Brief §9, with a BA position on each. All are decidable now and al
 | 6 | Scoring extension point | Extension point in core (US-07.2); PHQ-9/GAD-7 as documented example and test fixture, not a published package. **Confirm** |
 | 7 | *New* — effort budget | NFR-Z-01. Confirm hours per week before milestones are drawn |
 | 8 | *New* — playground analytics | NFR-X-09. **Resolved 2026-09-15: none** (`05-architecture.md` §9 AT4) |
+| 9 | *New* — where the locale enters | NFR-I-04 fixes *what* formats (`Intl`, host-supplied locale, 0 custom logic) but no document says *where* the host supplies the locale or which layer formats. Needed before M5 writes display text. **Open** |
