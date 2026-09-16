@@ -167,7 +167,7 @@ The integration cost is what the primary user actually evaluates.
 | NFR-I-01 | Hard-coded user-facing strings outside the message catalogue | 0, enforced by lint rule | Gate |
 | NFR-I-02 | Message catalogue size | ≤ 45 keys, each documented with context | Target |
 | NFR-I-03 | Built-in locales shipped | 1 (en) — hosts supply others | Published |
-| NFR-I-04 | Date, number and unit formatting | delegated to `Intl` with a host-supplied locale; 0 custom formatting logic | Gate |
+| NFR-I-04 | Date, number and unit formatting | delegated to `Intl` with a host-supplied locale; 0 custom formatting logic; formatted in `view/` from an explicit locale option (ADR-0020) | Gate |
 | NFR-I-05 | RTL support | full: logical CSS properties throughout, 0 physical-direction properties in themes; verified by a snapshot test in `dir="rtl"` | Gate |
 | NFR-I-06 | Multi-language questionnaires | `Questionnaire.item.text` translation extensions — **out of scope for v1, stated in the conformance matrix** | Published |
 
@@ -186,7 +186,7 @@ Constraint: a project that must survive at maintenance pace after the initial re
 | NFR-M-03 | Source file length | ≤ 400 lines | Target |
 | NFR-M-04 | Public API changes without a report diff in the PR | 0 — API surface diff is a blocking check, `any` in the public surface is 0 | Gate |
 | NFR-M-05 | ADR coverage | ≥ 10 ADRs at v1.0, covering at minimum: answer retention on hide; zero-dependency constraint; resolver injection; core/adapter/element layering; state model vs emitted document; customization tier model; FHIRPath exclusion and its seam; R4-only; validation timing and ownership; shadow DOM in the element | Gate + Published |
-| NFR-M-06 | Lint rules encoding architectural constraints | ≥ 4 custom rules: no DOM in core, no network API anywhere, no hard-coded user-facing strings, no cross-package deep imports — plus the intra-core module import table of `05-architecture.md` §4.1, row by row | Gate |
+| NFR-M-06 | Lint rules encoding architectural constraints | ≥ 4 custom rules: no DOM in core, no network API anywhere, no hard-coded user-facing strings, no cross-package deep imports — plus the intra-core module import table of `05-architecture.md` §4.1 row by row, and ADR-0020's pair: `Intl` allowed only under `view/format`, and no `toLocale*` or other ambient-locale call anywhere in core | Gate |
 | NFR-M-07 | CI wall-clock time for the blocking PR pipeline | ≤ 10 minutes p95; fast feedback subset (type-check + lint + core unit) ≤ 3 minutes | Target |
 | NFR-M-08 | Commit and PR hygiene | conventional commits; every PR links to a story or ADR; 0 direct pushes to the default branch | Published |
 | NFR-M-09 | Maintenance mode response commitment | **none stated publicly** — issues triaged monthly, security reports per NFR-X-08, no SLA on features or questions; stated in the README so no support expectation is created | Published |
@@ -256,4 +256,4 @@ Carried from Brief §9, with a BA position on each; later additions are marked *
 | 6 | Scoring extension point | Extension point in core (US-07.2); PHQ-9/GAD-7 as documented example and test fixture, not a published package. **Confirm** |
 | 7 | *New* — effort budget | NFR-Z-01. Confirm hours per week before milestones are drawn |
 | 8 | *New* — playground analytics | NFR-X-09. **Resolved 2026-09-15: none** (`05-architecture.md` §9 AT4) |
-| 9 | *New* — where the locale enters | NFR-I-04 fixes *what* formats (`Intl`, host-supplied locale, 0 custom logic) but no document says *where* the host supplies the locale or which layer formats. Needed before M5 writes display text. **Open** |
+| 9 | *New* — default locale | ADR-0020 settled the mechanism: `view/` formats, the locale is an explicit presentation option. What remains is product's: which locale the packages default to, and whether NFR-I-03's single built-in locale (en) serves a buyer operating outside English. **Confirm** |

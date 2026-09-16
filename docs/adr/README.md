@@ -27,10 +27,11 @@ Numbers are assigned in order of writing and never reused. A superseded ADR stay
 | [0017](0017-fhirpath-excluded-evaluator-seam.md) | FHIRPath is excluded; expressions route through an evaluator seam | Proposed | Brief §5; US-07.3; `05-architecture.md` §9 AT3 |
 | [0018](0018-build-and-verification-toolchain.md) | Build and verification toolchain under the licence allowlist | Proposed | `05-architecture.md` §9 AT1; E14 |
 | [0019](0019-static-client-only-playground-and-docs.md) | Playground and docs are static, client-only and run under a strict CSP | Proposed | `05-architecture.md` §9 AT4; E12 |
+| [0020](0020-explicit-locale-formatted-in-the-view-model.md) | Values are formatted in the view model from an explicit locale | Proposed | `03-nfr.md` §12 #9; NFR-I-04 |
 
 ## NFR-M-05 coverage
 
-NFR-M-05 requires at least ten ADRs at v1.0 covering the topics below. With the architecture phase written, every topic has an ADR; the count is nineteen.
+NFR-M-05 requires at least ten ADRs at v1.0 covering the topics below. With the architecture phase written, every topic has an ADR; the count is twenty.
 
 | Topic | ADR |
 |---|---|

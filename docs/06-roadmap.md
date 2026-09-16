@@ -65,13 +65,13 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 ### M0 — Preconditions, decisions and skeleton
 
-**Goal.** Reach the point where no decision that would change *what gets built* is still open, and where a trivial change can travel through a green fast lane. Everything in §6 closes here. `05-architecture.md` §8 leaves A3–A6 proposed, ADR-0008–0019 proposed, and ADR-0009 carries a follow-up that says in terms that it "needs acceptance before build" — building over that is building over an unresolved ADR, which the repository rules forbid.
+**Goal.** Reach the point where no decision that would change *what gets built* is still open, and where a trivial change can travel through a green fast lane. Everything in §6 closes here. `05-architecture.md` §8 leaves A3–A6 proposed, ADR-0008–0020 proposed, and ADR-0009 carries a follow-up that says in terms that it "needs acceptance before build" — building over that is building over an unresolved ADR, which the repository rules forbid.
 
 **Retires.** R3 (effort budget), R9 (performance anchors).
 
 **Scope.**
 - Close every open decision in §6: the effort budget (N24), the demo fixture shape (R9 of the requirements register, AC-15.1.3), the screen-reader pairs (N11), the scoring example's shape (R7), the reference-backend drop (R10), assumptions A3–A6, AT5's disposition, and ADR-0009's calculated-item ordering follow-up.
-- Move ADR-0008–0019 from Proposed to Accepted, or revise them. Update `docs/adr/README.md` statuses and dates.
+- Move ADR-0008–0020 from Proposed to Accepted, or revise them. Update `docs/adr/README.md` statuses and dates.
 - Scaffold the workspace from `05-architecture.md` §6 and the layout in the repository instructions: pnpm workspaces; `packages/core`, `packages/react`, `packages/element`, `packages/themes`; `apps/playground`; `fixtures/`.
 - TypeScript strict with `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess`, target ES2022 (NFR-C-06); ESLint with the four NFR-M-06 architectural rules written but pointed at a near-empty tree; Vitest; Changesets in fixed mode; Apache-2.0 `LICENSE` and `NOTICE` (NFR-Z-04); PR template linking a story or ADR, and branch protection on the default branch turned on as the milestone closes (NFR-M-08).
 - CI fast lane only: install from cache, typecheck, lint, core unit tests in Node.
@@ -229,7 +229,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Retires.** R2 (view-model sufficiency) in full.
 
-**Scope.** Control choice including the `itemControl` hints and the option-count fallback (INV-P-05); path-derived ids; ARIA state per node; announcement text and its per-cycle coalescing, with resolver-driven cycles announced in their own right (INV-P-03, T12); the error summary and its ordering; focus targets after a new instance, a removal, a refused completion; the inert add control with its reason (INV-P-04); the unsupported-item placeholder (AC-01.3.2); per-node view identity so that only changed nodes get new objects; the exported `ControlProps` tier-3 contract of ADR-0013; `Intl`-only formatting for any display text the view produces, with 0 hand-rolled date, number or unit formatting (NFR-I-04 — which layer formats and where the locale enters is `03-nfr.md` §12 #9, open); the DOM contract document finalised.
+**Scope.** Control choice including the `itemControl` hints and the option-count fallback (INV-P-05); path-derived ids; ARIA state per node; announcement text and its per-cycle coalescing, with resolver-driven cycles announced in their own right (INV-P-03, T12); the error summary and its ordering; focus targets after a new instance, a removal, a refused completion; the inert add control with its reason (INV-P-04); the unsupported-item placeholder (AC-01.3.2); per-node view identity so that only changed nodes get new objects; the exported `ControlProps` tier-3 contract of ADR-0013; `Intl` formatting of dates, numbers and quantities from the explicit `locale` and `timeZone` presentation options, at authored date precision and with no timezone round-trip, each node carrying both its domain value and its `display` string (NFR-I-04, ADR-0020); the DOM contract document finalised.
 
 **Out of scope.** Markup of any kind. React and element bindings (M6, M7). Theme tokens beyond the class and `part` names the contract fixes (M8).
 
@@ -257,7 +257,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Retires.** R5 (React SSR with zero hydration warnings on 18 and 19) in full.
 
-**Scope.** `useQuestionnaire`, the re-exported `createSession`, `<Questionnaire>`; reading through `useSyncExternalStore` with the same snapshot on server and client; `React.memo` per item path; the three-step controlled-by-response protocol of ADR-0015 (reference echo, semantic echo, external replacement with its diagnostic); tier 3 `controls` mapping with the development-only ARIA check; tier 4 exposure; the lint rule confining DOM access to effects and handlers.
+**Scope.** `useQuestionnaire`, the re-exported `createSession`, `<Questionnaire>`; reading through `useSyncExternalStore` with the same snapshot on server and client; `React.memo` per item path; the three-step controlled-by-response protocol of ADR-0015 (reference echo, semantic echo, external replacement with its diagnostic); tier 3 `controls` mapping with the development-only ARIA check; tier 4 exposure; the `locale` and `timeZone` options passed through to `view/`, defaulting to a fixed `"en"` and never sniffed, so server and first client render agree (ADR-0020); the lint rule confining DOM access to effects and handlers.
 
 **Out of scope.** Any default HTTP resolver (ADR-0012 gives React none by design). Themes beyond importing them (M8). Playground (M9).
 
@@ -285,7 +285,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Retires.** R4 (keyed patching that never disturbs focus or caret) in full; holds R1 at the element's 24 kB budget, against the figures M1 measured.
 
-**Scope.** `<fhir-questionnaire>` with an open shadow root; the keyed patcher; stylesheets embedded at build time and adopted once per document; `--fhirq-*` inheritance and `::part` hooks; `questionnaire` property and `src` attribute; change and complete events carrying plain objects; the default resolver in `default-resolver.ts` — the only file in the repository permitted a network call; connect/disconnect hygiene through one `AbortController` per connection; tier-3 overrides as host-defined custom elements inside the shadow root, driven by `fhirq-set`/`fhirq-clear`/`fhirq-leave`; ESM and IIFE outputs.
+**Scope.** `<fhir-questionnaire>` with an open shadow root; the keyed patcher; stylesheets embedded at build time and adopted once per document; `--fhirq-*` inheritance and `::part` hooks; `questionnaire` property and `src` attribute; the `locale` property and its `lang`-then-`navigator.language`-then-`"en"` fallback, the element's half of ADR-0012's asymmetry (ADR-0020); change and complete events carrying plain objects; the default resolver in `default-resolver.ts` — the only file in the repository permitted a network call; connect/disconnect hygiene through one `AbortController` per connection; tier-3 overrides as host-defined custom elements inside the shadow root, driven by `fhirq-set`/`fhirq-clear`/`fhirq-leave`; ESM and IIFE outputs.
 
 **Out of scope.** Form participation with a surrounding `<form>` — AT5 puts it out of v1; M0 confirms that and records the follow-up. Theme presets beyond the embedded default (M8).
 
@@ -440,7 +440,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Round-trip property tests, ≥ 1,000 cases | M3 | NFR-Q-06 |
 | Conformance: every `supported` row links a passing test | M3 (rows appear), enforced M10 | NFR-Q-04, AC-13.4.2 |
 | Throwing-stub no-network/no-storage test | M4 core · M6 react and themes · M7 element's single path | AC-14.6.1, NFR-X-01/02 |
-| `Intl`-only formatting: 0 hand-rolled date, number or unit formatting | M4 catalogue · M5 view text · M6/M7 renderers | NFR-I-04 |
+| `Intl`-only formatting: 0 hand-rolled date, number or unit formatting | M4 catalogue · M5 `view/` formats · M6/M7 supply the locale | NFR-I-04, ADR-0020 |
 | SSR hydration, 0 warnings, React 18 and 19 | M6 | NFR-C-08 |
 | CSP render, no inline styles, 0 `eval`/`new Function` | M7 (M1 proves it) | NFR-C-07 |
 | Automated accessibility across tiers, themes, viewports, renderers | M8 (M1 proves it on a slice) | NFR-A-01 |
@@ -459,7 +459,7 @@ Every row is already open in another document; none is new. The roadmap's contri
 | # | Decision | Where it is open | Consequence of leaving it open |
 |---|---|---|---|
 | 1 | **Effort budget** — hours per week and total | `03-nfr.md` N24, §12 #7; Brief §8 | §7's cut ladder cannot be applied, and every milestone's scope is provisional |
-| 2 | **ADR-0008–0019 status** — Proposed to Accepted or revised | `docs/adr/README.md` | Building over a Proposed ADR is building over an open decision |
+| 2 | **ADR-0008–0020 status** — Proposed to Accepted or revised | `docs/adr/README.md` | Building over a Proposed ADR is building over an open decision |
 | 3 | **Calculated items reading other calculated items** | ADR-0009 follow-up, which says acceptance is needed before build | M2 cannot implement step 4 of the cycle |
 | 4 | **Performance anchors** — the NFR-P-04 ceiling | `03-nfr.md` N2; spike S0 | M2's benchmark fixtures and committed baselines are guesses |
 | 5 | **Demo fixture shape** | `02-requirements.md` R9, AC-15.1.3; `03-nfr.md` §12 #1 | M2 needs the fixture; it is also the README demo and playground default |
