@@ -1,0 +1,15 @@
+{
+  "name": "@fhirq/eslint-rules",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The four NFR-M-06 architectural lint rules. Dev-only; never published, never a runtime dependency of any @fhirq/* package.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "8.70.0",
+    "eslint": "9.39.5"
+  }
+}

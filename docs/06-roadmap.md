@@ -2,7 +2,7 @@
 
 *Phase: delivery planning. Input: `05-architecture.md` (with `01-brief.md`, `02-requirements.md`, `03-nfr.md`, `04-domain.md` and ADR-0001–0019). Output: milestones ordered so the riskiest unknown is proven first, each with goal, scope, out-of-scope, acceptance criteria and its spike. Next: build.*
 
-**Status:** Proposed, 2026-09-16. M0 closes the decisions in §6; no milestone after it may start until they are closed — in particular NFR-Z-01, which §7 shows the current scope does not fit.
+**Status:** Accepted, 2026-09-16. §6's fifteen decisions are closed (see §6 and `00-m0-decisions.md`), which is what M0 gated on. NFR-Z-01 is restated at ≈ 184 hours, 13–15 weeks, and §7's cut ladder is declined in writing and held in reserve.
 
 ---
 
@@ -30,13 +30,13 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 |---|---|---|---|---|
 | **R1** | **The element's byte budget is arithmetically tight.** NFR-S-02 gives `@fhirq/element` ≤ 24 kB *standalone, including core, view and the default theme*. Core alone is budgeted at 14 kB and view at 5 kB, so 19 kB is committed before a single line of DOM code or a single byte of embedded CSS (ADR-0014 embeds `base.css` plus a preset as strings). | Every byte figure is flagged `ASSUMPTION` (N3) and `03-nfr.md` §2 says explicitly to re-baseline *after the engine spike*. Nobody has measured a line of this code. | The published competitive claim (Brief §4), possibly NFR-S-02 itself, possibly ADR-0014's decision to embed the theme in the bundle. | **M1** (measure), **M7** (hold) |
 | **R2** | **View-model sufficiency.** Architecture B is accepted on the claim that a DOM-free semantic view model can carry every BC6 behaviour — ids, ARIA state, announcements, error summary, focus targets, the tier-3 contract — for both a React renderer and a keyed vanilla renderer, without becoming a virtual DOM (ADR-0007's own named risk). | It has never been written. The failure mode is gradual: fields named after elements, then a tree of them, then a renderer that cannot skip unchanged nodes. | ADR-0007 — the accepted architecture. Falling back to Architecture A doubles BC6 (its rejection reason) and moves that code under the weaker NFR-Q-02 gate. | **M1** (proof of concept), **M5** (full) |
-| **R3** | **Effort budget.** NFR-Z-01 assumes 40–60 hours for everything below, and Brief §8 asks for confirmation "before milestone planning". §7 estimates roughly three times that. | The number was never confirmed. It is the only input on which every scope decision hangs (N24). | The shape of the release, via the cut ladder in `03-nfr.md` §10. Cutting after building is waste; cutting now is planning. | **M0** (decision), §7 (cut ladder) |
+| **R3** | **Retired 2026-09-16. Effort budget.** NFR-Z-01 assumed 40–60 hours for everything below, and Brief §8 asked for confirmation "before milestone planning". §7 estimated roughly three times that; the number moved to ≈ 184 h and the cut ladder was declined in writing. | The number was never confirmed. It is the only input on which every scope decision hangs (N24). | The shape of the release, via the cut ladder in `03-nfr.md` §10. Cutting after building is waste; cutting now is planning. | **M0** (decision), §7 (cut ladder) |
 | **R4** | **Keyed DOM patching that never disturbs focus or caret.** ADR-0007 requires the element to patch, not rebuild; ADR-0014 forbids `<style>`, inline styles and `el.style`; `adoptedStyleSheets` must work at the iOS Safari 16.4 floor (A4). | Hand-written patching against a live, focused form is the classic source of subtle input bugs, and the CSP and shadow-DOM constraints remove the usual escape hatches. | The element's default UI, NFR-A-07, NFR-P-03, and A4's browser floor. | **M1** (thin proof), **M7** (full) |
 | **R5** | **React SSR with zero hydration warnings on 18 *and* 19,** with `useSyncExternalStore`, `useId`-prefixed ids and pending option state rendered identically on server and first client render (ADR-0015). | Two React majors, two id strategies to keep aligned, and a gate that fails the build on any console warning (AC-08.3.2). | NFR-C-08, AC-08.3.1/2, and ADR-0015's "SSR by construction" claim. | **M1** (thin proof), **M6** (full) |
 | **R6** | **Incremental evaluation correctness at scale.** Tarjan, topological ranks, scope-resolved edges inside repeat instances, single-writer queue, per-node object identity, and a recompute set asserted against an independent BFS closure (ADR-0009, NFR-P-09). | Hard, but *specified*. The unknown is only whether the performance figures (N2, themselves assumptions) survive contact with the scale ceiling. | Performance NFRs and the benchmark baselines — not the architecture. | **M2** |
 | **R7** | **The CI pipeline's own budget.** Twenty-one blocking gates (§5), three browser engines, mutation testing, 1,000 property cases, six consumer environments, all inside 10 minutes p95 (NFR-M-07, A6). | Measurable only once real code and real suites exist. | NFR-M-07 (a target, not a gate) and the merge experience; the documented relief valve is moving WebKit to nightly (ADR-0018). | **M2** (first measurement), **M11** (full pipeline) |
 | **R8** | **Accessibility at full breadth.** 0 violations across demo forms × 4 tiers × 2 themes × 2 viewports × 2 renderers, plus contrast, target size, reflow, forced-colors and RTL (NFR-A-01…09). | Automated tooling catches roughly a third of real issues (`03-nfr.md` §5), so the residue surfaces only in manual passes, which are late and manual. | Brief §6 principle 4 and the claim the primary user checks hardest. | **M1** (one control, both renderers), **M8** (full) |
-| **R9** | **Performance anchors are unvalidated.** NFR-P-04's 1,000-item / 500-condition / 50-instance ceiling is `ASSUMPTION` N2, and `03-nfr.md` says to challenge it first. | No survey of real instrument sizes has been done. | Benchmark design, heap budget NFR-P-08, and possibly NFR-P-01/02's anchors. | **M0** (spike S0) |
+| **R9** | **Retired 2026-09-16, with one figure carried forward. Performance anchors.** NFR-P-04's 1,000-item / 500-condition ceiling and NFR-P-05 are confirmed against 300 surveyed instruments; the 50-instance figure is not evidenced by any `Questionnaire` and moves to M2. | A survey of real instrument sizes has now been done (`00-s0-instrument-survey.md`). | Benchmark design, heap budget NFR-P-08, and possibly NFR-P-01/02's anchors. | **M0** (spike S0) |
 
 **Why the engine is not first.** R6 is the largest *block of work* and the actual product, but it is the best-specified thing in the repository: ADR-0009 names the algorithm, the data structures, the cycle steps and the verification. Building it first would spend the biggest block of the budget before learning whether the layer it must publish into (R2) and the size envelope it must fit (R1) are real. M1 buys those answers for roughly a tenth of M2's cost.
 
@@ -89,6 +89,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 7. Branch protection is on as the milestone closes: the default branch refuses direct pushes, a PR with a passing fast lane is required, and the PR template links a story or ADR (NFR-M-08). M0's own scaffolding commits land before this, since the fast lane cannot gate the commits that create it.
 
 **Spike.** **S0 — instrument-size survey.** Timebox 2 h, no code. Sample published FHIR Questionnaires from real instrument libraries and record item counts, condition counts, nesting depth and repeat usage. Output: either NFR-P-04's ceiling is confirmed, or N2 is re-anchored to observed sizes and NFR-P-01/02 move with it. Decision it unblocks: the shape of M2's benchmark fixtures, which get committed as baselines and are expensive to change later.
+
+**Run on 2026-09-16; output `00-s0-instrument-survey.md`.** 300 instruments from two production libraries. The ceiling held — 1,000 items is the observed 99th percentile — and NFR-P-01/02's single 200-item anchor did not: the real distribution is bimodal and 200 sits in its trough. Both were re-anchored to 25-item and 500-item fixtures. The 50-repeat-instance figure is not evidenced by any `Questionnaire` and is carried into M2 as the one performance assumption still open.
 
 **Effort.** ASSUMPTION: 6 h (of which S0 is 2 h; decision-closing time is the product owner's, not counted here).
 
@@ -456,23 +458,27 @@ A gate becomes blocking in the milestone that first produces its subject.
 
 Every row is already open in another document; none is new. The roadmap's contribution is to say that they block the build rather than the release, because each one changes what gets built.
 
-| # | Decision | Where it is open | Consequence of leaving it open |
-|---|---|---|---|
-| 1 | **Effort budget** — hours per week and total | `03-nfr.md` N24, §12 #7; Brief §8 | §7's cut ladder cannot be applied, and every milestone's scope is provisional |
-| 2 | **ADR-0008–0020 status** — Proposed to Accepted or revised | `docs/adr/README.md` | Building over a Proposed ADR is building over an open decision |
-| 3 | **Calculated items reading other calculated items** | ADR-0009 follow-up, which says acceptance is needed before build | M2 cannot implement step 4 of the cycle |
-| 4 | **Performance anchors** — the NFR-P-04 ceiling | `03-nfr.md` N2; spike S0 | M2's benchmark fixtures and committed baselines are guesses |
-| 5 | **Demo fixture shape** | `02-requirements.md` R9, AC-15.1.3; `03-nfr.md` §12 #1 | M2 needs the fixture; it is also the README demo and playground default |
-| 6 | **Screen-reader pairs** | `03-nfr.md` N11, §12 #4 | M8's recurring manual cost, and a published claim |
-| 7 | **Scoring example shape** — docs example and fixture, not a package | `02-requirements.md` R7; `03-nfr.md` §12 #6 | M4 fixture and M10 documentation |
-| 8 | **Reference backend dropped** | `03-nfr.md` §12 #5; ADR-0019 already assumes dropped | Scope creep risk in M9 |
-| 9 | **A3 lockstep exact `@fhirq/*` versions** | `05-architecture.md` §8 | M0's Changesets configuration and M11's dependency gate |
-| 10 | **A4 iOS Safari 16.4 floor** | `05-architecture.md` §8 | M1/M7's styling mechanism; lowering it costs bytes against R1 |
-| 11 | **A5 snapshot format version, major-only restore** | `05-architecture.md` §8 | M3's snapshot header and its semver meaning |
-| 12 | **A6 incremental mutation on PRs, full run nightly** | `05-architecture.md` §8 | M2's spike S2 and M11's release blocker |
-| 13 | **AT5 element form participation out of v1** | `05-architecture.md` §9 | M7 scope |
-| 14 | **NFR-I-06 translation extensions** — excluded, or in scope for an EU buyer | `03-nfr.md` N19 | If it moves in, it touches M2 (parse), M5 (text selection) and M10 (matrix row) |
-| 15 | **Default locale** — which locale the packages default to, and whether NFR-I-03's single built-in `en` serves a buyer outside English | `03-nfr.md` §12 #9 | M5's display text. ADR-0020 made the locale an explicit option, so this only chooses its default — but unchosen it stops M5 mid-build for a product answer |
+**All fifteen were closed on 2026-09-16.** The sheet they were answered on is
+`00-m0-decisions.md`; each resolution is written, dated, into the document that
+owns it, which is what AC-4 requires. The last column records the answer.
+
+| # | Decision | Where it is open | Consequence of leaving it open | Resolution, 2026-09-16 |
+|---|---|---|---|---|
+| 1 | **Effort budget** — hours per week and total | `03-nfr.md` N24, §12 #7; Brief §8 | §7's cut ladder cannot be applied, and every milestone's scope is provisional | Number moved: 12–15 hrs/week, ≈ 184 h, 13–15 weeks. Cut ladder declined, first two rungs held in reserve (`03-nfr.md` §10, N24) |
+| 2 | **ADR-0008–0020 status** — Proposed to Accepted or revised | `docs/adr/README.md` | Building over a Proposed ADR is building over an open decision | All thirteen accepted as written, dated in each header and in the index |
+| 3 | **Calculated items reading other calculated items** | ADR-0009 follow-up, which says acceptance is needed before build | M2 cannot implement step 4 of the cycle | Document order; a reference to a later calculated item reads the previous cycle's value. Folded into ADR-0009's Decision |
+| 4 | **Performance anchors** — the NFR-P-04 ceiling | `03-nfr.md` N2; spike S0 | M2's benchmark fixtures and committed baselines are guesses | Ceiling and NFR-P-05 confirmed by S0 over 300 instruments; NFR-P-01/02 re-anchored to 25-item and 500-item fixtures; the 50-instance figure recorded as unvalidated (`03-nfr.md` §1, N2) |
+| 5 | **Demo fixture shape** | `02-requirements.md` R9, AC-15.1.3; `03-nfr.md` §12 #1 | M2 needs the fixture; it is also the README demo and playground default | Confirmed as written (`02-requirements.md` R9) |
+| 6 | **Screen-reader pairs** | `03-nfr.md` N11, §12 #4 | M8's recurring manual cost, and a published claim | Three: NVDA + Firefox, JAWS + Chrome, VoiceOver + Safari iOS (`03-nfr.md` NFR-A-02, N11) |
+| 7 | **Scoring example shape** — docs example and fixture, not a package | `02-requirements.md` R7; `03-nfr.md` §12 #6 | M4 fixture and M10 documentation | Confirmed as written (`02-requirements.md` R7) |
+| 8 | **Reference backend dropped** | `03-nfr.md` §12 #5; ADR-0019 already assumes dropped | Scope creep risk in M9 | Dropped (`02-requirements.md` R10, `03-nfr.md` §12 #5) |
+| 9 | **A3 lockstep exact `@fhirq/*` versions** | `05-architecture.md` §8 | M0's Changesets configuration and M11's dependency gate | Confirmed; Changesets fixed mode over the four packages is in the tree |
+| 10 | **A4 iOS Safari 16.4 floor** | `05-architecture.md` §8 | M1/M7's styling mechanism; lowering it costs bytes against R1 | Confirmed |
+| 11 | **A5 snapshot format version, major-only restore** | `05-architecture.md` §8 | M3's snapshot header and its semver meaning | Confirmed |
+| 12 | **A6 incremental mutation on PRs, full run nightly** | `05-architecture.md` §8 | M2's spike S2 and M11's release blocker | Confirmed |
+| 13 | **AT5 element form participation out of v1** | `05-architecture.md` §9 | M7 scope | Out of v1, recorded as a follow-up (`05-architecture.md` §9) |
+| 14 | **NFR-I-06 translation extensions** — excluded, or in scope for an EU buyer | `03-nfr.md` N19 | If it moves in, it touches M2 (parse), M5 (text selection) and M10 (matrix row) | Excluded from v1, as a conformance-matrix row with its reason (`03-nfr.md` NFR-I-06, N19) |
+| 15 | **Default locale** — which locale the packages default to, and whether NFR-I-03's single built-in `en` serves a buyer outside English | `03-nfr.md` §12 #9 | M5's display text. ADR-0020 made the locale an explicit option, so this only chooses its default — but unchosen it stops M5 mid-build for a product answer | `en`, single built-in locale, hosts supply others (`03-nfr.md` NFR-I-03, §12 #9) |
 
 ---
 
@@ -482,7 +488,7 @@ Every row is already open in another document; none is new. The roadmap's contri
 
 The estimate is not padded for the usual reasons: twenty-one blocking CI gates (§5), a mutation-tested engine, two renderers, four tiers, a verified WCAG 2.2 AA surface, a playground and a docs site each carry real hours, and the requirements make all of them `Must`. It is also not a case for doing less carefully — Brief §5 is explicit that nothing ships partial, and `03-nfr.md` §10 says cutting docs, ADRs or accessibility would remove exactly the evidence adopters need.
 
-**Three honest ways out, for the product owner to choose in M0.**
+**Three honest ways out, for the product owner to choose in M0.** *Chosen on 2026-09-16: option 1, with option 2's first two rungs held in reserve. `03-nfr.md` NFR-Z-01 and §10 carry the restated figure and the declined ladder.*
 
 1. **Move the number.** Accept 13–15 weeks at the same weekly pace, and restate NFR-Z-01. Nothing else changes.
 2. **Apply the published cut ladder, in its published order** (`03-nfr.md` §10), which trades verification depth rather than width:
@@ -493,7 +499,7 @@ The estimate is not padded for the usual reasons: twenty-one blocking CI gates (
    That ladder recovers roughly 14 hours against a gap of about 124. It closes a ninth of it, which is the honest arithmetic: the ladder was sized for schedule pressure, not for a 3× mismatch.
 3. **Cut depth, with product sign-off.** The only reductions that move the number materially are in spec surface — fewer supported item types, dropping repeating groups or dropping the snapshot path — and every one of them is a `Must` today and a row an evaluator will read. If this route is taken, each cut becomes a conformance-matrix row with a reason, which is the shape Brief §5 already commits to.
 
-**The recommendation.** Option 1, with option 2's first two rungs held in reserve. Width is the competitive position (Brief §5) and depth of verification is the evidence the primary user buys; the schedule is the only one of the three that costs nothing to adjust. M1 exists partly to make this call better informed: it will be the first real data on how fast this codebase is to write.
+**The recommendation, and the decision.** Option 1, with option 2's first two rungs held in reserve — recommended here, and taken on 2026-09-16. Width is the competitive position (Brief §5) and depth of verification is the evidence the primary user buys; the schedule is the only one of the three that costs nothing to adjust. M1 exists partly to make this call better informed: it will be the first real data on how fast this codebase is to write.
 
 ---
 

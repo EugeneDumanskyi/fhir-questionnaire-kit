@@ -1,7 +1,8 @@
 # ADR-0014 — The element renders into shadow DOM styled by constructable stylesheets
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §3 secondary user · E09 (AC-09.1.1–2, AC-09.2.1–2, AC-09.3.1), AC-10.3.1, AC-11.2.2, AC-11.3.1 · NFR-C-01, NFR-C-07, NFR-S-02, NFR-S-03, NFR-A-01, NFR-A-04, NFR-A-07 · ADR-0007, ADR-0013 · `05-architecture.md` §8 A4, §9 AT5 · NFR-M-05 topic *shadow DOM in the element*
 
 ## Context

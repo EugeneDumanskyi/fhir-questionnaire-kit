@@ -1,7 +1,8 @@
 # ADR-0017 — FHIRPath is excluded; expressions route through an evaluator seam
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §5 (FHIRPath out of scope) · US-07.3 (AC-07.3.1–4), US-01.3 (AC-01.3.3), AC-02.5.5 · NFR-S-01, NFR-S-02, NFR-S-05, NFR-C-07, NFR-U-05 · INV-D-09, INV-D-14, INV-D-15, INV-S-15, INV-X-09 · ADR-0003, ADR-0006, ADR-0009 · `05-architecture.md` §9 AT3 · NFR-M-05 topic *FHIRPath exclusion and its seam*
 
 ## Context

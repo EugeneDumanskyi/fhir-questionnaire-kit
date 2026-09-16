@@ -1,7 +1,8 @@
 # ADR-0012 — Option lists come from an injected resolver; only the element ships a default
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §3, §6 principle 2 · US-07.1 (AC-07.1.1–4), AC-01.1.2, AC-09.1.1, AC-14.6.1 · NFR-X-01, NFR-X-02, NFR-S-02, NFR-C-04 · INV-S-34, INV-X-01–03, SM-04, BC5 · ADR-0005 · NFR-M-05 topic *resolver injection*
 
 ## Context

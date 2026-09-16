@@ -1,0 +1,30 @@
+{
+  "name": "fhir-questionnaire-kit",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for @fhirq/*: render a FHIR R4 Questionnaire, emit a valid QuestionnaireResponse",
+  "license": "Apache-2.0",
+  "type": "module",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @fhirq/playground dev",
+    "typecheck": "tsc --build --force tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "changeset": "changeset",
+    "clean": "tsc --build --clean tsconfig.json"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.31.1",
+    "@eslint/js": "9.39.5",
+    "@types/node": "22.20.2",
+    "eslint": "9.39.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "3.2.7"
+  }
+}

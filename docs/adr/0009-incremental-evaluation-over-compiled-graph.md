@@ -1,7 +1,8 @@
 # ADR-0009 — Incremental evaluation over a dependency graph compiled at load
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** US-02.2 (AC-02.2.1–4), AC-02.5.1, AC-03.2.3, AC-06.2.1, AC-07.1.1 · NFR-P-01, NFR-P-02, NFR-P-04, NFR-P-05, NFR-P-08, NFR-P-09, NFR-Q-03 · INV-D-05, INV-D-11, INV-D-13, INV-S-01–08, INV-S-33, SM-01 `Evaluating`, `04-domain.md` §9.2 T12, §9.3 properties 3–4
 
 ## Context
@@ -58,6 +59,18 @@ The recompute set from step 3 is recorded in an internal trace that the NFR-P-09
 
 **Store contract.** The session exposes `subscribe(listener) → unsubscribe` and `getSnapshot()`, which returns a reference that is stable until the version changes. This is the shape `useSyncExternalStore` requires, and it is framework-neutral. Events carry paths and flags, never values (`04-domain.md` §7.2).
 
+**Calculated items reading other calculated items.** *Resolved 2026-09-16
+(`06-roadmap.md` §6 decision 3).* The evaluator is opaque (ADR-0003), so nothing
+can be inferred about what one calculated item reads. Step 4 therefore evaluates
+calculated items in **document order**: each sees the values of calculated items
+earlier in the same cycle, and a calculated item referring to a *later*
+calculated item reads the previous cycle's value. The alternative — rejecting
+such a questionnaire at load — was rejected: it costs a detection pass over
+expressions the engine otherwise never inspects, and it refuses a questionnaire
+that is well formed by the specification. The one-cycle lag is a documented
+behaviour with a conformance-matrix row and a fixture, not a defect, and it
+settles within one further cycle because any later change re-runs both.
+
 **Rules and scorers declare their inputs.** Registration takes the `linkId`s a rule or scorer reads. That list controls *when* it re-runs; what it receives is still the full read-only visible projection. Reading something undeclared is a contract violation: the result goes stale until one of the declared inputs changes. This is documented, not detected.
 
 ## Consequences
@@ -82,4 +95,5 @@ The recompute set from step 3 is recorded in an internal trace that the NFR-P-09
 - Benchmarks for NFR-P-01, P-02, P-07 and P-08 against committed baselines, failing on a > 20% regression (`03-nfr.md` §1).
 
 **Follow-ups**
-- **Calculated items reading other calculated items.** The evaluator is opaque (ADR-0003), so the order among calculated items is unknown. Proposed: evaluate them in document order, where each sees values computed earlier in the same cycle, and document that a calculated item referring to a *later* calculated item reads the previous cycle's value. This needs acceptance before build, or a rule rejecting such questionnaires.
+- None outstanding. The calculated-item ordering question that stood here was
+  resolved on 2026-09-16 and is now part of the decision above.

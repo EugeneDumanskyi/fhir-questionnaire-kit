@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* No "DOM" here, deliberately: ADR-0007 keeps the engine and the
+       presentation model DOM-free, and the type layer is the first place that
+       is enforced. The no-dom-in-core lint rule is the second. */
+    "lib": ["ES2022"],
+    "types": [],
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts"]
+}

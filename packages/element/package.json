@@ -1,0 +1,33 @@
+{
+  "name": "@fhirq/element",
+  "version": "0.0.0",
+  "description": "<fhir-questionnaire>, a dependency-free custom element over @fhirq/core",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": ["./dist/define.js", "./dist/define.cjs"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "LICENSE", "NOTICE"],
+  "scripts": {
+    "typecheck": "tsc --build --force"
+  },
+  "dependencies": {
+    "@fhirq/core": "workspace:0.0.0",
+    "@fhirq/themes": "workspace:0.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

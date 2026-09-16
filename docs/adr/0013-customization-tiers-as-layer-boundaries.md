@@ -1,7 +1,8 @@
 # ADR-0013 — Four customization tiers, each stopping at a layer boundary
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §3, §5 · E10 (AC-10.1.1, AC-10.2.1, AC-10.3.1, AC-10.4.1), AC-08.2.1, AC-09.2.2, AC-12.4.1, AC-11.2.2 · NFR-U-01, NFR-U-02, NFR-U-03, NFR-U-05, NFR-A-03, NFR-I-05, NFR-S-02, NFR-C-07 · INV-P-01, INV-P-02 · ADR-0007 · NFR-M-05 topic *customization tier model*
 
 ## Context

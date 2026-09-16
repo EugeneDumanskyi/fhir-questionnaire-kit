@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    /* Tests are code, so they typecheck under the same strictness as the code.
+       They emit nothing anyone ships: the declarations go to a scratch
+       directory only because `composite` requires an output. */
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "rootDir": ".",
+    "outDir": ".tsbuild/tests"
+  },
+  "include": ["packages/*/test/**/*.ts"],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/react" },
+    { "path": "packages/element" },
+    { "path": "packages/themes" }
+  ]
+}

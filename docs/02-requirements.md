@@ -1012,10 +1012,10 @@ Every guess in this document, for correction. Numeric assumptions live in `03-nf
 | R4 | AC-03.2.5 | A repeating group with no data renders one empty instance, not zero |
 | R5 | AC-04.2.3 | Validation timing default is on-blur, then live once an error is showing |
 | R6 | AC-05.2.3 | The configurable retention alternative is a single `discard` mode; no per-item override in v1 |
-| R7 | AC-07.2.3 | PHQ-9/GAD-7 scoring ships as a documented example and test fixture, not as a published package |
+| R7 | AC-07.2.3 | **Confirmed 2026-09-16** (`03-nfr.md` §12 #6, `06-roadmap.md` §6 decision 7): PHQ-9/GAD-7 scoring ships as a documented example and test fixture, not as a published package. A fifth package would reopen ADR-0008's lockstep surface for twenty lines an adopter copies |
 | R8 | AC-12.5.1 | Playground share links encode state in the URL fragment only |
-| R9 | AC-15.1.3 | Demo fixture is an original "pre-visit intake" form; PHQ-9 is a secondary flat fixture for scoring docs |
-| R10 | §17 | Print stylesheet is `Should` priority; reference backend is dropped |
+| R9 | AC-15.1.3 | **Confirmed 2026-09-16** (`06-roadmap.md` §6 decision 5): demo fixture is an original "pre-visit intake" form; PHQ-9 is a secondary flat fixture for scoring docs. Spike S0 supports authoring it rather than adopting a real instrument — in the surveyed corpus, instruments are either large and flat or small and conditional, never both (`00-s0-instrument-survey.md` §3) |
+| R10 | §17 | **Confirmed 2026-09-16** (`06-roadmap.md` §6 decision 8, `03-nfr.md` §12 #5): print stylesheet stays `Should` priority — it is the third rung of a cut ladder that was declined, so it is in scope — and the reference backend is dropped, as ADR-0019 already assumed |
 | R11 | Throughout | Diagnostics are a first-class, host-readable list on the session rather than console warnings |
 | R12 | US-06.3 | Version drift is surfaced but never auto-resolved; the host decides |
 
@@ -1054,7 +1054,7 @@ Raised in `04-domain.md` §9 (and, for the last two rows, in ADR follow-ups) and
 
 ## 20. Decisions confirmed from architecture
 
-Raised in `05-architecture.md` §8 and §9 and accepted on 2026-09-15. AT5 (form participation for the web component) and assumptions A3–A6 remain open.
+Raised in `05-architecture.md` §8 and §9 and accepted on 2026-09-15. **AT5 (form participation for the web component) and assumptions A3–A6 were closed on 2026-09-16** in M0: A3–A6 accepted as written, AT5 out of v1 as a recorded follow-up (`06-roadmap.md` §6 decisions 9–13).
 
 | # | Decision | Where it now lives |
 |---|---|---|

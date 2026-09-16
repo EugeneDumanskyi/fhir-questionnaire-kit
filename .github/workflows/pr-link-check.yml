@@ -1,0 +1,31 @@
+name: PR hygiene
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  links-a-story-or-adr:
+    name: PR body links a story or an ADR
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      # NFR-M-08. Every change is traceable to something someone asked for:
+      # a user story, an acceptance criterion, an epic, an NFR or an ADR.
+      # The check reads the description rather than the branch name, because
+      # the description is what a reviewer and an auditor read.
+      - name: Check the description
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          pattern='US-[0-9]+\.[0-9]+|AC-[0-9]+\.[0-9]+\.[0-9]+|E[0-9]{2}\b|NFR-[A-Z]-[0-9]{2}|INV-[A-Z]-[0-9]{2}|ADR-[0-9]{4}|docs/adr/[0-9]{4}|M(0|1[01]|[1-9])\b'
+          if printf '%s' "$PR_BODY" | grep -Eq "$pattern"; then
+            echo "Found a traceability reference."
+            exit 0
+          fi
+          echo "::error::This pull request links no story, criterion, NFR, ADR or milestone."
+          echo "Add one to the description, e.g. AC-02.1.1, NFR-M-06, ADR-0009 or M2."
+          exit 1

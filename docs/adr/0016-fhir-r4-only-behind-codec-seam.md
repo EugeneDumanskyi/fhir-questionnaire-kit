@@ -1,7 +1,8 @@
 # ADR-0016 — FHIR R4 only, behind an internal codec seam
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §5 (spec depth; R5 exclusion) · AC-01.1.3, US-05.1, US-06.1 · NFR-C-09, NFR-S-02, NFR-U-05 · INV-D-01, BC1, BC4 (anti-corruption layer), `04-domain.md` §2 relationship patterns · `05-architecture.md` §4.1 · NFR-M-05 topic *R4-only*
 
 ## Context

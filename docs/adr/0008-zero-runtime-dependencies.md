@@ -1,7 +1,8 @@
 # ADR-0008 — Zero third-party runtime dependencies, enforced mechanically
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §3, §4, §6 principle 2 · US-14.1 (AC-14.1.1), AC-13.5.1, AC-14.5.1 · NFR-S-01, NFR-S-05, NFR-S-08, NFR-X-06, NFR-X-07, NFR-C-06 · `05-architecture.md` §8 A3 · NFR-M-05 topic *zero-dependency constraint*
 
 ## Context

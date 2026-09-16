@@ -1,7 +1,8 @@
 # ADR-0010 — Engine state, emitted response and snapshot are separate models
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** US-05.1, US-05.3 (AC-05.3.1–3), US-06.1 (AC-06.1.1–5), AC-05.2.2 · NFR-Q-06, NFR-X-04 · INV-E-01–11, `04-domain.md` §3.4, §8, §9.3 properties 1, 2 and 5 · `05-architecture.md` §4.1, §8 A5 · NFR-M-05 topic *state model vs emitted document*
 
 ## Context

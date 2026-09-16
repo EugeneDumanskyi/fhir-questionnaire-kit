@@ -1,0 +1,15 @@
+FHIR Questionnaire Kit
+Copyright 2026 Eugene Dumanskiy
+
+This product includes software developed as part of the FHIR Questionnaire Kit
+project (https://github.com/EugeneDumanskyi/fhir-questionnaire-kit), licensed
+under the Apache License, Version 2.0.
+
+HL7(R), FHIR(R) and the FHIR (R) logo are trademarks owned by Health Level Seven
+International, registered with the United States Patent and Trademark Office.
+This project is not affiliated with, endorsed by, or certified by HL7. It
+implements behaviour described by the FHIR R4 (4.0.1) specification, which is
+published by HL7 under the Creative Commons "No Rights Reserved" (CC0)
+declaration.
+
+No third-party runtime code is distributed in any @fhirq/* package (ADR-0008).

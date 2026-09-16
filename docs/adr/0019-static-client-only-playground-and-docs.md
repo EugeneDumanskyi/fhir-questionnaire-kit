@@ -1,7 +1,8 @@
 # ADR-0019 — Playground and docs are static, client-only and run under a strict CSP
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §2 (STK), §6 principle 1 · E12 (AC-12.1.1–2, AC-12.2.1, AC-12.3.1–2, AC-12.4.1, AC-12.5.1), US-13.2, US-13.3 · NFR-P-06, NFR-C-07, NFR-X-03, NFR-X-09, NFR-U-04, NFR-Z-01 · requirement R8, open question #5 (reference backend) · `05-architecture.md` §9 AT4
 
 ## Context

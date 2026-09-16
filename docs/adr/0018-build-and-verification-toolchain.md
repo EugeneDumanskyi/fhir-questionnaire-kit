@@ -1,7 +1,8 @@
 # ADR-0018 — Build and verification toolchain under the licence allowlist
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** E14 (AC-14.1.1, AC-14.2.1, AC-14.3.1–2, AC-14.4.1, AC-14.5.1, AC-14.6.1), AC-11.5.1, AC-13.2.1, AC-13.4.2 · NFR-S-02, NFR-S-06, NFR-S-07, NFR-S-08, NFR-C-02, NFR-C-05, NFR-Q-01–08, NFR-A-01, NFR-M-04, NFR-M-06, NFR-M-07, NFR-X-06, NFR-X-07, NFR-Z-01 · `05-architecture.md` §8 A6, §9 AT1
 
 ## Context

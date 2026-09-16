@@ -278,22 +278,22 @@ C4Container
 
 ## 8. New assumptions introduced by architecture
 
-Extends `03-nfr.md` §11. Correct before milestone planning.
+Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were accepted on 2026-09-15; A3–A6 on 2026-09-16, in M0.** None is open.
 
 | # | Ref | Assumption | Why it matters |
 |---|---|---|---|
 | A1 | NFR-S-02 | **Accepted 2026-09-15, now in NFR-S-02.** New budgets: `@fhirq/core/view` ≤ 5 kB; `@fhirq/themes` structural stylesheet ≤ 4 kB | Architecture B adds two entry points that NFR-S-02 did not list |
 | A2 | NFR-S-02 | **Accepted 2026-09-15, now in NFR-S-02.** The React ≤ 6 kB budget excludes core and view, as it already excludes React | Otherwise React's budget is smaller than core alone |
-| A3 | NFR-S-01 | "0 direct runtime deps" means **third-party**. `@fhirq/*` packages depend on each other at exact versions and release in lockstep (ADR-0008) | Taken literally, `@fhirq/react` could not depend on `@fhirq/core` |
-| A4 | NFR-C-01 | The iOS Safari 16.4 floor is load-bearing: constructable stylesheets, the element's CSP-safe styling mechanism, arrive there (ADR-0014) | Lowering the floor now costs a CSP-compatible fallback, not only polyfill bytes |
-| A5 | AC-05.3.3 | Snapshots carry a format version; restore accepts the same format major only; a format change is a semver-major change of core (ADR-0010) | Otherwise "snapshots are not a migration format" has no mechanical meaning across library upgrades |
-| A6 | NFR-Q-03 | Mutation testing runs incrementally on changed engine modules per PR; the full run is nightly and blocks release, not merge (ADR-0018) | A full run will not fit NFR-M-07's 10 minutes |
+| A3 | NFR-S-01 | **Accepted 2026-09-16.** "0 direct runtime deps" means **third-party**. `@fhirq/*` packages depend on each other at exact versions and release in lockstep (ADR-0008). Mechanical from M0: Changesets is configured in fixed mode over the four packages, and the cross-dependencies are `workspace:0.0.0` | Taken literally, `@fhirq/react` could not depend on `@fhirq/core`. Ranges would leave NFR-S-01 unprovable |
+| A4 | NFR-C-01 | **Accepted 2026-09-16.** The iOS Safari 16.4 floor is load-bearing: constructable stylesheets, the element's CSP-safe styling mechanism, arrive there (ADR-0014). It is also the floor NFR-A-02's iOS screen-reader pair verifies each release | Lowering the floor costs a second, CSP-compatible styling mechanism carried in the bundle, against R1, which `06-roadmap.md` §1 already calls arithmetically tight |
+| A5 | AC-05.3.3 | **Accepted 2026-09-16.** Snapshots carry a format version; restore accepts the same format major only; a format change is a semver-major change of core (ADR-0010) | Otherwise "snapshots are not a migration format" has no mechanical meaning across library upgrades, and AC-05.3.3 has nothing to assert |
+| A6 | NFR-Q-03 | **Accepted 2026-09-16.** Mutation testing runs incrementally on changed engine modules per PR; the full run is nightly and blocks release, not merge (ADR-0018) | A full run will not fit NFR-M-07's 10 minutes (ADR-0018 option G). Accepted cost: a change that weakens tests in an unchanged file is caught nightly rather than at merge |
 
 ---
 
 ## 9. Tensions raised for product
 
-**AT1–AT4 were accepted as proposed on 2026-09-15** and are folded into `02-requirements.md` (indexed in its §20) and `03-nfr.md`. AT5 remains open.
+**AT1–AT4 were accepted as proposed on 2026-09-15** and are folded into `02-requirements.md` (indexed in its §20) and `03-nfr.md`. **AT5 was resolved on 2026-09-16** (`06-roadmap.md` §6 decision 13): out of v1.
 
 | # | Tension | Resolution | ADR |
 |---|---|---|---|
@@ -301,7 +301,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning.
 | AT2 | **AC-08.1.2 controlled mode vs retention.** If the controlled value is a `QuestionnaireResponse`, echoing it back each render would rehydrate and silently drop retained answers and surfacing state. | Prefer controlling by `session`. For a response-valued `value`, ignore values semantically equal to the last emitted response, and rehydrate only on a genuine external change, documenting that this resets retention. | 0015 |
 | AT3 | **Silent expression extensions.** An unsupported `enableWhenExpression` or `answerExpression` ignored at load would show questions the author meant to hide. | Treat them like unsupported item types: reject in `strict` mode, diagnostic plus item disabled in `lenient` mode. Now AC-01.3.3 and INV-D-15. | 0017 |
 | AT4 | **NFR-X-09 playground analytics.** Left undecided by `03-nfr.md`; resolved there on 2026-09-15 (N16, §12 #8). | **None.** Rely on GitHub traffic stats. The playground's CSP then denies all connections, which makes AC-12.3.2 browser-enforced. | 0019 |
-| AT5 | **Element form participation.** An embedder in a Rails or Django `<form>` will expect the response to submit with the form. Not in requirements. | Out of v1; record as a follow-up (form-associated custom element, also Safari 16.4+). | 0014 |
+| AT5 | **Element form participation.** An embedder in a Rails or Django `<form>` will expect the response to submit with the form. Not in requirements. | **Out of v1, confirmed 2026-09-16,** and recorded as a follow-up: a form-associated custom element via `ElementInternals`. It is a second serialisation path beside the emitted `QuestionnaireResponse`, it is in no requirement, and `ElementInternals` form association is itself Safari 16.4+ — so adding it later does not move A4. | 0014 |
 
 ---
 

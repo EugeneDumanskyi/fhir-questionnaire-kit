@@ -28,17 +28,21 @@ The primary user is a clinical team; forms are long, devices are often old table
 
 | ID | Requirement | Number | Type |
 |---|---|---|---|
-| NFR-P-01 | Session creation from a 200-item questionnaire, including initial `enableWhen` evaluation | ≤ 50 ms p95 | Gate |
-| NFR-P-02 | Re-evaluation after one answer change, 200-item questionnaire, cascade depth 5 | ≤ 5 ms p95, ≤ 16 ms p99 | Gate |
+| NFR-P-01 | Session creation, including initial `enableWhen` evaluation, measured on **two** committed fixtures: 25 items (the observed median) and 500 items (the observed p90) | 25-item fixture ≤ 50 ms p95. The 500-item figure is set from M2's first measurement and held from then on | Gate |
+| NFR-P-02 | Re-evaluation after one answer change, cascade depth 5, on the same two fixtures | 25-item fixture ≤ 5 ms p95, ≤ 16 ms p99. The 500-item figure is set from M2's first measurement and held from then on | Gate |
 | NFR-P-03 | Keystroke to painted character in a text item | ≤ 16 ms (one 60 fps frame) on reference hardware | Target |
-| NFR-P-04 | Scale ceiling supported and tested | 1,000 items; 500 `enableWhen` conditions; 50 instances of a repeating group; 20 items per repeat instance | Gate + Published |
-| NFR-P-05 | Maximum supported nesting and cascade depth | group nesting 10; `enableWhen` dependency chain 10 | Gate + Published |
+| NFR-P-04 | Scale ceiling supported and tested | 1,000 items; 500 `enableWhen` conditions; 50 instances of a repeating group; 20 items per repeat instance — **confirmed 2026-09-16** against 300 surveyed instruments (`00-s0-instrument-survey.md`), except the 50-instance figure, which a `Questionnaire` cannot evidence | Gate + Published |
+| NFR-P-05 | Maximum supported nesting and cascade depth | group nesting 10; `enableWhen` dependency chain 10 — **confirmed 2026-09-16**; observed maxima are 10 and 5 | Gate + Published |
 | NFR-P-06 | Playground load on mid-tier mobile over simulated 4G | LCP ≤ 2.5 s, TBT ≤ 200 ms, CLS ≤ 0.1, Lighthouse performance ≥ 90 | Gate |
 | NFR-P-07 | Response emission from a 1,000-item session | ≤ 20 ms p95 | Target |
 | NFR-P-08 | Peak engine heap for a 1,000-item session with 50 repeats | ≤ 8 MB | Target |
 | NFR-P-09 | Re-evaluation cost must be sub-linear in total item count | recompute set size = transitive dependents only, asserted by test | Gate |
 
-**ASSUMPTION: all figures in this section.** The brief sets no performance numbers. NFR-P-04's ceiling is the one to challenge first — if real instruments in the target domain are ≤ 150 items, the ceiling is over-engineered and NFR-P-01/02 should be re-anchored to that size.
+**Resolved 2026-09-16 (`06-roadmap.md` §6 decision 4), from spike S0.** The ceiling was challenged first, as this section asked, by surveying 300 published instruments from two production libraries (`00-s0-instrument-survey.md`). It survived: 1,000 items is the observed 99th percentile, 20 items per repeat instance is above the observed maximum of 18, and group nesting 10 is exactly the observed maximum. The 500-condition and chain-10 figures are headroom — observed maxima are 161 and 5 — and are kept, because no code is sized by them.
+
+What the survey did contradict is the *benchmark anchor*, not the ceiling. Real instrument sizes are bimodal: 209 of 300 are ≤ 50 items and 57 are ≥ 200, with only 34 in between. The old single 200-item anchor for NFR-P-01/02 sat in that trough, so both are now measured on two fixtures, 25 items and 500. The remaining `ASSUMPTION` in this section is the **50 repeat instances** of NFR-P-04, which a `Questionnaire` definition cannot evidence: it is a property of a response, and M2 checks it against `QuestionnaireResponse` data or records it as deliberate headroom in writing.
+
+S0 carries one further consequence for M2's fixture design, outside these numbers: size and logic are anti-correlated in the real corpus. Not one of the 200 LOINC-derived panels sampled carries a single `enableWhen`, `repeats` or calculated expression, and the most conditional instrument found has 161 conditions over 697 items. A fixture that is simultaneously at every ceiling is a synthetic stress case and is labelled as one.
 
 **Note on measurement.** Performance gates run as a benchmark suite with a fixed fixture set, comparing against a committed baseline. Regressions > 20% fail the build even when still inside the absolute number, because a silent 19% drift per release is how budgets die.
 
@@ -107,7 +111,7 @@ Brief §3: verifiable, not asserted. Brief §9.4 assumed WCAG 2.2 AA; confirmed 
 | ID | Requirement | Number | Type |
 |---|---|---|---|
 | NFR-A-01 | Automated accessibility violations, all demo forms × 4 tiers × light/dark themes × 375 px/1280 px | 0 violations at WCAG 2.2 A and AA rule sets | Gate |
-| NFR-A-02 | Manual screen reader verification per release | 3 pairs: NVDA + Firefox (Windows), VoiceOver + Safari (macOS), VoiceOver + Safari (iOS); dated record published | Published |
+| NFR-A-02 | Manual screen reader verification per release | **Confirmed 2026-09-16:** 3 pairs — NVDA + Firefox (Windows), JAWS + Chrome (Windows), VoiceOver + Safari (iOS); dated record published | Published |
 | NFR-A-03 | Contrast, default themes | ≥ 4.5:1 body text, ≥ 3:1 large text and non-text UI, both light and dark | Gate |
 | NFR-A-04 | Focus indicator | ≥ 2 px thick, ≥ 3:1 contrast against adjacent colours, never removed, visible in `forced-colors` | Gate |
 | NFR-A-05 | Target size | ≥ 24 × 24 CSS px for every interactive control, with ≥ 44 × 44 px for primary controls in the default theme | Gate |
@@ -116,7 +120,7 @@ Brief §3: verifiable, not asserted. Brief §9.4 assumed WCAG 2.2 AA; confirmed 
 | NFR-A-08 | Live-region announcements per user action | ≤ 1 coalesced announcement; announcement latency ≤ 500 ms after state change | Target |
 | NFR-A-09 | Known accessibility gaps published | complete and dated; 0 undisclosed known failures | Published |
 
-**ASSUMPTION: NFR-A-02's specific pairs, NFR-A-05's 44 px primary target, NFR-A-08's numbers.** WCAG 2.2 AA itself is confirmed from the brief. Note that automated tooling catches roughly a third of real issues — NFR-A-02 is not optional padding, it is the part that makes NFR-A-01 honest, and the README should say so rather than implying the automated gate is sufficient.
+**NFR-A-02's pairs were resolved on 2026-09-16** (N11, §12 #4): JAWS + Chrome replaces the macOS VoiceOver pair, because JAWS is what the buyer's own accessibility team runs and the iOS pair already covers VoiceOver — and covers A4's Safari 16.4 floor while it is there. **Still ASSUMPTION: NFR-A-05's 44 px primary target and NFR-A-08's numbers.** WCAG 2.2 AA itself is confirmed from the brief. Note that automated tooling catches roughly a third of real issues — NFR-A-02 is not optional padding, it is the part that makes NFR-A-01 honest, and the README should say so rather than implying the automated gate is sufficient.
 
 ---
 
@@ -169,9 +173,9 @@ The integration cost is what the primary user actually evaluates.
 | NFR-I-03 | Built-in locales shipped | 1 (en) — hosts supply others | Published |
 | NFR-I-04 | Date, number and unit formatting | delegated to `Intl` with a host-supplied locale; 0 custom formatting logic; formatted in `view/` from an explicit locale option (ADR-0020) | Gate |
 | NFR-I-05 | RTL support | full: logical CSS properties throughout, 0 physical-direction properties in themes; verified by a snapshot test in `dir="rtl"` | Gate |
-| NFR-I-06 | Multi-language questionnaires | `Questionnaire.item.text` translation extensions — **out of scope for v1, stated in the conformance matrix** | Published |
+| NFR-I-06 | Multi-language questionnaires | `Questionnaire.item.text` translation extensions — **out of scope for v1, confirmed 2026-09-16, stated in the conformance matrix with its reason** | Published |
 
-**ASSUMPTION: NFR-I-02's key count and NFR-I-06's exclusion.** NFR-I-06 is worth a second look: a regulated clinical buyer operating in the EU may treat translation extensions as table stakes rather than a long-tail SDC feature. If so it moves into scope and the conformance matrix row becomes a supported row instead.
+**Still ASSUMPTION: NFR-I-02's key count.** **NFR-I-06's exclusion was confirmed on 2026-09-16** (N19, §6 decision 14), with the second look taken rather than deferred: a regulated clinical buyer operating in the EU may treat translation extensions as table stakes rather than a long-tail SDC feature, and v1 does not target one. If that changes, the feature moves into scope, the conformance-matrix row becomes a supported row, and it touches M2 (parse), M5 (text selection) and M10 (matrix row). **NFR-I-03's single built-in locale was confirmed on the same date:** `en` is the default, hosts supply the rest (§12 #9, ADR-0020).
 
 ---
 
@@ -201,11 +205,15 @@ These are not build gates but they bound every decision above.
 
 | ID | Constraint | Number | Source |
 |---|---|---|---|
-| NFR-Z-01 | Main build effort | 3–4 weeks at a sustainable part-time pace — **ASSUMPTION: 12–15 hours per week, so roughly 40–60 hours total. Brief §8 explicitly asks for this to be confirmed before milestone planning; every scope decision hangs on it** | Brief §8 |
+| NFR-Z-01 | Main build effort | **Confirmed 2026-09-16: 13–15 weeks at 12–15 hours per week, so roughly 184 hours total** (`06-roadmap.md` §6 decision 1, §7). This replaces the 3–4 weeks / 40–60 hours of Brief §8, which was an estimate made before the plan existed. The weekly pace is unchanged; the total moved to meet it | Brief §8; `06-roadmap.md` §7 |
 | NFR-Z-02 | Completeness | 0 layers shipped in a partial state; there is no phase two to defer to | Brief §5, §8 |
 | NFR-Z-03 | Defensibility | 100% of decisions arguable unaided by the maintainer | Brief §8 |
 | NFR-Z-04 | Licence | Apache-2.0, for the explicit patent grant the primary user's legal team looks for — **recommendation confirmed; Brief §9.2 asked for confirmation** | Brief §9.2 |
-**Effort reality check.** NFR-Z-01 is the riskiest number in either document. Taken at face value, 40–60 hours must absorb: a rules engine with mutation-tested correctness, four packages, a web component, four customization tiers, a WCAG 2.2 AA-verified default UI, a playground, a docs site, twenty ADRs and a CI pipeline with twenty-one blocking gates. If the confirmed budget is at the lower end, the honest cuts in priority order are: NFR-Q-03 mutation testing scope → E12 US-12.4/12.5 playground extras → the print stylesheet → NFR-A-02 reduced to two screen reader pairs. Cutting docs, ADRs or accessibility instead would remove the exact evidence adopters need to verify the principles in Brief §6.
+**Effort reality check, and the cut ladder's verdict.** NFR-Z-01 was the riskiest number in either document. Taken at face value, 40–60 hours had to absorb: a rules engine with mutation-tested correctness, four packages, a web component, four customization tiers, a WCAG 2.2 AA-verified default UI, a playground, a docs site, twenty ADRs and a CI pipeline with twenty-one blocking gates. `06-roadmap.md` §7 summed the plan at roughly 184 hours, about three times the assumption.
+
+**Resolved 2026-09-16 (`06-roadmap.md` §6 decision 1): the number moved, and the cut ladder is declined for now.** The published ladder — NFR-Q-03 mutation scope → E12 US-12.4/12.5 playground extras → the print stylesheet → NFR-A-02 reduced to two screen reader pairs — recovers roughly 14 hours against a gap of about 124. It was sized for schedule pressure, not for a 3× mismatch, so spending it would trade real verification depth for a ninth of the problem.
+
+**The ladder is not withdrawn; it is held in reserve.** Its first two rungs (mutation scope, then the playground extras) are the ones to spend first if M1's measured pace shows the 184-hour estimate is itself optimistic, and M1 exists partly to make that call better informed. Cutting docs, ADRs or accessibility remains off the ladder entirely: that would remove the exact evidence adopters need to verify the principles in Brief §6.
 
 ---
 
@@ -216,7 +224,7 @@ Every number in this document that the brief did not fix. Correct these before m
 | # | Ref | Assumed value | Why it matters |
 |---|---|---|---|
 | N1 | §0 | 2-core CI runner + 4× throttled mobile as reference hardware | All timing figures are meaningless without it |
-| N2 | NFR-P-01…09 | All performance figures | Anchor to real instrument sizes; challenge the 1,000-item ceiling first |
+| N2 | NFR-P-01…09 | **Resolved 2026-09-16** by spike S0 (`00-s0-instrument-survey.md`, 300 instruments): NFR-P-04's ceiling and NFR-P-05 confirmed; NFR-P-01/02 re-anchored to 25-item and 500-item fixtures. Still assumed: NFR-P-04's **50 repeat instances**, which no `Questionnaire` can evidence, and the millisecond figures themselves, which M2 measures | The ceiling was challenged first, as §1 asked, and held |
 | N3 | NFR-S-02/03/04 | Core ≤ 14 kB, view ≤ 5 kB, react ≤ 6 kB (excl. React, core and view), element ≤ 24 kB, `base.css` ≤ 4 kB, theme preset ≤ 3 kB, IIFE ≤ 30 kB | Published competitive claim; re-baseline after the engine spike |
 | N4 | NFR-S-06 | ≤ 40 direct dev dependencies | Soft; keeps the dev toolchain small enough to audit, not a hard constraint |
 | N5 | NFR-C-01 | Last 2 browser versions, iOS Safari 16.4+ | Lowering this costs bundle size |
@@ -225,7 +233,7 @@ Every number in this document that the brief did not fix. Correct these before m
 | N8 | NFR-Q-01/02 | 95%/90% core, 85%/80% adapters | |
 | N9 | NFR-Q-03 | 80% mutation score on engine modules | Highest-cost gate, and the strongest correctness evidence |
 | N10 | NFR-Q-06 | 1,000 generated round-trip cases per run | Trades CI time for correctness confidence |
-| N11 | NFR-A-02 | Three screen reader/browser pairs per release | Manual effort per release, recurring |
+| N11 | NFR-A-02 | **Resolved 2026-09-16:** three pairs, and these three — NVDA + Firefox (Windows), JAWS + Chrome (Windows), VoiceOver + Safari (iOS). JAWS is what the buyer's accessibility team uses, NVDA is what an evaluator can reproduce for free, and VoiceOver on iOS also exercises A4's Safari 16.4 floor | Manual effort per release, recurring. The cut ladder's fourth rung would drop this to two; it was not taken |
 | N12 | NFR-A-05 | 44 px primary targets above the 24 px AA floor | Affects default theme density |
 | N13 | NFR-A-08 | ≤ 1 announcement per action, ≤ 500 ms | |
 | N14 | NFR-X-05 | ≥ 20-vector XSS payload corpus | |
@@ -233,27 +241,27 @@ Every number in this document that the brief did not fix. Correct these before m
 | N16 | NFR-X-09 | **Resolved 2026-09-15:** no analytics; CSP `connect-src 'none'` (AT4) | No longer an assumption |
 | N17 | NFR-U-01…07 | All integration-effort figures | NFR-U-05's 60-symbol API cap is the one to hold |
 | N18 | NFR-I-02 | ≤ 45 message keys | |
-| N19 | NFR-I-06 | Translation extensions excluded from v1 | May be table stakes for an EU clinical buyer — reconsider |
+| N19 | NFR-I-06 | **Resolved 2026-09-16: excluded from v1,** and recorded as a conformance-matrix row with its reason rather than left silent. Reconsider before v1.1 if a European buyer comes into view; moving it in touches M2 (parse), M5 (text selection) and M10 (matrix row) | A market call, taken deliberately rather than by default |
 | N20 | NFR-M-02/03 | Complexity ≤ 15, file ≤ 400 lines | |
 | N21 | NFR-M-05 | ≥ 10 ADRs, list as given | The list itself is the real assumption |
-| N22 | NFR-M-07 | ≤ 10 min CI, ≤ 3 min fast feedback | |
+| N22 | NFR-M-07 | **Part-measured 2026-09-16.** The fast lane's three steps run locally in **5.2 s total** on M0's tree (typecheck 1.6 s, lint 1.2 s, test 2.4 s; install from a warm store 1.1 s). The figure that NFR-M-07 actually gates — wall-clock of the GitHub Actions fast lane, including checkout, Node setup and a cold pnpm cache — is recorded here on the first run once the remote exists. The 10-minute full-pipeline figure stays an assumption until M11 | A 5-second local lane over a near-empty tree says the harness is not the bottleneck; it does not yet say NFR-M-07 is met |
 | N23 | NFR-M-09 | Monthly issue triage | Deliberately minimal; protects Brief §1 |
-| N24 | NFR-Z-01 | 12–15 hrs/week → 40–60 hours total | **Confirm first. Brief §8 says the whole plan hangs on it** |
+| N24 | NFR-Z-01 | **Resolved 2026-09-16:** 12–15 hrs/week confirmed; the total moved to **≈ 184 hours, 13–15 weeks** (`06-roadmap.md` §6 decision 1, §7). The cut ladder in §10 is declined and held in reserve, its first two rungs to be spent first if M1's measured pace says the estimate is optimistic | No longer an assumption; the remaining risk is the per-milestone estimates (`06-roadmap.md` §9 P1) |
 
 ---
 
 ## 12. Open questions returned to product
 
-Carried from Brief §9, with a BA position on each; later additions are marked *New*. All are decidable now. Rows 1–8 block milestone planning; row 9 blocks M5.
+Carried from Brief §9, with a BA position on each; later additions are marked *New*. All are decidable now. Rows 1–8 blocked milestone planning and row 9 blocked M5; **all nine were closed on 2026-09-16** as part of M0 (`06-roadmap.md` §6, and the sheet they were answered on, `00-m0-decisions.md`).
 
 | # | Question | Position |
 |---|---|---|
-| 1 | Demo questionnaire | Original "pre-visit intake" fixture per AC-15.1.3; PHQ-9 kept as a flat secondary fixture for scoring docs. **Confirm** |
+| 1 | Demo questionnaire | **Confirmed 2026-09-16:** original "pre-visit intake" fixture per AC-15.1.3, with PHQ-9 as a flat secondary fixture for the scoring docs. S0 supports the choice: real instruments are either large and flat or small and conditional, so a demo that shows nested groups, repeats, cascades and validation in one artefact has to be authored |
 | 2 | Licence | Apache-2.0. **Confirmed as recommended, no objection from analysis** |
 | 3 | Naming / brand | Defer past launch as the brief proposes. A brand name adds no evidence for any principle in §6 |
-| 4 | Accessibility target | WCAG 2.2 AA, verified per §5 — automated gate in CI plus a published dated manual record. **Confirm the three screen reader pairs** |
-| 5 | Reference backend | **Drop.** Serves no principle in §6, adds a Docker surface and a thing that can break on an evaluator's machine |
-| 6 | Scoring extension point | Extension point in core (US-07.2); PHQ-9/GAD-7 as documented example and test fixture, not a published package. **Confirm** |
-| 7 | *New* — effort budget | NFR-Z-01. Confirm hours per week before milestones are drawn |
+| 4 | Accessibility target | WCAG 2.2 AA, verified per §5 — automated gate in CI plus a published dated manual record. **Confirmed 2026-09-16:** three pairs — NVDA + Firefox (Windows), JAWS + Chrome (Windows), VoiceOver + Safari (iOS). See N11 |
+| 5 | Reference backend | **Dropped, confirmed 2026-09-16.** Serves no principle in §6, adds a Docker surface and a thing that can break on an evaluator's machine — the one place the kit cannot afford to fail. ADR-0019 already assumed this |
+| 6 | Scoring extension point | **Confirmed 2026-09-16:** extension point in core (US-07.2); PHQ-9/GAD-7 as a documented example and test fixture, not a published package. A fifth published package would reopen ADR-0008's lockstep surface and NFR-S-01's dependency claim for something an adopter copies in twenty lines |
+| 7 | *New* — effort budget | **Resolved 2026-09-16:** 12–15 hrs/week at ≈ 184 hours, 13–15 weeks. NFR-Z-01 restated; §10's cut ladder declined in writing and held in reserve. See N24 |
 | 8 | *New* — playground analytics | NFR-X-09. **Resolved 2026-09-15: none** (`05-architecture.md` §9 AT4) |
-| 9 | *New* — default locale | ADR-0020 settled the mechanism: `view/` formats, the locale is an explicit presentation option. What remains is product's: which locale the packages default to, and whether NFR-I-03's single built-in locale (en) serves a buyer operating outside English. **Confirm** |
+| 9 | *New* — default locale | ADR-0020 settled the mechanism: `view/` formats, the locale is an explicit presentation option. **Resolved 2026-09-16: `en` is the default and the only built-in locale; hosts supply any other.** The catalogue is ≤ 45 keys (NFR-I-02) and the locale is already an explicit option, so a second built-in adds maintenance and bytes without adding capability. Revisit together with N19 if translation extensions come into scope |

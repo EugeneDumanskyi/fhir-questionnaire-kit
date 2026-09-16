@@ -1,7 +1,8 @@
 # ADR-0011 — Answers to hidden items are retained and excluded from the response by default
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** Brief §5 "key product decision", §6 principle 4 · US-05.2 (AC-05.2.1–6), AC-02.2.4, AC-06.1.5, AC-07.2.2 · INV-S-04, INV-S-12, INV-S-13, INV-E-01, INV-X-04, SM-02, `04-domain.md` §9.2 T4, T5, T7 · requirement R6 · NFR-M-05 topic *answer retention on hide*
 
 ## Context

@@ -1,7 +1,8 @@
 # ADR-0020 — Values are formatted in the view model from an explicit locale
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-16
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** AC-08.3.1, AC-08.3.2, AC-10.3.1, AC-11.2.2 · NFR-I-01, NFR-I-03, NFR-I-04, NFR-C-08, NFR-Q-01, NFR-Q-03, NFR-S-02, NFR-U-05, NFR-M-06 · INV-P-01, INV-P-02 · BC6 · `05-architecture.md` §4.1, §6.1 · ADR-0007, ADR-0008, ADR-0012, ADR-0013, ADR-0015 · closes the architecture half of `03-nfr.md` §12 #9
 
 ## Context

@@ -15,19 +15,19 @@ Numbers are assigned in order of writing and never reused. A superseded ADR stay
 | [0005](0005-eager-option-resolution.md) | Options are resolved at session start and not snapshotted | Accepted | `04-domain.md` D5 |
 | [0006](0006-failing-scorers-degrade-like-rules.md) | A failing scoring function degrades like a failing rule | Accepted | `04-domain.md` D6 |
 | [0007](0007-layered-architecture-with-shared-presentation-model.md) | Layered architecture: headless core, shared presentation model, thin native renderers | Accepted | `05-architecture.md` §2–4 |
-| [0008](0008-zero-runtime-dependencies.md) | Zero third-party runtime dependencies, enforced mechanically | Proposed | `05-architecture.md` §4; NFR-S-01 |
-| [0009](0009-incremental-evaluation-over-compiled-graph.md) | Incremental evaluation over a dependency graph compiled at load | Proposed | `05-architecture.md` §4; NFR-P-09 |
-| [0010](0010-state-model-separate-from-emitted-document.md) | Engine state, emitted response and snapshot are separate models | Proposed | `05-architecture.md` §4; US-05.3 |
-| [0011](0011-retain-hidden-answers-exclude-from-response.md) | Answers to hidden items are retained and excluded from the response by default | Proposed | Brief §5; AC-05.2.4 |
-| [0012](0012-injected-option-resolver.md) | Option lists come from an injected resolver; only the element ships a default | Proposed | `05-architecture.md` §4; US-07.1 |
-| [0013](0013-customization-tiers-as-layer-boundaries.md) | Four customization tiers, each stopping at a layer boundary | Proposed | `05-architecture.md` §4; E10 |
-| [0014](0014-shadow-dom-with-constructable-stylesheets.md) | The element renders into shadow DOM styled by constructable stylesheets | Proposed | `05-architecture.md` §4; E09 |
-| [0015](0015-react-adapter-session-ownership-and-ssr.md) | React adapter: sessions owned outside components, SSR by construction | Proposed | `05-architecture.md` §4, §9 AT2; E08 |
-| [0016](0016-fhir-r4-only-behind-codec-seam.md) | FHIR R4 only, behind an internal codec seam | Proposed | Brief §5; NFR-C-09 |
-| [0017](0017-fhirpath-excluded-evaluator-seam.md) | FHIRPath is excluded; expressions route through an evaluator seam | Proposed | Brief §5; US-07.3; `05-architecture.md` §9 AT3 |
-| [0018](0018-build-and-verification-toolchain.md) | Build and verification toolchain under the licence allowlist | Proposed | `05-architecture.md` §9 AT1; E14 |
-| [0019](0019-static-client-only-playground-and-docs.md) | Playground and docs are static, client-only and run under a strict CSP | Proposed | `05-architecture.md` §9 AT4; E12 |
-| [0020](0020-explicit-locale-formatted-in-the-view-model.md) | Values are formatted in the view model from an explicit locale | Proposed | `03-nfr.md` §12 #9; NFR-I-04 |
+| [0008](0008-zero-runtime-dependencies.md) | Zero third-party runtime dependencies, enforced mechanically | Accepted 2026-09-16 | `05-architecture.md` §4; NFR-S-01 |
+| [0009](0009-incremental-evaluation-over-compiled-graph.md) | Incremental evaluation over a dependency graph compiled at load | Accepted 2026-09-16 | `05-architecture.md` §4; NFR-P-09 |
+| [0010](0010-state-model-separate-from-emitted-document.md) | Engine state, emitted response and snapshot are separate models | Accepted 2026-09-16 | `05-architecture.md` §4; US-05.3 |
+| [0011](0011-retain-hidden-answers-exclude-from-response.md) | Answers to hidden items are retained and excluded from the response by default | Accepted 2026-09-16 | Brief §5; AC-05.2.4 |
+| [0012](0012-injected-option-resolver.md) | Option lists come from an injected resolver; only the element ships a default | Accepted 2026-09-16 | `05-architecture.md` §4; US-07.1 |
+| [0013](0013-customization-tiers-as-layer-boundaries.md) | Four customization tiers, each stopping at a layer boundary | Accepted 2026-09-16 | `05-architecture.md` §4; E10 |
+| [0014](0014-shadow-dom-with-constructable-stylesheets.md) | The element renders into shadow DOM styled by constructable stylesheets | Accepted 2026-09-16 | `05-architecture.md` §4; E09 |
+| [0015](0015-react-adapter-session-ownership-and-ssr.md) | React adapter: sessions owned outside components, SSR by construction | Accepted 2026-09-16 | `05-architecture.md` §4, §9 AT2; E08 |
+| [0016](0016-fhir-r4-only-behind-codec-seam.md) | FHIR R4 only, behind an internal codec seam | Accepted 2026-09-16 | Brief §5; NFR-C-09 |
+| [0017](0017-fhirpath-excluded-evaluator-seam.md) | FHIRPath is excluded; expressions route through an evaluator seam | Accepted 2026-09-16 | Brief §5; US-07.3; `05-architecture.md` §9 AT3 |
+| [0018](0018-build-and-verification-toolchain.md) | Build and verification toolchain under the licence allowlist | Accepted 2026-09-16 | `05-architecture.md` §9 AT1; E14 |
+| [0019](0019-static-client-only-playground-and-docs.md) | Playground and docs are static, client-only and run under a strict CSP | Accepted 2026-09-16 | `05-architecture.md` §9 AT4; E12 |
+| [0020](0020-explicit-locale-formatted-in-the-view-model.md) | Values are formatted in the view model from an explicit locale | Accepted 2026-09-16 | `03-nfr.md` §12 #9; NFR-I-04 |
 
 ## NFR-M-05 coverage
 

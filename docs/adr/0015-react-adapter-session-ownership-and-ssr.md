@@ -1,7 +1,8 @@
 # ADR-0015 — React adapter: sessions owned outside components, SSR by construction
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-15
+- **Accepted:** 2026-09-16 (`06-roadmap.md` §6 decision 2)
 - **Traces to:** E08 (AC-08.1.1–4, AC-08.2.1, AC-08.3.1–2), AC-12.4.1, AC-05.2.1, AC-04.2.4 · NFR-C-03, NFR-C-08, NFR-P-03, NFR-S-02, NFR-U-01, NFR-U-03 · INV-P-01, INV-S-33, ADR-0009, ADR-0010, ADR-0011 · `05-architecture.md` §9 AT2
 
 ## Context

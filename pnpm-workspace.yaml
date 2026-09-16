@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+  - apps/*
+  - tools/*
+
+# Lifecycle scripts are blocked by default. Anything set to true here has been
+# looked at: esbuild's postinstall fetches its platform binary, and esbuild is
+# the bundler ADR-0018 chose. Nothing in this list reaches a published package.
+allowBuilds:
+  esbuild: true
