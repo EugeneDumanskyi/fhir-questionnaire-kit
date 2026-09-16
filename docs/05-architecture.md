@@ -269,7 +269,7 @@ C4Container
 | `04-domain.md` §9.3 | Where the architecture guarantees it |
 |---|---|
 | 1. Stored state is small | ADR-0010: stored state is five structures; all else recomputed. Snapshot serialises only those. |
-| 2. One visible projection | §4.1 import rules: validation, interchange, ports and view reach answers only via `session/projection`. |
+| 2. One visible projection | §4.1 import rules: `validation/` and `interchange/` reach answers only via `session/projection`; `view/` only via the public engine API; `ports/` is types only and never reads answers. |
 | 3. Definition ≠ node | ADR-0009: definitions in compiled tables indexed by item id; nodes keyed by ordinal path; scopes resolve per repeat instance. |
 | 4. One command → one cycle → one notification | ADR-0009: single-writer queue, re-entrant commands deferred, notification after settle. ADR-0015: React reads through `useSyncExternalStore`, so it cannot see `Evaluating`. |
 | 5. No values in diagnostics or events | ADR-0009: events carry paths and flags only; lint rule bans interpolating answer values into diagnostic messages; NFR-X-04 test. |
@@ -300,7 +300,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning.
 | AT1 | **NFR-S-07 vs NFR-A-01.** The de facto automated accessibility engine, axe-core, is MPL-2.0, which is not on the dev licence allowlist. | Add MPL-2.0 to the allowlist **for dev-only tooling that is never bundled or redistributed**. Fallback: IBM Equal Access checker (Apache-2.0), with weaker ecosystem support. | 0018 |
 | AT2 | **AC-08.1.2 controlled mode vs retention.** If the controlled value is a `QuestionnaireResponse`, echoing it back each render would rehydrate and silently drop retained answers and surfacing state. | Prefer controlling by `session`. For a response-valued `value`, ignore values semantically equal to the last emitted response, and rehydrate only on a genuine external change, documenting that this resets retention. | 0015 |
 | AT3 | **Silent expression extensions.** An unsupported `enableWhenExpression` or `answerExpression` ignored at load would show questions the author meant to hide. | Treat them like unsupported item types: reject in `strict` mode, diagnostic plus item disabled in `lenient` mode. Now AC-01.3.3 and INV-D-15. | 0017 |
-| AT4 | **NFR-X-09 playground analytics.** Still open in `03-nfr.md`. | **None.** Rely on GitHub traffic stats. The playground's CSP then denies all connections, which makes AC-12.3.2 browser-enforced. | 0019 |
+| AT4 | **NFR-X-09 playground analytics.** Left undecided by `03-nfr.md`; resolved there on 2026-09-15 (N16, §12 #8). | **None.** Rely on GitHub traffic stats. The playground's CSP then denies all connections, which makes AC-12.3.2 browser-enforced. | 0019 |
 | AT5 | **Element form participation.** An embedder in a Rails or Django `<form>` will expect the response to submit with the form. Not in requirements. | Out of v1; record as a follow-up (form-associated custom element, also Safari 16.4+). | 0014 |
 
 ---
