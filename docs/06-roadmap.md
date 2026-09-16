@@ -227,6 +227,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Goal.** Write every BC6 behaviour that is not markup, once, in a DOM-free module tested in Node under the core gates. This is where R2 is settled for real, having been proven in miniature by M1.
 
+**Retires.** R2 (view-model sufficiency) in full.
+
 **Scope.** Control choice including the `itemControl` hints and the option-count fallback (INV-P-05); path-derived ids; ARIA state per node; announcement text and its per-cycle coalescing, with resolver-driven cycles announced in their own right (INV-P-03, T12); the error summary and its ordering; focus targets after a new instance, a removal, a refused completion; the inert add control with its reason (INV-P-04); the unsupported-item placeholder (AC-01.3.2); per-node view identity so that only changed nodes get new objects; the exported `ControlProps` tier-3 contract of ADR-0013; `Intl`-only formatting for any display text the view produces, with 0 hand-rolled date, number or unit formatting (NFR-I-04 — which layer formats and where the locale enters is `03-nfr.md` §12 #9, open); the DOM contract document finalised.
 
 **Out of scope.** Markup of any kind. React and element bindings (M6, M7). Theme tokens beyond the class and `part` names the contract fixes (M8).
@@ -252,6 +254,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 ### M6 — React adapter
 
 **Goal.** A React package thin enough to stay inside 6 kB and complete enough that the default UI is itself the proof that the headless tier is sufficient.
+
+**Retires.** R5 (React SSR with zero hydration warnings on 18 and 19) in full.
 
 **Scope.** `useQuestionnaire`, the re-exported `createSession`, `<Questionnaire>`; reading through `useSyncExternalStore` with the same snapshot on server and client; `React.memo` per item path; the three-step controlled-by-response protocol of ADR-0015 (reference echo, semantic echo, external replacement with its diagnostic); tier 3 `controls` mapping with the development-only ARIA check; tier 4 exposure; the lint rule confining DOM access to effects and handlers.
 
@@ -279,6 +283,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 **Goal.** The secondary user's entire path: one script tag, one custom element, no build step — inside the tightest budget in the project.
 
+**Retires.** R4 (keyed patching that never disturbs focus or caret) in full; holds R1 at the element's 24 kB budget, against the figures M1 measured.
+
 **Scope.** `<fhir-questionnaire>` with an open shadow root; the keyed patcher; stylesheets embedded at build time and adopted once per document; `--fhirq-*` inheritance and `::part` hooks; `questionnaire` property and `src` attribute; change and complete events carrying plain objects; the default resolver in `default-resolver.ts` — the only file in the repository permitted a network call; connect/disconnect hygiene through one `AbortController` per connection; tier-3 overrides as host-defined custom elements inside the shadow root, driven by `fhirq-set`/`fhirq-clear`/`fhirq-leave`; ESM and IIFE outputs.
 
 **Out of scope.** Form participation with a surrounding `<form>` — AT5 puts it out of v1; M0 confirms that and records the follow-up. Theme presets beyond the embedded default (M8).
@@ -304,6 +310,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 ### M8 — Themes and accessibility completion
 
 **Goal.** Turn the accessibility claim into published evidence at full breadth, and finish the token system both renderers already consume.
+
+**Retires.** R8 (accessibility at full breadth) in full.
 
 **Scope.** `base.css` completed against the DOM contract; light and dark presets; logical properties throughout; `forced-colors` and `prefers-reduced-motion` handling; the print stylesheet (`Should`, `02-requirements.md` §17); the automated accessibility matrix; contrast, focus-indicator, target-size, reflow and RTL gates; the manual screen-reader passes and the dated public record with its honest gap list.
 
@@ -378,6 +386,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 ### M11 — Release engineering and 1.0.0
 
 **Goal.** Every gate blocking, every artifact reproducible and verifiable, and the four packages published in lockstep.
+
+**Retires.** R7 (the CI pipeline's own budget) in full, on the complete pipeline; M2 took the first reading.
 
 **Scope.** Consumer smoke tests across the six NFR-C-02 environments against packed tarballs; the remaining in-repo gates (dependency, packed contents, licence, API report diff) with their negative fixtures; provenance, CycloneDX SBOM, signed tag; Changesets fixed-mode release at 1.0.0; nightly full mutation and high-count property runs wired as release blockers; Pages deployment of docs and playground.
 
