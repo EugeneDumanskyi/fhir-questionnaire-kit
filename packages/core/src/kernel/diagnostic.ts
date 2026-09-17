@@ -16,6 +16,7 @@ export type DiagnosticCode =
   | 'not-a-questionnaire'
   | 'not-r4'
   | 'malformed'
+  | 'modifier-extension'
   | 'r4-constraint'
   /* INV-D-02 … INV-D-07 */
   | 'duplicate-link-id'
