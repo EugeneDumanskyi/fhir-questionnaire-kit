@@ -1,0 +1,334 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:bench:small-25",
+  "version": "1",
+  "status": "draft",
+  "title": "Benchmark fixture: small-25",
+  "item": [
+    {
+      "linkId": "consent",
+      "text": "Consent",
+      "type": "boolean"
+    },
+    {
+      "linkId": "chain-1",
+      "text": "Chain 1",
+      "type": "boolean"
+    },
+    {
+      "linkId": "chain-2",
+      "text": "Chain 2",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-1",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-3",
+      "text": "Chain 3",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-2",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-4",
+      "text": "Chain 4",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-3",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-5",
+      "text": "Chain 5",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-4",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-6",
+      "text": "Chain 6",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-5",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "history",
+      "text": "History",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "consent",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "item": [
+        {
+          "linkId": "h1",
+          "text": "h1",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o0"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o1"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "h2",
+          "text": "h2",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o0"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o1"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o2"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "h3",
+          "text": "h3",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o0"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o1"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o2"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o3"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o4"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:bench",
+                "code": "o5"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "smoker",
+          "text": "Smoker",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "linkId": "smoking",
+      "text": "Smoking",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "item": [
+        {
+          "linkId": "s1",
+          "text": "s1",
+          "type": "string"
+        },
+        {
+          "linkId": "s2",
+          "text": "s2",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medications",
+      "type": "group",
+      "repeats": true,
+      "item": [
+        {
+          "linkId": "med-name",
+          "text": "Name",
+          "type": "string"
+        },
+        {
+          "linkId": "med-taking",
+          "text": "Taking",
+          "type": "boolean"
+        },
+        {
+          "linkId": "med-dose",
+          "text": "Dose",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "med-taking",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "either",
+      "text": "Either",
+      "type": "string",
+      "enableBehavior": "any",
+      "enableWhen": [
+        {
+          "question": "consent",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "f1",
+      "text": "f1",
+      "type": "display"
+    },
+    {
+      "linkId": "f2",
+      "text": "f2",
+      "type": "display"
+    },
+    {
+      "linkId": "f3",
+      "text": "f3",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o0"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o1"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "f4",
+      "text": "f4",
+      "type": "display"
+    },
+    {
+      "linkId": "f5",
+      "text": "f5",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o0"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:bench",
+            "code": "o5"
+          }
+        }
+      ]
+    }
+  ]
+}

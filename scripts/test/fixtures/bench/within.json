@@ -1,0 +1,10 @@
+{
+  "runs": 5,
+  "benchmarks": {
+    "NFR-P-01 create session > small-25": { "medianMs": 0.119, "p99Ms": 0.5 },
+    "NFR-P-02 one answer, cascade depth 5 > small-25": { "medianMs": 0.0119, "p99Ms": 0.03 },
+    "NFR-P-01 create session > large-500": { "medianMs": 2.0, "p99Ms": 6 },
+    "reference: synthetic ceiling (not gated) > create, then 49 more instances": { "medianMs": 90, "p99Ms": 99 }
+  },
+  "heapBytes": 2390000
+}

@@ -43,6 +43,7 @@ export default defineConfig({
           root: './packages/core',
           environment: 'node',
           include: ['test/**/*.test.ts'],
+          benchmark: { include: ['bench/**/*.bench.ts'] },
         },
       },
       {

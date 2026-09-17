@@ -126,6 +126,60 @@ jobs:
           path: reports/stryker/
           retention-days: 30
 
+  # NFR-P-01, P-02 and P-08 against the committed baseline (M2 plan D7): the
+  # median of five runs, failing above 20 % after one automatic re-run. The
+  # baseline is measured here, on this runner class, and changes only through
+  # an explicit PR. Not a required check until step 12.
+  bench:
+    name: Benchmarks (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Benchmarks, five runs
+        run: pnpm bench
+
+      - name: Compare with the baseline, re-running once before failing
+        if: ${{ hashFiles('benchmarks/baseline.json') != '' }}
+        run: |
+          if ! pnpm bench:compare; then
+            echo "Over the tolerance; re-running the benchmarks once."
+            pnpm bench
+            pnpm bench:compare
+          fi
+
+      - name: Upload the results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench
+          path: reports/bench/results.json
+          retention-days: 30
+
   # M1's spike proofs (S1, decision D5): the DOM contract, axe, hydration on
   # React 18 and 19, caret and CSP in Chromium and WebKit, and the bundle
   # report. Deliberately not a required check: SSR blocks from M6, CSP from M7,
