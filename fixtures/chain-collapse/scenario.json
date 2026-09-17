@@ -1,0 +1,140 @@
+{
+  "behaviour": "A three-deep chain collapses in the cycle that caused it (AC-02.2.1, INV-S-05, M2 AC-3)",
+  "cases": [
+    {
+      "name": "collapse and restore",
+      "loadMode": "strict",
+      "enabled": [
+        "a"
+      ],
+      "steps": [
+        {
+          "name": "A yes",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "name": "B yes",
+          "command": {
+            "type": "SetAnswer",
+            "path": "b",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "c"
+          ]
+        },
+        {
+          "name": "C yes",
+          "command": {
+            "type": "SetAnswer",
+            "path": "c",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ]
+        },
+        {
+          "name": "D answered",
+          "command": {
+            "type": "SetAnswer",
+            "path": "d",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "x"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ]
+        },
+        {
+          "name": "A no: B, C and D go in one cycle",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a"
+          ]
+        },
+        {
+          "name": "A yes: the chain returns with its retained answers",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "c",
+            "d"
+          ]
+        }
+      ]
+    }
+  ]
+}

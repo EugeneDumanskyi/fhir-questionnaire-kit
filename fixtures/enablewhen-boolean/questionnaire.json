@@ -1,0 +1,50 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enablewhen-boolean",
+  "version": "1",
+  "status": "draft",
+  "title": "enableWhen operators on boolean",
+  "item": [
+    {
+      "linkId": "q",
+      "text": "A boolean question",
+      "type": "boolean"
+    },
+    {
+      "linkId": "eq",
+      "text": "Shown when q =",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "ne",
+      "text": "Shown when q !=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "!=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "exists",
+      "text": "Shown when q exists",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

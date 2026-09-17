@@ -1,0 +1,98 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enablewhen-dateTime",
+  "version": "1",
+  "status": "draft",
+  "title": "enableWhen operators on dateTime",
+  "item": [
+    {
+      "linkId": "q",
+      "text": "A dateTime question",
+      "type": "dateTime"
+    },
+    {
+      "linkId": "eq",
+      "text": "Shown when q =",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "=",
+          "answerDateTime": "2024-05-01T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "linkId": "ne",
+      "text": "Shown when q !=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "!=",
+          "answerDateTime": "2024-05-01T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "linkId": "gt",
+      "text": "Shown when q >",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">",
+          "answerDateTime": "2024-05-01T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "linkId": "lt",
+      "text": "Shown when q <",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<",
+          "answerDateTime": "2024-05-01T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "linkId": "ge",
+      "text": "Shown when q >=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">=",
+          "answerDateTime": "2024-05-01T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "linkId": "le",
+      "text": "Shown when q <=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<=",
+          "answerDateTime": "2024-05-01T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "linkId": "exists",
+      "text": "Shown when q exists",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

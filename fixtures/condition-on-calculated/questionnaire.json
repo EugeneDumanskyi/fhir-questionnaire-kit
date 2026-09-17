@@ -1,0 +1,35 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:condition-on-calculated",
+  "version": "1",
+  "status": "draft",
+  "title": "condition-on-calculated",
+  "item": [
+    {
+      "linkId": "bmi",
+      "text": "BMI",
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%weight / (%height * %height)"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "advice",
+      "text": "Gated on the calculated BMI",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "bmi",
+          "operator": ">",
+          "answerDecimal": 30
+        }
+      ]
+    }
+  ]
+}

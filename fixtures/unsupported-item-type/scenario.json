@@ -1,0 +1,86 @@
+{
+  "behaviour": "Item types outside the supported set (AC-01.3.1, AC-01.3.2, INV-D-03)",
+  "cases": [
+    {
+      "name": "strict lists every unsupported linkId with its type",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "unsupported-item-type",
+          "path": "file",
+          "detail": "attachment"
+        },
+        {
+          "code": "unsupported-item-type",
+          "path": "when",
+          "detail": "time"
+        },
+        {
+          "code": "unsupported-item-type",
+          "path": "site",
+          "detail": "url"
+        },
+        {
+          "code": "unsupported-item-type",
+          "path": "referrer",
+          "detail": "reference"
+        }
+      ]
+    },
+    {
+      "name": "lenient keeps placeholders that accept no answer",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "unsupported-item-type",
+          "path": "file"
+        },
+        {
+          "code": "unsupported-item-type",
+          "path": "when"
+        },
+        {
+          "code": "unsupported-item-type",
+          "path": "site"
+        },
+        {
+          "code": "unsupported-item-type",
+          "path": "referrer"
+        }
+      ],
+      "enabled": [
+        "file",
+        "name",
+        "when",
+        "site",
+        "referrer"
+      ],
+      "steps": [
+        {
+          "name": "a placeholder refuses an answer",
+          "command": {
+            "type": "SetAnswer",
+            "path": "when",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "10:00"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "not-answerable"
+          },
+          "enabled": [
+            "file",
+            "name",
+            "when",
+            "site",
+            "referrer"
+          ]
+        }
+      ]
+    }
+  ]
+}

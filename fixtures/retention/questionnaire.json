@@ -1,0 +1,46 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:retention",
+  "version": "1",
+  "status": "draft",
+  "title": "retention",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "type": "boolean"
+    },
+    {
+      "linkId": "amount",
+      "text": "How much?",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "packs",
+      "text": "Packs",
+      "type": "group",
+      "repeats": true,
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ],
+      "item": [
+        {
+          "linkId": "brand",
+          "text": "Brand",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

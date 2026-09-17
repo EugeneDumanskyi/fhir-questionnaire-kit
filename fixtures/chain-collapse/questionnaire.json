@@ -1,0 +1,50 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:chain-collapse",
+  "version": "1",
+  "status": "draft",
+  "title": "chain-collapse",
+  "item": [
+    {
+      "linkId": "a",
+      "text": "A",
+      "type": "boolean"
+    },
+    {
+      "linkId": "b",
+      "text": "B",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "a",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "c",
+      "text": "C",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "b",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "d",
+      "text": "D",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "c",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

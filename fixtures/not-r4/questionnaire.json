@@ -1,0 +1,15 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:not-r4",
+  "version": "1",
+  "status": "draft",
+  "title": "not-r4",
+  "fhirVersion": "5.0.0",
+  "item": [
+    {
+      "linkId": "pick",
+      "text": "An R5 coding item",
+      "type": "coding"
+    }
+  ]
+}

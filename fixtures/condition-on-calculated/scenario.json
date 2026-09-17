@@ -1,0 +1,57 @@
+{
+  "behaviour": "A condition on a calculated item (AC-02.5.5, INV-D-14, ADR-0003) and a binding with no evaluator (INV-D-09)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "condition-on-calculated",
+          "path": "advice",
+          "related": [
+            "bmi"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lenient: false, and the calculated item refuses answers",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "no-evaluator",
+          "path": "bmi"
+        },
+        {
+          "code": "condition-on-calculated",
+          "path": "advice"
+        }
+      ],
+      "enabled": [
+        "bmi"
+      ],
+      "steps": [
+        {
+          "name": "a calculated item refuses a direct answer",
+          "command": {
+            "type": "SetAnswer",
+            "path": "bmi",
+            "answers": [
+              {
+                "kind": "decimal",
+                "value": 31
+              }
+            ]
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "node-calculated"
+          },
+          "enabled": [
+            "bmi"
+          ]
+        }
+      ]
+    }
+  ]
+}

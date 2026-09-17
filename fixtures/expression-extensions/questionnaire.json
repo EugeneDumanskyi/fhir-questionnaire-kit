@@ -1,0 +1,66 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:expression-extensions",
+  "version": "1",
+  "status": "draft",
+  "title": "expression-extensions",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "age",
+        "language": "text/fhirpath",
+        "expression": "18"
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "gated",
+      "text": "Gated by an expression",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%age > 18"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "listed",
+      "text": "Options from an expression",
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%options"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "prefilled",
+      "text": "Prefilled by an expression",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%name"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "plain",
+      "text": "Plain",
+      "type": "string"
+    }
+  ]
+}

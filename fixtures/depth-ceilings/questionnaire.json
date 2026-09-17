@@ -1,0 +1,228 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:depth-ceilings",
+  "version": "1",
+  "status": "draft",
+  "title": "depth-ceilings",
+  "item": [
+    {
+      "linkId": "level-1",
+      "text": "Level 1",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "level-2",
+          "text": "Level 2",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "level-3",
+              "text": "Level 3",
+              "type": "group",
+              "item": [
+                {
+                  "linkId": "level-4",
+                  "text": "Level 4",
+                  "type": "group",
+                  "item": [
+                    {
+                      "linkId": "level-5",
+                      "text": "Level 5",
+                      "type": "group",
+                      "item": [
+                        {
+                          "linkId": "level-6",
+                          "text": "Level 6",
+                          "type": "group",
+                          "item": [
+                            {
+                              "linkId": "level-7",
+                              "text": "Level 7",
+                              "type": "group",
+                              "item": [
+                                {
+                                  "linkId": "level-8",
+                                  "text": "Level 8",
+                                  "type": "group",
+                                  "item": [
+                                    {
+                                      "linkId": "level-9",
+                                      "text": "Level 9",
+                                      "type": "group",
+                                      "item": [
+                                        {
+                                          "linkId": "level-10",
+                                          "text": "Level 10",
+                                          "type": "group",
+                                          "item": [
+                                            {
+                                              "linkId": "level-11",
+                                              "text": "Level 11",
+                                              "type": "group",
+                                              "item": [
+                                                {
+                                                  "linkId": "leaf",
+                                                  "text": "Deepest question",
+                                                  "type": "boolean"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "chain-0",
+      "text": "Step 0",
+      "type": "boolean"
+    },
+    {
+      "linkId": "chain-1",
+      "text": "Step 1",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-0",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-2",
+      "text": "Step 2",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-1",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-3",
+      "text": "Step 3",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-2",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-4",
+      "text": "Step 4",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-3",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-5",
+      "text": "Step 5",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-4",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-6",
+      "text": "Step 6",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-5",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-7",
+      "text": "Step 7",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-6",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-8",
+      "text": "Step 8",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-7",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-9",
+      "text": "Step 9",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-8",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-10",
+      "text": "Step 10",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-9",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "chain-11",
+      "text": "Step 11",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "chain-10",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

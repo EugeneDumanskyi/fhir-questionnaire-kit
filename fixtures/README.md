@@ -1,14 +1,62 @@
 # `fixtures/`
 
-Conformance fixture pairs: one `Questionnaire`, one expected
-`QuestionnaireResponse`, plus whatever the behaviour under test needs
-(a command script, an expected diagnostic list, a snapshot).
+Conformance fixtures: one `Questionnaire` per behaviour, plus what the
+behaviour under test needs (a command script, expected diagnostics and, from
+M3, an expected `QuestionnaireResponse`).
 
-**Empty at M0 by design.** The repository instructions require a fixture pair,
-a conformance test and a conformance-matrix row for every spec behaviour, and
-M0 implements no spec behaviour. The first pairs arrive with M2 (definition and
-evaluation) and the matrix rows are enforced from M10
-(`06-roadmap.md` §5, NFR-Q-04, AC-13.4.2).
+**From M2** each behaviour directory holds `questionnaire.json` and
+`scenario.json`; `expected-response.json` joins them in M3, when the engine
+emits a response (`06-roadmap.md` M2 plan D6). Each case is linked from a row
+of `docs/conformance/matrix.json`. M10 renders the matrix and enforces every
+link against a passing run (NFR-Q-04, AC-13.4.2).
+
+## The scenario (`scenario.json`)
+
+`packages/core/test/conformance/fixtures.test.ts` loads the questionnaire through
+the public `createSession`, as a host would, and replays each case as the test
+`<directory>: <case name>`.
+
+```jsonc
+{
+  "behaviour": "One line, with the criteria and invariants it proves",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",                 // or "lenient"
+      "retention": "discard",               // optional; the default is retain-exclude
+      // Either the load is rejected, with these findings in this order…
+      "rejected": [{ "code": "dependency-cycle", "path": "a", "related": ["a", "b"] }],
+      // …or it loads, with these diagnostics and these enabled node paths, in document order.
+      "diagnostics": [{ "code": "dangling-condition", "path": "q" }],
+      "enabled": ["q", "group/child"],
+      // Commands, each with its result and the enabled paths after it.
+      "steps": [
+        {
+          "name": "answer the question",
+          "command": { "type": "SetAnswer", "path": "q", "answers": [{ "kind": "boolean", "value": true }] },
+          "result": { "outcome": "applied" },
+          "enabled": ["q", "dependent"]
+        }
+      ],
+      // Optional: the answers on some node paths at the end.
+      "answers": { "q": [{ "kind": "boolean", "value": true }] }
+    }
+  ]
+}
+```
+
+A finding or diagnostic is compared on the fields it names: `code` and `path`
+always, `related`, `detail` and `severity` where given. `detail` holds an item
+type, a value type or an extension URL, never an answer.
+
+**Generated fixtures.** The `enablewhen-<type>` directories are written by
+`scripts/gen-conformance-fixtures.mjs` from a truth table, not by the engine; a
+test fails if a committed file differs from what it writes. Change the script,
+not the files.
+
+**`demo/`** is the demo questionnaire, not a behaviour fixture: it has no
+scenario, and `packages/core/test/conformance/demo.test.ts` checks its
+structure.
 
 ## Rules for what lands here
 

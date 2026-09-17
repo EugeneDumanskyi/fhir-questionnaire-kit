@@ -1,0 +1,52 @@
+{
+  "behaviour": "A condition naming a linkId that does not exist (AC-02.5.2, INV-D-04)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "dangling-condition",
+          "path": "b",
+          "related": [
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lenient: the condition is false, with a diagnostic",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "dangling-condition",
+          "path": "b"
+        }
+      ],
+      "enabled": [
+        "a"
+      ],
+      "steps": [
+        {
+          "name": "answering A changes nothing",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a"
+          ]
+        }
+      ]
+    }
+  ]
+}

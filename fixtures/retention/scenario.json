@@ -1,0 +1,241 @@
+{
+  "behaviour": "What happens to a hidden answer: retain-exclude restores it, discard erases it and resets a repeating group (AC-05.2.1, AC-05.2.3, AC-05.2.6, ADR-0011, SM-02)",
+  "cases": [
+    {
+      "name": "retain-exclude (the default)",
+      "loadMode": "strict",
+      "retention": "retain-exclude",
+      "enabled": [
+        "smoker"
+      ],
+      "steps": [
+        {
+          "name": "smoker yes",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand"
+          ]
+        },
+        {
+          "name": "answer",
+          "command": {
+            "type": "SetAnswer",
+            "path": "amount",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "5"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand"
+          ]
+        },
+        {
+          "name": "a second pack",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "packs"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand",
+            "packs[1]/brand"
+          ]
+        },
+        {
+          "name": "smoker no: hidden",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker"
+          ]
+        },
+        {
+          "name": "smoker yes: both instances return",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand",
+            "packs[1]/brand"
+          ]
+        }
+      ],
+      "answers": {
+        "amount": [
+          {
+            "kind": "string",
+            "value": "5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "discard",
+      "loadMode": "strict",
+      "retention": "discard",
+      "enabled": [
+        "smoker"
+      ],
+      "steps": [
+        {
+          "name": "smoker yes",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand"
+          ]
+        },
+        {
+          "name": "answer",
+          "command": {
+            "type": "SetAnswer",
+            "path": "amount",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "5"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand"
+          ]
+        },
+        {
+          "name": "a second pack",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "packs"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[0]/brand",
+            "packs[1]/brand"
+          ]
+        },
+        {
+          "name": "smoker no: hidden and erased",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker"
+          ]
+        },
+        {
+          "name": "smoker yes: one empty instance with a fresh ordinal",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "packs",
+            "packs[2]/brand"
+          ]
+        }
+      ],
+      "answers": {
+        "amount": []
+      }
+    }
+  ]
+}

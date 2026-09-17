@@ -1,0 +1,50 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:disabled-question-reads-unanswered",
+  "version": "1",
+  "status": "draft",
+  "title": "disabled-question-reads-unanswered",
+  "item": [
+    {
+      "linkId": "gate",
+      "text": "Gate",
+      "type": "boolean"
+    },
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "gate",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "amount",
+      "text": "Shown when smoker = yes",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "reason",
+      "text": "Shown when smoker != yes",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "!=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

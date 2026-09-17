@@ -1,0 +1,53 @@
+{
+  "behaviour": "initial[x] and answerOption.initialSelected are ignored with a warning in both modes; items start empty (INV-D-18, plan D4)",
+  "cases": [
+    {
+      "name": "strict: ignored, with a warning",
+      "loadMode": "strict",
+      "diagnostics": [
+        {
+          "code": "initial-value-ignored",
+          "path": "smoker",
+          "severity": "warning"
+        },
+        {
+          "code": "initial-value-ignored",
+          "path": "frequency",
+          "severity": "warning"
+        }
+      ],
+      "enabled": [
+        "smoker",
+        "frequency"
+      ],
+      "answers": {
+        "smoker": [],
+        "frequency": []
+      }
+    },
+    {
+      "name": "lenient: ignored, with a warning",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "initial-value-ignored",
+          "path": "smoker",
+          "severity": "warning"
+        },
+        {
+          "code": "initial-value-ignored",
+          "path": "frequency",
+          "severity": "warning"
+        }
+      ],
+      "enabled": [
+        "smoker",
+        "frequency"
+      ],
+      "answers": {
+        "smoker": [],
+        "frequency": []
+      }
+    }
+  ]
+}

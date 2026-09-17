@@ -1,0 +1,85 @@
+{
+  "behaviour": "Answer option values other than Coding, string, integer and date (INV-D-19, plan D4)",
+  "cases": [
+    {
+      "name": "strict lists each item and value type once",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "unsupported-option-type",
+          "path": "slot",
+          "detail": "Time"
+        },
+        {
+          "code": "unsupported-option-type",
+          "path": "clinic",
+          "detail": "Reference"
+        }
+      ]
+    },
+    {
+      "name": "lenient keeps placeholders that accept no answer",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "unsupported-option-type",
+          "path": "slot"
+        },
+        {
+          "code": "unsupported-option-type",
+          "path": "clinic"
+        }
+      ],
+      "enabled": [
+        "coded",
+        "slot",
+        "clinic"
+      ],
+      "steps": [
+        {
+          "name": "a supported option type is answerable",
+          "command": {
+            "type": "SetAnswer",
+            "path": "coded",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 3
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "coded",
+            "slot",
+            "clinic"
+          ]
+        },
+        {
+          "name": "the placeholder refuses an answer",
+          "result": {
+            "outcome": "refused",
+            "reason": "not-answerable"
+          },
+          "command": {
+            "type": "SetAnswer",
+            "path": "slot",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "09:00:00"
+              }
+            ]
+          },
+          "enabled": [
+            "coded",
+            "slot",
+            "clinic"
+          ]
+        }
+      ]
+    }
+  ]
+}

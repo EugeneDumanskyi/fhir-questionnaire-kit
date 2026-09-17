@@ -1,0 +1,33 @@
+{
+  "behaviour": "Group nesting and enableWhen chains deeper than the published ceilings reject the load in both modes (INV-D-07, NFR-P-05)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "nesting-too-deep",
+          "path": "level-1/level-2/level-3/level-4/level-5/level-6/level-7/level-8/level-9/level-10/level-11"
+        },
+        {
+          "code": "chain-too-deep",
+          "path": "chain-11"
+        }
+      ]
+    },
+    {
+      "name": "lenient rejects too",
+      "loadMode": "lenient",
+      "rejected": [
+        {
+          "code": "nesting-too-deep",
+          "path": "level-1/level-2/level-3/level-4/level-5/level-6/level-7/level-8/level-9/level-10/level-11"
+        },
+        {
+          "code": "chain-too-deep",
+          "path": "chain-11"
+        }
+      ]
+    }
+  ]
+}

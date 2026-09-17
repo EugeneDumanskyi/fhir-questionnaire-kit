@@ -1,0 +1,75 @@
+{
+  "behaviour": "Items nested under a question: R4 allows them, the kit does not (INV-D-17, plan D4)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "items-under-question",
+          "path": "pain"
+        }
+      ]
+    },
+    {
+      "name": "lenient: the children become placeholders",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "items-under-question",
+          "path": "pain"
+        }
+      ],
+      "enabled": [
+        "pain",
+        "pain/pain-where",
+        "notes"
+      ],
+      "steps": [
+        {
+          "name": "the question still takes an answer",
+          "command": {
+            "type": "SetAnswer",
+            "path": "pain",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "pain",
+            "pain/pain-where",
+            "notes"
+          ]
+        },
+        {
+          "name": "the placeholder refuses an answer",
+          "result": {
+            "outcome": "refused",
+            "reason": "not-answerable"
+          },
+          "command": {
+            "type": "SetAnswer",
+            "path": "pain/pain-where",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "knee"
+              }
+            ]
+          },
+          "enabled": [
+            "pain",
+            "pain/pain-where",
+            "notes"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enablewhen-integer",
+  "version": "1",
+  "status": "draft",
+  "title": "enableWhen operators on integer",
+  "item": [
+    {
+      "linkId": "q",
+      "text": "An integer question",
+      "type": "integer"
+    },
+    {
+      "linkId": "eq",
+      "text": "Shown when q =",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "=",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "ne",
+      "text": "Shown when q !=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "!=",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "gt",
+      "text": "Shown when q >",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "lt",
+      "text": "Shown when q <",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "ge",
+      "text": "Shown when q >=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">=",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "le",
+      "text": "Shown when q <=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<=",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "exists",
+      "text": "Shown when q exists",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

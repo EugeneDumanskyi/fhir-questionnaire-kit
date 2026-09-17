@@ -1,0 +1,73 @@
+{
+  "behaviour": "An operator that means nothing for the question's type (AC-02.5.3, INV-D-06, plan D3)",
+  "cases": [
+    {
+      "name": "strict loads with a warning; the condition is false",
+      "loadMode": "strict",
+      "diagnostics": [
+        {
+          "code": "meaningless-condition",
+          "path": "b"
+        }
+      ],
+      "enabled": [
+        "name"
+      ],
+      "steps": [
+        {
+          "name": "an answer that would sort after m changes nothing",
+          "command": {
+            "type": "SetAnswer",
+            "path": "name",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "zoe"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lenient: the same",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "meaningless-condition",
+          "path": "b"
+        }
+      ],
+      "enabled": [
+        "name"
+      ],
+      "steps": [
+        {
+          "name": "an answer that would sort after m changes nothing",
+          "command": {
+            "type": "SetAnswer",
+            "path": "name",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "zoe"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name"
+          ]
+        }
+      ]
+    }
+  ]
+}

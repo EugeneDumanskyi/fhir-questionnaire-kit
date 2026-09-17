@@ -1,0 +1,79 @@
+{
+  "behaviour": "enableBehavior all and any (AC-02.3.1, AC-02.3.2, INV-S-02)",
+  "cases": [
+    {
+      "name": "all needs every condition, any needs one",
+      "loadMode": "strict",
+      "enabled": [
+        "a",
+        "b"
+      ],
+      "steps": [
+        {
+          "name": "A yes: any holds, all does not",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "any"
+          ]
+        },
+        {
+          "name": "B yes too: both hold",
+          "command": {
+            "type": "SetAnswer",
+            "path": "b",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "all",
+            "any"
+          ]
+        },
+        {
+          "name": "A no: any still holds",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "any"
+          ]
+        }
+      ]
+    }
+  ]
+}

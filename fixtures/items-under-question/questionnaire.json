@@ -1,0 +1,26 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:items-under-question",
+  "version": "1",
+  "status": "draft",
+  "title": "items-under-question",
+  "item": [
+    {
+      "linkId": "pain",
+      "text": "Are you in pain?",
+      "type": "boolean",
+      "item": [
+        {
+          "linkId": "pain-where",
+          "text": "Where?",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "notes",
+      "text": "Notes",
+      "type": "text"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:missing-enable-behavior",
+  "version": "1",
+  "status": "draft",
+  "title": "missing-enable-behavior",
+  "item": [
+    {
+      "linkId": "a",
+      "text": "A",
+      "type": "boolean"
+    },
+    {
+      "linkId": "b",
+      "text": "B",
+      "type": "boolean"
+    },
+    {
+      "linkId": "c",
+      "text": "Two conditions, no enableBehavior",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "a",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "b",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

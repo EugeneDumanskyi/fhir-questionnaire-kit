@@ -1,0 +1,34 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:unsupported-item-type",
+  "version": "1",
+  "status": "draft",
+  "title": "unsupported-item-type",
+  "item": [
+    {
+      "linkId": "file",
+      "text": "Attach a letter",
+      "type": "attachment"
+    },
+    {
+      "linkId": "name",
+      "text": "Name",
+      "type": "string"
+    },
+    {
+      "linkId": "when",
+      "text": "What time?",
+      "type": "time"
+    },
+    {
+      "linkId": "site",
+      "text": "Clinic website",
+      "type": "url"
+    },
+    {
+      "linkId": "referrer",
+      "text": "Referring practitioner",
+      "type": "reference"
+    }
+  ]
+}

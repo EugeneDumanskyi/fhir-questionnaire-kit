@@ -1,0 +1,72 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enablewhen-choice",
+  "version": "1",
+  "status": "draft",
+  "title": "enableWhen operators on choice",
+  "item": [
+    {
+      "linkId": "q",
+      "text": "A choice question",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "daily",
+            "display": "Daily"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "never",
+            "display": "Never"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "eq",
+      "text": "Shown when q =",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "daily"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ne",
+      "text": "Shown when q !=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "!=",
+          "answerCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "daily"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "exists",
+      "text": "Shown when q exists",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

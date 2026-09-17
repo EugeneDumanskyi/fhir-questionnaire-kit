@@ -1,0 +1,41 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:initial-values",
+  "version": "1",
+  "status": "draft",
+  "title": "initial-values",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "type": "boolean",
+      "initial": [
+        {
+          "valueBoolean": false
+        }
+      ]
+    },
+    {
+      "linkId": "frequency",
+      "text": "How often?",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "daily",
+            "display": "Daily"
+          },
+          "initialSelected": true
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "weekly",
+            "display": "Weekly"
+          }
+        }
+      ]
+    }
+  ]
+}

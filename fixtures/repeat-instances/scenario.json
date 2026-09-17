@@ -1,0 +1,183 @@
+{
+  "behaviour": "Repeating groups: per-instance conditions, ordinals never reused, Add refused at maxOccurs, Remove never refused on cardinality (AC-03.2.1–5, INV-S-08, INV-S-20–24, M2 AC-7)",
+  "cases": [
+    {
+      "name": "instances",
+      "loadMode": "strict",
+      "enabled": [
+        "meds",
+        "meds[0]/name",
+        "meds[0]/taking"
+      ],
+      "steps": [
+        {
+          "name": "add a second instance",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "meds"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[1]/name",
+            "meds[1]/taking"
+          ]
+        },
+        {
+          "name": "add a third",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "meds"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[1]/name",
+            "meds[1]/taking",
+            "meds[2]/name",
+            "meds[2]/taking"
+          ]
+        },
+        {
+          "name": "a fourth is refused at maxOccurs",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "meds"
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "at-max-occurs"
+          },
+          "enabled": [
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[1]/name",
+            "meds[1]/taking",
+            "meds[2]/name",
+            "meds[2]/taking"
+          ]
+        },
+        {
+          "name": "taking in instance 1 shows its dose only",
+          "command": {
+            "type": "SetAnswer",
+            "path": "meds[1]/taking",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[1]/name",
+            "meds[1]/taking",
+            "meds[1]/dose",
+            "meds[2]/name",
+            "meds[2]/taking"
+          ]
+        },
+        {
+          "name": "remove instance 1",
+          "command": {
+            "type": "RemoveRepeatInstance",
+            "path": "meds",
+            "ordinal": 1
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[2]/name",
+            "meds[2]/taking"
+          ]
+        },
+        {
+          "name": "a new instance takes ordinal 3, never 1",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "meds"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[2]/name",
+            "meds[2]/taking",
+            "meds[3]/name",
+            "meds[3]/taking"
+          ]
+        },
+        {
+          "name": "remove the rest, starting with ordinal 0",
+          "command": {
+            "type": "RemoveRepeatInstance",
+            "path": "meds",
+            "ordinal": 0
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[2]/name",
+            "meds[2]/taking",
+            "meds[3]/name",
+            "meds[3]/taking"
+          ]
+        },
+        {
+          "name": "and ordinal 2",
+          "command": {
+            "type": "RemoveRepeatInstance",
+            "path": "meds",
+            "ordinal": 2
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds",
+            "meds[3]/name",
+            "meds[3]/taking"
+          ]
+        },
+        {
+          "name": "the last goes too: removal is never refused on cardinality",
+          "command": {
+            "type": "RemoveRepeatInstance",
+            "path": "meds",
+            "ordinal": 3
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "meds"
+          ]
+        }
+      ]
+    }
+  ]
+}

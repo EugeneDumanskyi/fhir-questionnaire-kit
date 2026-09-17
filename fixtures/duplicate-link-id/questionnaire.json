@@ -1,0 +1,26 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:duplicate-link-id",
+  "version": "1",
+  "status": "draft",
+  "title": "duplicate-link-id",
+  "item": [
+    {
+      "linkId": "name",
+      "text": "Name",
+      "type": "string"
+    },
+    {
+      "linkId": "contact",
+      "text": "Contact",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Contact name",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

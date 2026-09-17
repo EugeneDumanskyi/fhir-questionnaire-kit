@@ -1,0 +1,45 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:cycle",
+  "version": "1",
+  "status": "draft",
+  "title": "cycle",
+  "item": [
+    {
+      "linkId": "a",
+      "text": "A",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "b",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "b",
+      "text": "B",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "a",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "self",
+      "text": "Gated on itself",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "self",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

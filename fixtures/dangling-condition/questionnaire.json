@@ -1,0 +1,26 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:dangling-condition",
+  "version": "1",
+  "status": "draft",
+  "title": "dangling-condition",
+  "item": [
+    {
+      "linkId": "a",
+      "text": "A",
+      "type": "boolean"
+    },
+    {
+      "linkId": "b",
+      "text": "Gated on a question that does not exist",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "ghost",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}
