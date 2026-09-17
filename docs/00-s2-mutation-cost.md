@@ -57,3 +57,21 @@ The other lanes in the same CI run: the fast lane took **26–31 s**; the browse
 - **No nightly workflow yet** (step 12), so the full-run figure is the cold PR figure above.
 - **No p95.** Two CI runs are two samples, not a distribution; NFR-M-07's p95 comes from Actions run data over time (ADR-0018).
 - **One PR shape.** The incremental figure is for a PR that touches one test file. A PR that touches `session.test.ts` and the conditions table together would re-run close to all mutants.
+
+## 7. Addendum, 2026-09-17: K1 triggered at step 12, and relieved
+
+M2's later steps added three suites that S2 never timed: the generated properties (step 9), the recompute-set check at the scale ceiling (step 10), and the conformance runner (step 11). On PR #27, which touched most test files, the incremental run re-ran 498 of 1,086 mutants in **5 min 1 s**, and the job took 5 min 26 s. **K1 triggered.**
+
+| Run on the CI runner | Mutants re-run | Mutation step | Score |
+|---|---:|---:|---:|
+| PR #26, before the relief | 209 | 3 min 16 s | 90.06 % |
+| PR #27, first push | 498 | **5 min 1 s** | 90.06 % |
+| PR #27, after the relief | 175 | 2 min 28 s | 90.06 % |
+| PR #28, after the relief, the same 498 mutants as PR #27's first push | 498 | **2 min 20 s** | 89.96 % |
+
+- **Cause.** 84 % of mutants are static, and each one reruns the whole core suite. The ceiling test is half that suite's time (1.9 s of about 3.5 s).
+- **Why not K1's listed relief.** Moving WebKit to nightly shortens the pipeline, not the mutation lane, and WebKit runs in the non-blocking lane.
+- **The relief taken.** `stryker.vitest.config.ts` excludes `test/property/ceiling.test.ts`; `pnpm test` still runs it. Full local runs with and without it detect the same mutants (983 and 986; scores 90.5 % and 90.8 %) in 9 min 28 s and 6 min 10 s. The generated properties already assert the same BFS equality, on small trees. On the runner, 498 re-run mutants took 5 min 1 s with the ceiling test and 2 min 20 s without it.
+- **K2 is not near.** The blocking pipeline runs in about 3 min wall-clock, because its lanes run in parallel.
+
+**Watch in M3.** §5's growth estimate stands, and the static-mutant share makes it steeper. Every test file M3 adds is paid for once per static mutant. The next reliefs, in order: keep slow tests out of the mutation suite as here; split the lane into a matrix of jobs by module; `ignoreStatic` only as the maintainer's call, since it drops the D2 and D3 table mutants.

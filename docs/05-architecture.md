@@ -350,8 +350,8 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 
 | Rewritten | Why |
 |---|---|
-| `session/session.ts` | A naive full pass; ADR-0009's compiled graph and recompute set replace it (M2) |
-| `definition/definition.ts` | Hand-built input and four checks; M2's R4 codec and INV-D-01…19 replace it |
+| `session/session.ts` | A naive full pass; ADR-0009's compiled graph and recompute set replace it (M2). **Done 2026-09-17:** the naive pass survives only as `packages/core/test/oracle.ts`, the independent oracle the property tests compare against |
+| `definition/definition.ts` | Hand-built input and four checks; M2's R4 codec and INV-D-01…19 replace it. **Done 2026-09-17:** deleted; `fhir/r4/parse.ts` and `definition/{compile,checks,graph,scc}.ts` replace it |
 | `view/view.ts` | Two control kinds; M5 writes the full field list |
 | `validation/required.ts` | One rule; M3 |
 | `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3 |
