@@ -43,6 +43,24 @@ const NO_INLINE_STYLE = [
   "MemberExpression[property.name='attributeStyleMap']",
 ].map((selector) => ({ selector, message: STYLE_MESSAGE }));
 
+/**
+ * `05-architecture.md` §4.1, row by row (NFR-M-06). A module may import its own
+ * files and the entries listed; `fhir/r4/parse` and `session/projection` are
+ * single files, `index` is the public engine API. `interchange/` and `ports/`
+ * do not exist yet and are listed so their rows hold from their first file.
+ * `session/snapshot` is interchange's second door into session state (M3).
+ */
+export const CORE_MODULES = {
+  kernel: [],
+  'fhir/r4': ['kernel'],
+  definition: ['kernel', 'fhir/r4/parse'],
+  session: ['kernel', 'definition'],
+  validation: ['kernel', 'definition', 'session/projection'],
+  interchange: ['kernel', 'definition', 'session/projection', 'session/snapshot', 'fhir/r4'],
+  ports: ['kernel'],
+  view: ['kernel', 'index'],
+};
+
 /** Where prose is allowed to live (NFR-I-01). The catalogue itself is M4. */
 const CATALOGUE = ['packages/core/src/**/messages/**'];
 
@@ -54,6 +72,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/*.tsbuildinfo',
       '.tsbuild/**',
+      '.stryker-tmp/**',
       // Deliberate violations, linted only by the rules' own tests.
       'tools/eslint-rules/test/fixtures/**',
     ],
@@ -98,7 +117,12 @@ export default tseslint.config(
   {
     /* ADR-0007: the engine and the presentation model are DOM-free. */
     files: ['packages/core/src/**/*.ts'],
-    rules: { 'fhirq/no-dom-in-core': 'error' },
+    rules: {
+      'fhirq/no-dom-in-core': 'error',
+      'fhirq/core-module-imports': ['error', { root: 'packages/core/src', modules: CORE_MODULES }],
+      /* ADR-0016: R4 shapes stay in the codec. */
+      'fhirq/no-fhir-shapes-outside-codec': ['error', { allow: ['packages/core/src/fhir/**'] }],
+    },
   },
 
   {
