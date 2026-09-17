@@ -1,0 +1,45 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:repeat-instances",
+  "version": "1",
+  "status": "draft",
+  "title": "repeat-instances",
+  "item": [
+    {
+      "linkId": "meds",
+      "text": "Medications",
+      "type": "group",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 3
+        }
+      ],
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "type": "string"
+        },
+        {
+          "linkId": "taking",
+          "text": "Still taking it?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "dose",
+          "text": "Dose",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "taking",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

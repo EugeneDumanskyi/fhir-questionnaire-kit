@@ -1,0 +1,55 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enable-behavior",
+  "version": "1",
+  "status": "draft",
+  "title": "enable-behavior",
+  "item": [
+    {
+      "linkId": "a",
+      "text": "A",
+      "type": "boolean"
+    },
+    {
+      "linkId": "b",
+      "text": "B",
+      "type": "boolean"
+    },
+    {
+      "linkId": "all",
+      "text": "Shown when A and B",
+      "type": "display",
+      "enableBehavior": "all",
+      "enableWhen": [
+        {
+          "question": "a",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "b",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "any",
+      "text": "Shown when A or B",
+      "type": "display",
+      "enableBehavior": "any",
+      "enableWhen": [
+        {
+          "question": "a",
+          "operator": "=",
+          "answerBoolean": true
+        },
+        {
+          "question": "b",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

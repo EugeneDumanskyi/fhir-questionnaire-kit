@@ -1,0 +1,823 @@
+{
+  "$comment": "Conformance matrix rows (06-roadmap.md M2 plan D6). A test link is `<test file> > <describe or test name>`. M10 renders this page and enforces every link.",
+  "rows": [
+    {
+      "id": "enablewhen.boolean.eq",
+      "feature": "`enableWhen` `=` on a `boolean` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-boolean: operators on boolean",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.boolean.ne",
+      "feature": "`enableWhen` `!=` on a `boolean` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-boolean: operators on boolean",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.boolean.exists",
+      "feature": "`enableWhen` `exists` on a `boolean` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-boolean: operators on boolean",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.eq",
+      "feature": "`enableWhen` `=` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.ne",
+      "feature": "`enableWhen` `!=` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.gt",
+      "feature": "`enableWhen` `>` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.lt",
+      "feature": "`enableWhen` `<` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.ge",
+      "feature": "`enableWhen` `>=` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.le",
+      "feature": "`enableWhen` `<=` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.integer.exists",
+      "feature": "`enableWhen` `exists` on a `integer` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-integer: operators on integer",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.eq",
+      "feature": "`enableWhen` `=` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.ne",
+      "feature": "`enableWhen` `!=` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.gt",
+      "feature": "`enableWhen` `>` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.lt",
+      "feature": "`enableWhen` `<` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.ge",
+      "feature": "`enableWhen` `>=` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.le",
+      "feature": "`enableWhen` `<=` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.decimal.exists",
+      "feature": "`enableWhen` `exists` on a `decimal` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-decimal: operators on decimal",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.eq",
+      "feature": "`enableWhen` `=` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.ne",
+      "feature": "`enableWhen` `!=` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.gt",
+      "feature": "`enableWhen` `>` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.lt",
+      "feature": "`enableWhen` `<` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.ge",
+      "feature": "`enableWhen` `>=` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.le",
+      "feature": "`enableWhen` `<=` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.date.exists",
+      "feature": "`enableWhen` `exists` on a `date` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-date: operators on date",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.eq",
+      "feature": "`enableWhen` `=` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.ne",
+      "feature": "`enableWhen` `!=` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.gt",
+      "feature": "`enableWhen` `>` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.lt",
+      "feature": "`enableWhen` `<` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.ge",
+      "feature": "`enableWhen` `>=` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.le",
+      "feature": "`enableWhen` `<=` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.dateTime.exists",
+      "feature": "`enableWhen` `exists` on a `dateTime` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-dateTime: operators on dateTime",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.string.eq",
+      "feature": "`enableWhen` `=` on a `string` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-string: operators on string",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.string.ne",
+      "feature": "`enableWhen` `!=` on a `string` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-string: operators on string",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.string.exists",
+      "feature": "`enableWhen` `exists` on a `string` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-string: operators on string",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.text.eq",
+      "feature": "`enableWhen` `=` on a `text` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-text: operators on text",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.text.ne",
+      "feature": "`enableWhen` `!=` on a `text` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-text: operators on text",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.text.exists",
+      "feature": "`enableWhen` `exists` on a `text` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-text: operators on text",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.choice.eq",
+      "feature": "`enableWhen` `=` on a `choice` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-choice: operators on choice",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.choice.ne",
+      "feature": "`enableWhen` `!=` on a `choice` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-choice: operators on choice",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.choice.exists",
+      "feature": "`enableWhen` `exists` on a `choice` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-choice: operators on choice",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.open-choice.eq",
+      "feature": "`enableWhen` `=` on a `open-choice` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-open-choice: operators on open-choice",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.open-choice.ne",
+      "feature": "`enableWhen` `!=` on a `open-choice` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-open-choice: operators on open-choice",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.open-choice.exists",
+      "feature": "`enableWhen` `exists` on a `open-choice` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-open-choice: operators on open-choice",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.eq",
+      "feature": "`enableWhen` `=` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.ne",
+      "feature": "`enableWhen` `!=` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.gt",
+      "feature": "`enableWhen` `>` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.lt",
+      "feature": "`enableWhen` `<` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.ge",
+      "feature": "`enableWhen` `>=` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.le",
+      "feature": "`enableWhen` `<=` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity.exists",
+      "feature": "`enableWhen` `exists` on a `quantity` question",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enablewhen-quantity: operators on quantity",
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.meaningless-operator",
+      "feature": "An operator or `answer[x]` type that means nothing for the question (e.g. `>` on `string`)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > meaningless-condition: strict loads with a warning; the condition is false",
+        "packages/core/test/conformance/fixtures.test.ts > meaningless-condition: lenient: the same"
+      ]
+    },
+    {
+      "id": "enablewhen.temporal-precision",
+      "feature": "Comparing a `date` or `dateTime` with a value of different precision",
+      "status": "partial",
+      "reason": "Undecidable, so the condition is false (M2 plan D3); FHIRPath would decide some of these pairs",
+      "tests": [
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.quantity-units",
+      "feature": "Comparing quantities in different units",
+      "status": "partial",
+      "reason": "Compared only when system and code are identical; unit conversion needs UCUM, a runtime dependency (ADR-0008)",
+      "tests": [
+        "packages/core/test/session/conditions.test.ts > enableWhen operator × answer type (AC-02.1.3, NFR-Q-05)"
+      ]
+    },
+    {
+      "id": "enablewhen.disabled-question",
+      "feature": "A disabled question reads as unanswered, so a retained answer never satisfies a condition and `!=` holds",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > disabled-question-reads-unanswered: a retained answer is invisible to conditions"
+      ]
+    },
+    {
+      "id": "enablebehavior.all-any",
+      "feature": "`enableBehavior` `all` and `any`",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > enable-behavior: all needs every condition, any needs one"
+      ]
+    },
+    {
+      "id": "enablebehavior.missing",
+      "feature": "Several conditions with no `enableBehavior` (rule que-12)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > missing-enable-behavior: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > missing-enable-behavior: lenient applies all, with a diagnostic"
+      ]
+    },
+    {
+      "id": "enablement.cascade",
+      "feature": "A chain of conditions settles in the cycle that caused it, with one notification",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > chain-collapse: collapse and restore"
+      ]
+    },
+    {
+      "id": "enablewhen.question-in-repeat",
+      "feature": "A condition inside a repeating group reads the question in its own instance",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > repeat-instances: instances"
+      ]
+    },
+    {
+      "id": "enablewhen.question-in-repeat-from-outside",
+      "feature": "A condition outside a repeating group reading a question inside it",
+      "status": "not supported",
+      "reason": "Spec rule depends on document position; not supported (M2 plan D5)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > condition-crosses-repeat: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > condition-crosses-repeat: lenient: the condition is false, with a diagnostic"
+      ]
+    },
+    {
+      "id": "enablewhen.calculated-question",
+      "feature": "A condition that tests a calculated item",
+      "status": "not supported",
+      "reason": "The evaluator's inputs are invisible to the dependency graph, so acyclicity cannot be proven (AC-02.5.5)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > condition-on-calculated: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > condition-on-calculated: lenient: false, and the calculated item refuses answers"
+      ]
+    },
+    {
+      "id": "definition.cycle",
+      "feature": "A dependency cycle is rejected, naming every `linkId`",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > cycle: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > cycle: lenient rejects too"
+      ]
+    },
+    {
+      "id": "definition.dangling-condition",
+      "feature": "A condition naming a `linkId` that does not exist",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > dangling-condition: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > dangling-condition: lenient: the condition is false, with a diagnostic"
+      ]
+    },
+    {
+      "id": "definition.duplicate-link-id",
+      "feature": "A `linkId` used twice (rule que-2)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > duplicate-link-id: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > duplicate-link-id: lenient rejects too"
+      ]
+    },
+    {
+      "id": "definition.depth-ceilings",
+      "feature": "Group nesting and condition chains up to the published ceiling of 10 (NFR-P-05)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > depth-ceilings: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > depth-ceilings: lenient rejects too"
+      ]
+    },
+    {
+      "id": "definition.r5",
+      "feature": "FHIR R5 `Questionnaire`",
+      "status": "out of scope",
+      "reason": "R4 (4.0.1) only; R5 is rejected, not degraded (ADR-0016)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > not-r4: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > not-r4: lenient rejects too"
+      ]
+    },
+    {
+      "id": "definition.modifier-extension",
+      "feature": "Modifier extensions",
+      "status": "not supported",
+      "reason": "R4 forbids ignoring a modifier extension, and the kit understands none, so the load is rejected in both modes",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > modifier-extension: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > modifier-extension: lenient rejects too"
+      ]
+    },
+    {
+      "id": "definition.items-under-question",
+      "feature": "Items nested under a question",
+      "status": "not supported",
+      "reason": "An item here has answers or children, never both (04-domain.md §4 note 2, INV-D-17)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > items-under-question: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > items-under-question: lenient: the children become placeholders"
+      ]
+    },
+    {
+      "id": "definition.initial-values",
+      "feature": "`initial[x]` and `answerOption.initialSelected`",
+      "status": "not supported",
+      "reason": "Ignored with a warning in both modes; strict rejection would refuse many real forms (M2 plan D4)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > initial-values: strict: ignored, with a warning",
+        "packages/core/test/conformance/fixtures.test.ts > initial-values: lenient: ignored, with a warning"
+      ]
+    },
+    {
+      "id": "options.value-types",
+      "feature": "Answer options of type `Coding`, `string`, `integer` and `date`",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > option-value-types: lenient keeps placeholders that accept no answer",
+        "packages/core/test/definition/compile.test.ts > the strict/lenient matrix (04-domain.md §5.1)"
+      ]
+    },
+    {
+      "id": "options.time-reference",
+      "feature": "Answer options of type `time` and `Reference`",
+      "status": "not supported",
+      "reason": "Handled like an unsupported item type (INV-D-19, M2 plan D4)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > option-value-types: strict lists each item and value type once",
+        "packages/core/test/conformance/fixtures.test.ts > option-value-types: lenient keeps placeholders that accept no answer"
+      ]
+    },
+    {
+      "id": "item-type.attachment",
+      "feature": "Item type `attachment`",
+      "status": "not supported",
+      "reason": "Outside the supported item types (AC-01.3.1): strict rejects, listing each item; lenient keeps a placeholder",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ]
+    },
+    {
+      "id": "item-type.reference",
+      "feature": "Item type `reference`",
+      "status": "not supported",
+      "reason": "Outside the supported item types (AC-01.3.1): strict rejects, listing each item; lenient keeps a placeholder",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ]
+    },
+    {
+      "id": "item-type.url",
+      "feature": "Item type `url`",
+      "status": "not supported",
+      "reason": "Outside the supported item types (AC-01.3.1): strict rejects, listing each item; lenient keeps a placeholder",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ]
+    },
+    {
+      "id": "item-type.time",
+      "feature": "Item type `time`",
+      "status": "not supported",
+      "reason": "Outside the supported item types (AC-01.3.1): strict rejects, listing each item; lenient keeps a placeholder",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
+        "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ]
+    },
+    {
+      "id": "extension.enablewhen-expression",
+      "feature": "SDC `enableWhenExpression`",
+      "status": "not supported",
+      "reason": "FHIRPath is out of scope (02-requirements.md §17): strict rejects; lenient: the item is disabled, with a diagnostic (INV-D-15)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: strict rejects each, naming the extension",
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ]
+    },
+    {
+      "id": "extension.answer-expression",
+      "feature": "SDC `answerExpression`",
+      "status": "not supported",
+      "reason": "FHIRPath is out of scope (02-requirements.md §17): strict rejects; lenient: the item has no options, with a diagnostic (INV-D-15)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: strict rejects each, naming the extension",
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ]
+    },
+    {
+      "id": "extension.candidate-expression",
+      "feature": "SDC `candidateExpression`",
+      "status": "not supported",
+      "reason": "FHIRPath is out of scope (02-requirements.md §17): strict rejects; lenient: the item has no options, with a diagnostic (INV-D-15)",
+      "tests": [
+        "packages/core/test/definition/compile.test.ts > the strict/lenient matrix (04-domain.md §5.1)"
+      ]
+    },
+    {
+      "id": "extension.initial-expression",
+      "feature": "SDC `initialExpression`",
+      "status": "not supported",
+      "reason": "FHIRPath is out of scope (02-requirements.md §17): strict rejects; lenient: ignored, with a diagnostic (INV-D-15)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: strict rejects each, naming the extension",
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ]
+    },
+    {
+      "id": "extension.variable",
+      "feature": "`variable` extension",
+      "status": "not supported",
+      "reason": "FHIRPath is out of scope (02-requirements.md §17): loads with a diagnostic in both modes (INV-D-15)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ]
+    },
+    {
+      "id": "extension.launch-context",
+      "feature": "SDC `launchContext`",
+      "status": "not supported",
+      "reason": "Loads with a diagnostic in both modes (INV-D-15)",
+      "tests": [
+        "packages/core/test/definition/compile.test.ts > the strict/lenient matrix (04-domain.md §5.1)"
+      ]
+    },
+    {
+      "id": "repeats.instances",
+      "feature": "Repeating groups: add and remove instances, ordinals never reused, `maxOccurs`",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > repeat-instances: instances"
+      ]
+    },
+    {
+      "id": "retention.retain-exclude",
+      "feature": "A hidden answer is kept and restored when the item shows again (the default)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > retention: retain-exclude (the default)"
+      ]
+    },
+    {
+      "id": "retention.discard",
+      "feature": "A hidden answer is erased, and a hidden repeating group resets to one empty instance",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > retention: discard"
+      ]
+    }
+  ]
+}

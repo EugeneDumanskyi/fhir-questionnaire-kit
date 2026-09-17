@@ -1,0 +1,26 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:meaningless-condition",
+  "version": "1",
+  "status": "draft",
+  "title": "meaningless-condition",
+  "item": [
+    {
+      "linkId": "name",
+      "text": "Name",
+      "type": "string"
+    },
+    {
+      "linkId": "b",
+      "text": "Gated on name > \"m\"",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "name",
+          "operator": ">",
+          "answerString": "m"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "behaviour": "Expression extensions other than calculatedExpression are never silently ignored (AC-01.3.3, INV-D-15)",
+  "cases": [
+    {
+      "name": "strict rejects each, naming the extension",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "unsupported-extension",
+          "path": "gated",
+          "detail": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression"
+        },
+        {
+          "code": "unsupported-extension",
+          "path": "listed",
+          "detail": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression"
+        },
+        {
+          "code": "unsupported-extension",
+          "path": "prefilled",
+          "detail": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+        }
+      ]
+    },
+    {
+      "name": "lenient disables the gated item and reports the rest",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "context-extension-ignored",
+          "path": null
+        },
+        {
+          "code": "unsupported-extension",
+          "path": "gated"
+        },
+        {
+          "code": "unsupported-extension",
+          "path": "listed"
+        },
+        {
+          "code": "unsupported-extension",
+          "path": "prefilled"
+        }
+      ],
+      "enabled": [
+        "listed",
+        "prefilled",
+        "plain"
+      ]
+    }
+  ]
+}

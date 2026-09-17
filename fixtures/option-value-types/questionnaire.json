@@ -1,0 +1,57 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:option-value-types",
+  "version": "1",
+  "status": "draft",
+  "title": "option-value-types",
+  "item": [
+    {
+      "linkId": "coded",
+      "text": "Coded options",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance",
+            "code": "a",
+            "display": "A"
+          }
+        },
+        {
+          "valueString": "b"
+        },
+        {
+          "valueInteger": 3
+        },
+        {
+          "valueDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "slot",
+      "text": "Appointment slot",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueTime": "09:00:00"
+        },
+        {
+          "valueTime": "14:00:00"
+        }
+      ]
+    },
+    {
+      "linkId": "clinic",
+      "text": "Clinic",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueReference": {
+            "reference": "Location/1"
+          }
+        }
+      ]
+    }
+  ]
+}

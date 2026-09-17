@@ -1,0 +1,98 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enablewhen-date",
+  "version": "1",
+  "status": "draft",
+  "title": "enableWhen operators on date",
+  "item": [
+    {
+      "linkId": "q",
+      "text": "A date question",
+      "type": "date"
+    },
+    {
+      "linkId": "eq",
+      "text": "Shown when q =",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "=",
+          "answerDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "ne",
+      "text": "Shown when q !=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "!=",
+          "answerDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "gt",
+      "text": "Shown when q >",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">",
+          "answerDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "lt",
+      "text": "Shown when q <",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<",
+          "answerDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "ge",
+      "text": "Shown when q >=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">=",
+          "answerDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "le",
+      "text": "Shown when q <=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<=",
+          "answerDate": "2024-05-01"
+        }
+      ]
+    },
+    {
+      "linkId": "exists",
+      "text": "Shown when q exists",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

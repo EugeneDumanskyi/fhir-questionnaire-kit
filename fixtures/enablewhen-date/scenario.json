@@ -1,0 +1,98 @@
+{
+  "behaviour": "enableWhen operators on a date question (AC-02.1.3, plan D2 and D3)",
+  "cases": [
+    {
+      "name": "operators on date",
+      "loadMode": "strict",
+      "enabled": [
+        "q",
+        "ne"
+      ],
+      "steps": [
+        {
+          "name": "answer equal to the expected value",
+          "command": {
+            "type": "SetAnswer",
+            "path": "q",
+            "answers": [
+              {
+                "kind": "date",
+                "value": "2024-05-01"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "q",
+            "eq",
+            "ge",
+            "le",
+            "exists"
+          ]
+        },
+        {
+          "name": "answer greater than the expected value",
+          "command": {
+            "type": "SetAnswer",
+            "path": "q",
+            "answers": [
+              {
+                "kind": "date",
+                "value": "2024-06-01"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "q",
+            "ne",
+            "gt",
+            "ge",
+            "exists"
+          ]
+        },
+        {
+          "name": "answer less than the expected value",
+          "command": {
+            "type": "SetAnswer",
+            "path": "q",
+            "answers": [
+              {
+                "kind": "date",
+                "value": "2024-04-01"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "q",
+            "ne",
+            "lt",
+            "le",
+            "exists"
+          ]
+        },
+        {
+          "name": "cleared: unanswered",
+          "command": {
+            "type": "ClearAnswer",
+            "path": "q"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "q",
+            "ne"
+          ]
+        }
+      ]
+    }
+  ]
+}

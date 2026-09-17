@@ -1,0 +1,34 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:condition-crosses-repeat",
+  "version": "1",
+  "status": "draft",
+  "title": "condition-crosses-repeat",
+  "item": [
+    {
+      "linkId": "meds",
+      "text": "Medications",
+      "type": "group",
+      "repeats": true,
+      "item": [
+        {
+          "linkId": "taking",
+          "text": "Taking it?",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "linkId": "outside",
+      "text": "Gated on an item inside the repeat",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "taking",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

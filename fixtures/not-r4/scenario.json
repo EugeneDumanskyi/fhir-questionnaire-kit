@@ -1,0 +1,37 @@
+{
+  "behaviour": "FHIR R5 is rejected, not degraded (INV-D-01, ADR-0016)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "not-r4",
+          "path": null,
+          "detail": "fhirVersion"
+        },
+        {
+          "code": "not-r4",
+          "path": "pick",
+          "detail": "coding"
+        }
+      ]
+    },
+    {
+      "name": "lenient rejects too",
+      "loadMode": "lenient",
+      "rejected": [
+        {
+          "code": "not-r4",
+          "path": null,
+          "detail": "fhirVersion"
+        },
+        {
+          "code": "not-r4",
+          "path": "pick",
+          "detail": "coding"
+        }
+      ]
+    }
+  ]
+}

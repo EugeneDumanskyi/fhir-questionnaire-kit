@@ -1,0 +1,47 @@
+{
+  "behaviour": "A dependency cycle rejects the load in both modes, naming every linkId, and nothing is evaluated (AC-02.5.1, INV-D-05, M2 AC-2)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "dependency-cycle",
+          "path": "a",
+          "related": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "code": "dependency-cycle",
+          "path": "self",
+          "related": [
+            "self"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lenient rejects too",
+      "loadMode": "lenient",
+      "rejected": [
+        {
+          "code": "dependency-cycle",
+          "path": "a",
+          "related": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "code": "dependency-cycle",
+          "path": "self",
+          "related": [
+            "self"
+          ]
+        }
+      ]
+    }
+  ]
+}

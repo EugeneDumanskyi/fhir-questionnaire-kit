@@ -1,0 +1,128 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:enablewhen-quantity",
+  "version": "1",
+  "status": "draft",
+  "title": "enableWhen operators on quantity",
+  "item": [
+    {
+      "linkId": "q",
+      "text": "A quantity question",
+      "type": "quantity"
+    },
+    {
+      "linkId": "eq",
+      "text": "Shown when q =",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "=",
+          "answerQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ne",
+      "text": "Shown when q !=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "!=",
+          "answerQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "gt",
+      "text": "Shown when q >",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">",
+          "answerQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "lt",
+      "text": "Shown when q <",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<",
+          "answerQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ge",
+      "text": "Shown when q >=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": ">=",
+          "answerQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "le",
+      "text": "Shown when q <=",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "<=",
+          "answerQuantity": {
+            "value": 70,
+            "unit": "kg",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "exists",
+      "text": "Shown when q exists",
+      "type": "display",
+      "enableWhen": [
+        {
+          "question": "q",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

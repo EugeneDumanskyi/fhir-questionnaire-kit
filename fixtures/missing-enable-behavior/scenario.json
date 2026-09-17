@@ -1,0 +1,72 @@
+{
+  "behaviour": "Several conditions and no enableBehavior: R4 requires one (que-12; INV-D-16, AC-02.3.3, plan D1)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "missing-enable-behavior",
+          "path": "c"
+        }
+      ]
+    },
+    {
+      "name": "lenient applies all, with a diagnostic",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "missing-enable-behavior",
+          "path": "c"
+        }
+      ],
+      "enabled": [
+        "a",
+        "b"
+      ],
+      "steps": [
+        {
+          "name": "A yes only: all does not hold",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "name": "B yes too: all holds",
+          "command": {
+            "type": "SetAnswer",
+            "path": "b",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      ]
+    }
+  ]
+}

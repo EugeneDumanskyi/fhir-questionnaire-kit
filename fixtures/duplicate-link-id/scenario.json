@@ -1,0 +1,31 @@
+{
+  "behaviour": "A linkId used twice anywhere in the tree rejects the load in both modes (AC-01.1.3, INV-D-02)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "duplicate-link-id",
+          "path": "contact/name",
+          "related": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lenient rejects too",
+      "loadMode": "lenient",
+      "rejected": [
+        {
+          "code": "duplicate-link-id",
+          "path": "contact/name",
+          "related": [
+            "name"
+          ]
+        }
+      ]
+    }
+  ]
+}

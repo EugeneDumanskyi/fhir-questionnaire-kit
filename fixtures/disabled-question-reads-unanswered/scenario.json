@@ -1,0 +1,77 @@
+{
+  "behaviour": "A disabled question counts as unanswered for every condition, so a retained answer never satisfies one and != holds (INV-S-04, AC-02.2.4, T4, plan D2)",
+  "cases": [
+    {
+      "name": "a retained answer is invisible to conditions",
+      "loadMode": "strict",
+      "enabled": [
+        "gate",
+        "reason"
+      ],
+      "steps": [
+        {
+          "name": "gate yes: smoker shown, still unanswered",
+          "command": {
+            "type": "SetAnswer",
+            "path": "gate",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "gate",
+            "smoker",
+            "reason"
+          ]
+        },
+        {
+          "name": "smoker yes: = holds, != does not",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "gate",
+            "smoker",
+            "amount"
+          ]
+        },
+        {
+          "name": "gate no: smoker hidden with its answer retained, which no condition reads",
+          "command": {
+            "type": "SetAnswer",
+            "path": "gate",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "gate",
+            "reason"
+          ]
+        }
+      ]
+    }
+  ]
+}
