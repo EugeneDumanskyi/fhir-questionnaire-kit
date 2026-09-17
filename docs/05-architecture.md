@@ -327,7 +327,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 
 ## 11. Go/no-go on Architecture B after spike S1
 
-*M1 AC-9. Evidence: `00-s1-architecture-and-bytes.md`. **Recommendation, 2026-09-16: continue. Awaiting the maintainer's sign-off,** together with the AC-3 field-list review and the budget verdict in `03-nfr.md` §2.*
+*M1 AC-9. Evidence: `00-s1-architecture-and-bytes.md`. **Decision: continue.** Recommended 2026-09-16; approved by the maintainer 2026-09-17, together with the budget verdict in `03-nfr.md` §2. The AC-3 field-list review is still open.*
 
 **What S1 set out to break, and did not.** One DOM-free view model drove a React renderer and a keyed vanilla renderer to identical markup, roles, accessible names and ARIA relationships in every state of the slice, asserted by one contract suite (AC-4). Neither renderer needed a field naming an element, an ARIA attribute or a CSS property (AC-3), and neither computes visibility, validity, ids or response shape. Axe found nothing in 24 runs (AC-5); React 18 and 19 hydrated with no warnings (AC-6); the element kept caret and focus through cycles that change the focused input's own state, on Chromium and WebKit (AC-7); and it rendered under `style-src 'self'` with adopted stylesheets only (AC-8). None of S1's three kill criteria triggered.
 
@@ -339,11 +339,20 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 
 **What M2 keeps from the spike** (P4: nothing is kept by default).
 
-| Kept, as a starting point | Rewritten | Why rewritten |
-|---|---|---|
-| `scripts/measure-bundles.mjs` and its test: the budget gate from M2 | `session/session.ts` | A naive full pass; ADR-0009's compiled graph and recompute set replace it |
-| `tests/browser/` harness and all five specs: they become the SSR (M6), CSP (M7) and accessibility (M8) gates | `definition/definition.ts` | Hand-built input and four checks; M2's R4 codec and INV-D-01…15 replace it |
-| `packages/core/test/deny-lists.ts` and `view-fields.test.ts`: the AC-3 check for M5 | `view/view.ts` | Two control kinds; M5 writes the full field list |
-| `view/ids.ts`, `view/format.ts` | `validation/required.ts` | One rule; M3 |
-| The element's inline-style lint bans and their must-fail tests | `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3 |
-| `@fhirq/themes` token-contract test; `docs/08-dom-contract.md` as the contract's first rows | `packages/react/src/questionnaire.tsx` | M6's hook, tiers and controlled mode |
+| Kept, as a starting point | What it becomes |
+|---|---|
+| `scripts/measure-bundles.mjs` and its test | The budget gate from M2 |
+| The `tests/browser/` harness and all five specs | The SSR (M6), CSP (M7) and accessibility (M8) gates |
+| `packages/core/test/deny-lists.ts` and `view-fields.test.ts` | The AC-3 check for M5 |
+| `view/ids.ts`, `view/format.ts` | Starting points for M5's view |
+| The element's inline-style lint bans and their must-fail tests | The CSP guard for M7 |
+| The `@fhirq/themes` token-contract test; `docs/08-dom-contract.md` | The contract's first rows, completed in M5 and M8 |
+
+| Rewritten | Why |
+|---|---|
+| `session/session.ts` | A naive full pass; ADR-0009's compiled graph and recompute set replace it (M2) |
+| `definition/definition.ts` | Hand-built input and four checks; M2's R4 codec and INV-D-01…15 replace it |
+| `view/view.ts` | Two control kinds; M5 writes the full field list |
+| `validation/required.ts` | One rule; M3 |
+| `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3 |
+| `packages/react/src/questionnaire.tsx` | M6's hook, tiers and controlled mode |
