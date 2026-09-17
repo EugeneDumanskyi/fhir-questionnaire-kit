@@ -25,6 +25,14 @@ import {
  * becomes disabled loses its answers in this same cycle (INV-S-13).
  */
 
+/**
+ * What happens to the answers of an item that becomes disabled (ADR-0011,
+ * SM-02). `retain-exclude` (the default) keeps them out of the response and
+ * conditions, and restores them if the item is enabled again; `discard`
+ * erases them, and resets a repeating group to one empty instance.
+ *
+ * @beta
+ */
 export type RetentionPolicy = 'retain-exclude' | 'discard';
 
 export interface Settlement {

@@ -13,5 +13,5 @@ Add a changeset in the same commit as any public API change (NFR-M-08):
 pnpm changeset
 ```
 
-There is no public API yet, so there are no changesets yet. The first one
-arrives with M2, alongside `docs/07-api.md` and the API Extractor report.
+The public API is described in `docs/07-api.md` and held by the API Extractor
+reports in `packages/*/etc/`; a change to either comes with a changeset.

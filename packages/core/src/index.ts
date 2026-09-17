@@ -1,8 +1,8 @@
 /**
  * `@fhirq/core`: the DOM-free engine.
  *
- * Exports are `@alpha` until step 13 of M2 writes `docs/07-api.md` and the API
- * report (M2 plan D12).
+ * Exports are `@beta` from M2: documented in `docs/07-api.md` and held by the
+ * API report in `etc/core.api.md` (M2 plan D12).
  */
 
 import { compile, type LoadMode } from './definition/compile.js';
@@ -26,12 +26,17 @@ export type { Command, RefusalReason } from './session/guard.js';
 export type { ItemDefinition, NodeState } from './session/publish.js';
 export type { CommandResult, Session, SessionChange, SessionState } from './session/session.js';
 
-/** @alpha M2 fixes the surface in `docs/07-api.md`. */
+/**
+ * How a session loads its questionnaire and treats hidden answers.
+ *
+ * @beta
+ */
 export interface SessionOptions {
   /** `strict` (the default) rejects a questionnaire with any unsupported construct; `lenient` degrades it with diagnostics. */
   readonly loadMode?: LoadMode;
   /** `retain-exclude` (the default) keeps a hidden answer out of the response and restores it on re-enable; `discard` erases it (ADR-0011). */
   readonly retention?: RetentionPolicy;
+  /** The response fields the host owns, stored verbatim for emission (INV-S-32). */
   readonly hostIdentity?: HostIdentity;
 }
 
@@ -46,7 +51,7 @@ const RETENTION: readonly unknown[] = ['retain-exclude', 'discard'];
  * questionnaire is not loadable in the chosen mode (AC-01.1.3, AC-01.3.1), and
  * with `invalid-options` for options it cannot read.
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export function createSession(questionnaire: Questionnaire, options: SessionOptions = {}): Session {
   const { loadMode = 'strict', retention = 'retain-exclude', hostIdentity } = typeof options === 'object' && options !== null ? options : invalidOptions();

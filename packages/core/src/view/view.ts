@@ -11,14 +11,20 @@ import { en, type Messages } from './messages/en.js';
  * own field names and are recorded as such in the deny-list test.
  */
 
+/** @alpha */
 export interface ViewOptions {
   /** Prefixes every id, so two forms on one page or one React tree cannot collide. */
   readonly idPrefix: string;
 }
 
-/** Semantic control kinds. Which element and role each maps to is the DOM contract's business. */
+/**
+ * Semantic control kinds. Which element and role each maps to is the DOM contract's business.
+ *
+ * @alpha
+ */
 export type ControlKind = 'yes-no' | 'short-text';
 
+/** @alpha */
 export interface ViewIssue {
   /** The rule that raised it. Not `code`, which names an HTML element. */
   readonly rule: IssueCode;
@@ -42,12 +48,14 @@ interface ViewNodeCommon {
   readonly leave: () => void;
 }
 
+/** @alpha */
 export interface YesNoChoice {
   readonly value: boolean;
   readonly label: string;
   readonly selected: boolean;
 }
 
+/** @alpha */
 export interface YesNoViewNode extends ViewNodeCommon {
   readonly control: 'yes-no';
   /** `null` is unanswered, which FHIR `boolean` allows and a two-state control cannot show. */
@@ -56,6 +64,7 @@ export interface YesNoViewNode extends ViewNodeCommon {
   readonly set: (value: boolean) => void;
 }
 
+/** @alpha */
 export interface ShortTextViewNode extends ViewNodeCommon {
   readonly control: 'short-text';
   /** `''` when unanswered. */
@@ -64,8 +73,10 @@ export interface ShortTextViewNode extends ViewNodeCommon {
   readonly set: (value: string) => void;
 }
 
+/** @alpha */
 export type ViewNode = YesNoViewNode | ShortTextViewNode;
 
+/** @alpha */
 export interface ErrorSummaryEntry {
   readonly path: string;
   /** The issue and the question it is about, so the link makes sense out of context. */
@@ -74,6 +85,7 @@ export interface ErrorSummaryEntry {
   readonly focusId: string;
 }
 
+/** @alpha */
 export interface ErrorSummary {
   readonly id: string;
   readonly headingId: string;
@@ -81,17 +93,23 @@ export interface ErrorSummary {
   readonly entries: readonly ErrorSummaryEntry[];
 }
 
-/** One coalesced message per cycle (INV-P-03). `cycle` lets a renderer tell a repeat from a re-render. */
+/**
+ * One coalesced message per cycle (INV-P-03). `cycle` lets a renderer tell a repeat from a re-render.
+ *
+ * @alpha
+ */
 export interface Announcement {
   readonly text: string;
   readonly cycle: number;
 }
 
+/** @alpha */
 export interface FocusTarget {
   readonly id: string;
   readonly cycle: number;
 }
 
+/** @alpha */
 export interface ViewModel {
   readonly completed: boolean;
   readonly requiredMarker: string;

@@ -33,7 +33,7 @@ import { recordTrace } from './trace.js';
  * refusal that changes state is `validation-errors`: a refused completion
  * surfaces every issue (SM-01), so it notifies.
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export type CommandResult =
   | { readonly outcome: 'applied' | 'unchanged' | 'deferred' }
@@ -42,7 +42,7 @@ export type CommandResult =
 /**
  * What one cycle did: paths and flags only, never values (NFR-X-04).
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export interface SessionChange {
   readonly command: Command['type'];
@@ -59,13 +59,20 @@ export interface SessionChange {
   readonly responseChanged: boolean;
 }
 
-/** @alpha M2 fixes the surface in `docs/07-api.md`. */
+/**
+ * One immutable snapshot. A new object only when a cycle changed something
+ * visible.
+ *
+ * @beta
+ */
 export interface SessionState {
+  /** `completed` is final (AC-05.1.4). */
   readonly status: 'in-progress' | 'completed';
   /** Increments once per cycle that changed anything visible. */
   readonly cycle: number;
   /** Effectively enabled nodes only, in document order. */
   readonly nodes: readonly NodeState[];
+  /** Whether a completion has been refused, so every issue is surfaced. */
   readonly completionRefused: boolean;
   /** The cycle that produced this state; `null` for the initial state. */
   readonly change: SessionChange | null;
@@ -75,11 +82,14 @@ export interface SessionState {
  * The store contract `useSyncExternalStore` needs: `getSnapshot` returns the
  * same reference until a cycle changes something visible.
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export interface Session {
+  /** Called once per cycle that changed something visible. Returns the unsubscribe function. A listener that throws becomes a diagnostic. */
   readonly subscribe: (listener: (change: SessionChange) => void) => () => void;
+  /** The current snapshot; the same reference until a cycle changes something visible. */
   readonly getSnapshot: () => SessionState;
+  /** Runs the command as one cycle. A command sent from a listener is `deferred` and runs in its own cycle straight after. */
   readonly dispatch: (command: Command) => CommandResult;
   /** Load findings, then runtime ones as they happen. */
   readonly diagnostics: readonly Diagnostic[];
