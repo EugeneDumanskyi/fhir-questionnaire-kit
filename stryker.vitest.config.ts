@@ -13,6 +13,11 @@ export default defineConfig({
     root: './packages/core',
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    // The recompute-set check at the scale ceiling takes half the suite's time
+    // and kills nothing the generated properties do not: they assert the same
+    // BFS equality on small trees. Every static mutant reruns the whole suite,
+    // so it stays in `pnpm test` and out of here (step 12, S2 K1).
+    exclude: ['test/property/ceiling.test.ts'],
     // Each mutant reruns the generated properties; a few cases per property is enough to kill with.
     env: { FHIRQ_PROPERTY_RUNS: '12' },
   },
