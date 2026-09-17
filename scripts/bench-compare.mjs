@@ -9,7 +9,8 @@
  *   node scripts/bench-compare.mjs --update                write the baseline from results (an explicit PR only)
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -52,6 +53,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const baselinePath = args[1] ?? `${root}benchmarks/baseline.json`;
   const results = JSON.parse(readFileSync(resultsPath, 'utf8'));
   if (process.argv.includes('--update')) {
+    mkdirSync(dirname(baselinePath), { recursive: true });
     writeFileSync(baselinePath, `${JSON.stringify({ ...results, $comment: 'Measured on the CI runner. Change only through an explicit PR (M2 plan D7).' }, null, 2)}\n`);
     console.log(`baseline written: ${baselinePath}`);
   } else {

@@ -26,3 +26,20 @@ evaluation) and the matrix rows are enforced from M10
   asserts a diagnostic asserts its code and path.
 - **Benchmark fixtures are separate** and carry their committed baseline; see
   `00-s0-instrument-survey.md` §4 for the sizes they are anchored to.
+
+## Benchmark fixtures (`bench/`)
+
+Generated, never hand-edited: `node scripts/gen-bench-fixtures.mjs` writes them
+from a fixed seed, and `--check` fails if a committed file differs.
+
+| File | Shape | Measures |
+|---|---|---|
+| `small-25.json` | 25 items, S0's median instrument | NFR-P-01 and P-02, with absolute budgets |
+| `large-500.json` | 500 items, S0's p90 | NFR-P-01 and P-02, held against the baseline |
+| `ceiling.json` | **Synthetic stress case**, not a real instrument: 1,000 items, 500 conditions, a repeating group of 20 items taken to 50 instances, nesting 10 | NFR-P-08 retained heap; the NFR-P-09 recompute-set test; reference timings that are reported, not gated |
+
+`pnpm bench` takes the median of five runs into `reports/bench/results.json`;
+`pnpm bench:compare` fails above 20 % of `benchmarks/baseline.json`. The
+baseline is measured on the CI runner and changes only through an explicit PR
+(`06-roadmap.md` M2 D7): download the `bench` artifact from a green run and
+write it with `node scripts/bench-compare.mjs <results.json> --update`.
