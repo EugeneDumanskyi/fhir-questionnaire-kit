@@ -117,7 +117,7 @@ Legend: **AR** aggregate root · **E** entity (identity, lifecycle) · **VO** va
 | **Definition** | AR | Immutable after construction. Owns the item tree, the dependency graph and load diagnostics. One per session. |
 | Item definition | E | Identity = `linkId`. Carries type, `required`, `repeats`, constraint set, text, answer options or value set reference, units, conditions, extensions of interest. |
 | Enable-when condition | VO | `(question linkId, operator, expected answer)`. Belongs to exactly one item definition. |
-| Enable behaviour | VO | `all` \| `any`; defaults to `all` (AC-02.3.3). |
+| Enable behaviour | VO | `all` \| `any`. R4 requires one when an item has more than one condition; `lenient` load applies `all` when it is missing (AC-02.3.3, INV-D-16). |
 | Answer option | VO | Coded option declared inline. |
 | Value set reference | VO | Canonical URL. Resolution is **not** a BC1 concern — BC1 only records that it exists. |
 | Unit option | VO | `(system, code, display)` permitted for a `quantity` item. |
@@ -305,7 +305,7 @@ erDiagram
         string type "supported set, or unsupported in lenient"
         boolean required
         boolean repeats
-        string enableBehavior "all (default) | any"
+        string enableBehavior "all | any; required with 2+ conditions"
         string text "plain; rich text only via sanitizer"
         string itemControl "hint, optional"
     }
@@ -408,7 +408,7 @@ erDiagram
 **Reading notes.**
 
 1. **Item definition vs item node** is the relationship everything else hangs on. Conditions, constraints and options attach to the *definition*; answers, enablement and surfacing attach to the *node*. A definition inside a repeating group maps to many nodes — this is what makes AC-03.2.3 (independent per-instance conditional state) fall out of the model rather than be special-cased.
-2. **A node has either answers or children, never both.** Group nodes own children (directly, or through repeat instances); non-group nodes own answers. `display` nodes own neither.
+2. **A node has either answers or children, never both.** Group nodes own children (directly, or through repeat instances); non-group nodes own answers. `display` nodes own neither. R4 allows items nested under a question; this model does not (INV-D-17).
 3. **Visible projection is the funnel.** Emission, validation and scoring all hang off it, not off the session. Only the snapshot reads the session directly. The ER shape therefore *enforces* AC-05.3.2 ("no field of the emitted response derived from disabled-item state").
 4. **Option set is keyed by URL, not by item.** Two items referencing the same value set share one resolution (AC-07.1.1: at most once per distinct URL).
 
@@ -422,12 +422,12 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 
 | ID | Invariant | Strict | Lenient | Source |
 |---|---|---|---|---|
-| INV-D-01 | The input is a FHIR R4 `Questionnaire`. | Reject | Reject | AC-01.1.3 |
+| INV-D-01 | The input is a FHIR R4 `Questionnaire` that satisfies R4 rules que-1, que-4, que-6, que-7 and que-10. | Reject | Reject | AC-01.1.3; `06-roadmap.md` M2 D4 |
 | INV-D-02 | Every `linkId` is unique across the whole item tree. | Reject | Reject | AC-01.1.3 |
 | INV-D-03 | Every item type is in the supported set. | Reject, listing every offending `linkId` + type | Placeholder; excluded from validation and emission; diagnostic | AC-01.3.1, AC-01.3.2 |
 | INV-D-04 | Every condition's question `linkId` exists. | Reject | Condition evaluates `false`; diagnostic | AC-02.5.2 |
 | INV-D-05 | The dependency graph is acyclic. The error names every `linkId` in each cycle. | Reject | Reject — no evaluation is attempted | AC-02.5.1 |
-| INV-D-06 | Every condition's operator is meaningful for its question's type (e.g. no `>` on string). | Diagnostic | Diagnostic | AC-02.5.3 |
+| INV-D-06 | Every condition's operator and `answer[x]` type are meaningful for its question's type (e.g. no `>` on string); `integer` and `decimal` may be compared with each other. A condition that breaks this evaluates `false`. | Diagnostic | Diagnostic | AC-02.5.3; `06-roadmap.md` M2 D3 |
 | INV-D-07 | Nesting depth ≤ the published ceiling; dependency chain depth ≤ the published ceiling. | Reject | Reject | NFR-P-05 |
 | INV-D-08 | A value set reference with no resolver configured does **not** fail load; affected items carry `unresolved-options`. | — | — | AC-01.1.2 |
 | INV-D-09 | An expression binding with no evaluator configured does **not** fail load; it raises a diagnostic. | — | — | AC-07.3.1 |
@@ -437,6 +437,10 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | INV-D-13 | Dependency edges whose question sits inside a repeating group resolve in the dependent's *nearest shared repeat instance*; edges that cross into a repeat from outside it are a load finding. | Reject | Condition `false`; diagnostic | DECISION (§9 T3) |
 | INV-D-14 | No condition tests an expression-bound (calculated) item: the evaluator's inputs are opaque to the dependency graph, so acyclicity (INV-D-05) could not be proven. | Reject, naming both `linkId`s | Condition `false`; diagnostic | AC-02.5.5 |
 | INV-D-15 | No expression extension other than `calculatedExpression` is silently ignored: `enableWhenExpression`, `answerExpression`, `candidateExpression` and `initialExpression` are unsupported constructs; context-only extensions (`variable`, `launchContext`) raise a diagnostic. | Reject, naming the extension and `linkId` path | `enableWhenExpression` ⇒ item disabled; `answerExpression`/`candidateExpression` ⇒ no options; `initialExpression` ⇒ ignored; each with a diagnostic | AC-01.3.3 |
+| INV-D-16 | An item with more than one condition declares `enableBehavior`. R4 defines no default (rule que-12). | Reject, naming the `linkId` path | `all` applied; diagnostic | AC-02.3.3 |
+| INV-D-17 | A question item has no child items. R4 allows them; a node here has answers or children, never both (§4 note 2). | Reject, naming the `linkId` path | Children become unsupported placeholders; diagnostic | AC-01.3.1, AC-01.3.2; `06-roadmap.md` M2 D4 |
+| INV-D-18 | `initial[x]` and `answerOption.initialSelected` are not supported; items start empty. | Ignored; diagnostic | Ignored; diagnostic | `06-roadmap.md` M2 D4 |
+| INV-D-19 | Every answer option's value is a `Coding`, `string`, `integer` or `date`. | Reject, listing each offending `linkId` and value type | Item becomes an unsupported placeholder; diagnostic | AC-01.3.1, AC-01.3.2; `06-roadmap.md` M2 D4 |
 
 ### 5.2 BC2 — Response Session
 
@@ -445,9 +449,9 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | ID | Invariant | Source |
 |---|---|---|
 | INV-S-01 | `effective(n) = own(n) ∧ effective(parent(n))`; root nodes have an enabled parent. A disabled group disables its whole subtree regardless of descendants' own conditions. | AC-02.4.1 |
-| INV-S-02 | `own(n)` for an item with no conditions is `true`; with conditions it is their conjunction under `all` (also the default) or disjunction under `any`. | AC-02.3.1–3 |
+| INV-S-02 | `own(n)` for an item with no conditions is `true`; with conditions it is their conjunction under `all` or disjunction under `any`. One condition needs no `enableBehavior`; with more, a missing one has already failed load (`strict`) or been set to `all` (`lenient`, INV-D-16). | AC-02.3.1–3 |
 | INV-S-03 | On re-enabling a group, descendants take their *own* conditions again — never a blanket enable. (Follows from INV-S-01 being derived, not stored.) | AC-02.4.2 |
-| INV-S-04 | Conditions read only the answers of *effectively enabled* question nodes. A retained answer on a disabled node never satisfies a condition. | DECISION (§9 T4) |
+| INV-S-04 | Conditions read only the answers of *effectively enabled* question nodes. A retained answer on a disabled node never satisfies a condition. A disabled node reads as unanswered, so it satisfies `!=`, which R4 defines as "no answer is equal" (`06-roadmap.md` M2 D2). | DECISION (§9 T4) |
 | INV-S-05 | After any command, all enablement is settled before the cycle ends; no observer ever sees an intermediate state. | AC-02.2.1 |
 | INV-S-06 | Settled state is independent of item declaration order. | AC-02.2.2 |
 | INV-S-07 | Only the recompute set of the changed node(s) is re-evaluated. | AC-02.2.3, NFR-P-09 |
@@ -564,7 +568,7 @@ Presentation lifecycles (mount, detach, reattach, hydrate markup) are deliberate
 stateDiagram-v2
     [*] --> Building : create from Definition, hydrate from response, or restore snapshot
 
-    Building --> Rejected : structural invariant violated (INV-D-01..07, 13 per load mode)
+    Building --> Rejected : structural invariant violated (INV-D-01..07, 13..17, 19 per load mode)
     Building --> InProgress : initial evaluation settled
     Building --> Completed : restored snapshot whose status is completed
 
@@ -874,7 +878,7 @@ Restore from a snapshot skips steps 2–5: a snapshot is engine state produced b
 |---|---|---|
 | **T1** | Nothing says whether a `completed` session can be edited. FHIR allows `amended`, but it is not in the supported status set. | **Terminal.** Editing a completed response means hydrating a new session. `amended` goes in the conformance matrix as `not supported`. |
 | **T2** | AC-06.1.2 requires lossless round-trip; if the stored response was `completed`, does the hydrated session start `completed`? | **Always `in-progress`.** Resume (US-06.1) is about unfinished forms, and a hydrated session that is born completed would be un-editable under T1. Define the round-trip invariant (INV-E-06) over item content and host identity, excluding `status` as well as `authored`. |
-| **T3** | AC-03.2.3 covers conditions between siblings in the same repeat instance. R4 is silent on a condition *outside* a repeating group referring to an item *inside* one — which instance counts? | **Nearest shared repeat instance** for edges within a group; edges crossing into a repeat from outside are a load finding (reject strict / `false` lenient). "Any instance" and "first instance" both invent semantics a clinical author did not write. |
+| **T3** | AC-03.2.3 covers conditions between siblings in the same repeat instance. Which instance counts when a condition *outside* a repeating group refers to an item *inside* one? *(Corrected 2026-09-17: this row said R4 is silent. It is not: `enableWhen.question` resolves to the nearest occurrence along the ancestor axis, then preceding, then following. `06-roadmap.md` M2 D5.)* | **Nearest shared repeat instance** for edges within a group, which is R4's ancestor axis; edges crossing into a repeat from outside are a load finding (reject strict / `false` lenient). R4's rule there picks an instance by document position, not by anything the author said about instances, so the kit does not implement it; "any instance" and "first instance" would invent semantics outright. |
 | **T4** | Requirements do not say whether a condition may read a disabled node's retained answer. | **No** (INV-S-04). It is the only reading under which retention is invisible downstream, and it matches R4's guidance to treat a disabled question as unanswered. Without it, AC-02.2.1's chain collapse would not happen under `retain-exclude`. |
 | **T5** | Retention is specified for *disablement*. Is a removed repeat instance retained (undo)? And what does `discard` do to a disabled group's instances? | **Removal is destruction** — no undo in the domain; presentation may confirm. **`discard` resets** a disabled repeating group to one empty instance. |
 | **T6** | AC-06.3.2 says quarantined answers are "listed in the diagnostics"; NFR-X-04 says diagnostics never carry answer values. | **Diagnostics list the path and types, not the value.** The host still holds the original response if it wants to recover it. |
