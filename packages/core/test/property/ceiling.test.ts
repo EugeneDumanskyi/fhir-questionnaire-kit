@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { compile } from '../../src/definition/compile.js';
 import { parseQuestionnaire } from '../../src/fhir/r4/parse.js';
@@ -19,6 +19,9 @@ import { Oracle, type ModelCommand } from '../oracle.js';
  * independent pruned BFS, lies inside the scoped closure, and the state equals
  * the oracle's. The recompute set stays a small fraction of the ~2,000 nodes.
  */
+
+// About two seconds on a runner; the default five would flake on a loaded one.
+vi.setConfig({ testTimeout: 30_000 });
 
 const fixture = JSON.parse(readFileSync(new URL('../../../../fixtures/bench/ceiling.json', import.meta.url), 'utf8')) as unknown;
 const yes = [{ kind: 'boolean', value: true }] as const;

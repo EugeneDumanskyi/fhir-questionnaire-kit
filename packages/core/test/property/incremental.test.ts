@@ -1,5 +1,5 @@
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { compile } from '../../src/definition/compile.js';
 import type { Command, ItemPath } from '../../src/index.js';
@@ -25,6 +25,8 @@ import { commandSequences, concretise, questionnaires, shuffled } from './genera
  * stays the gate on the code as written (spike S2).
  */
 const RUNS = Number(process.env['FHIRQ_PROPERTY_RUNS'] ?? 300);
+// A property runs for one to three seconds on a runner; the default five would flake on a loaded one.
+vi.setConfig({ testTimeout: 30_000 });
 const retention = fc.constantFrom<Retention>('retain-exclude', 'discard');
 
 function start(input: DefinitionInput, policy: Retention): Session {
