@@ -13,12 +13,18 @@ import { commandSequences, concretise, questionnaires, shuffled } from './genera
 
 /**
  * M2 AC-4 and AC-5 over generated questionnaires and command sequences
- * (ADR-0009 verification, INV-S-06, INV-S-07, ADR-0002). Each property runs
- * `RUNS` generated cases; a failure prints fast-check's seed and the shrunk
- * counterexample, which replays with `{ seed, path }`.
+ * (ADR-0009 verification, INV-S-06, INV-S-07, ADR-0002). A failure prints
+ * fast-check's seed and the shrunk counterexample, which replays with
+ * `{ seed, path }`.
  */
 
-const RUNS = 300;
+/**
+ * 300 cases each in the suite. Under mutation testing every surviving mutant
+ * reruns these, so `stryker.vitest.config.ts` lowers the count: a handful of
+ * cases already kills what these properties can kill, and the full count
+ * stays the gate on the code as written (spike S2).
+ */
+const RUNS = Number(process.env['FHIRQ_PROPERTY_RUNS'] ?? 300);
 const retention = fc.constantFrom<Retention>('retain-exclude', 'discard');
 
 function start(input: DefinitionInput, policy: Retention): Session {

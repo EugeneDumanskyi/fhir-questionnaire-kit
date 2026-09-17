@@ -13,5 +13,7 @@ export default defineConfig({
     root: './packages/core',
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    // Each mutant reruns the generated properties; a few cases per property is enough to kill with.
+    env: { FHIRQ_PROPERTY_RUNS: '12' },
   },
 });
