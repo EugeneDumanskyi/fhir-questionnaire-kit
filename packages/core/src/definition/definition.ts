@@ -1,4 +1,5 @@
 import type { AnswerValue } from '../kernel/answer.js';
+import { diagnostic, type DiagnosticCode } from '../kernel/diagnostic.js';
 import { FhirqError } from '../kernel/error.js';
 import { itemPath, type ItemPath } from '../kernel/path.js';
 
@@ -55,7 +56,7 @@ const TYPE_OF_ANSWER: Readonly<Record<ItemType, string>> = { boolean: 'boolean',
 export function buildDefinition(input: DefinitionInput): Definition {
   const byLinkId = new Map<string, ItemInput>();
   for (const item of input.items) {
-    if (byLinkId.has(item.linkId)) throw new FhirqError('definition-rejected', item.linkId);
+    if (byLinkId.has(item.linkId)) reject('duplicate-link-id', item.linkId);
     byLinkId.set(item.linkId, item);
   }
 
@@ -64,9 +65,9 @@ export function buildDefinition(input: DefinitionInput): Definition {
     for (const condition of conditions) {
       const target = byLinkId.get(condition.question);
       const mismatched = target !== undefined && typeof condition.answer !== TYPE_OF_ANSWER[target.type];
-      if (target === undefined || target === item || mismatched) {
-        throw new FhirqError('definition-rejected', item.linkId);
-      }
+      if (target === undefined) reject('dangling-condition', item.linkId);
+      if (target === item) reject('dependency-cycle', item.linkId);
+      if (mismatched) reject('meaningless-condition', item.linkId);
     }
     return {
       linkId: item.linkId,
@@ -80,4 +81,8 @@ export function buildDefinition(input: DefinitionInput): Definition {
   });
 
   return { items, byPath: new Map(items.map((item) => [item.path, item])) };
+}
+
+function reject(code: DiagnosticCode, linkId: string): never {
+  throw new FhirqError('definition-rejected', [diagnostic(code, 'error', itemPath(linkId))]);
 }

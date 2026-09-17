@@ -1,4 +1,5 @@
 import type { AnswerValue } from '../kernel/answer.js';
+import { diagnostic, type Diagnostic } from '../kernel/diagnostic.js';
 import type { Issue } from '../kernel/issue.js';
 import { itemPath, type ItemPath } from '../kernel/path.js';
 import type { Definition, ItemDefinition } from '../definition/definition.js';
@@ -58,10 +59,6 @@ export interface SessionState {
   readonly completionRefused: boolean;
   /** The cycle that produced this state; `null` for the initial state. */
   readonly change: SessionChange | null;
-}
-
-export interface Diagnostic {
-  readonly code: 'listener-threw';
 }
 
 /**
@@ -177,7 +174,7 @@ export function createResponseSession(definition: Definition, validate: Validato
         listener(change);
       } catch {
         // A throwing host collaborator becomes a diagnostic, never a failed cycle.
-        diagnostics.push({ code: 'listener-threw' });
+        diagnostics.push(diagnostic('listener-threw', 'warning', null));
       }
     }
     return completion === 'refused' ? { outcome: 'refused', reason: 'validation-errors' } : { outcome: 'applied' };
