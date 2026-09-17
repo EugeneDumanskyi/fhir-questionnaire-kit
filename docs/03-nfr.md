@@ -60,7 +60,7 @@ This is the competitive position (Brief §4). It is the number an adopting team'
 | NFR-S-04 | Tree-shaking effectiveness: importing only the headless core from the React package | ≤ 60% of full package size reaches the bundle | Target |
 | NFR-S-05 | Peer dependencies | React ≥ 18 only, on `@fhirq/react`; no peer deps on any other package | Published |
 | NFR-S-06 | Direct development dependencies across the monorepo | ≤ 40 | Target |
-| NFR-S-07 | Dev dependency licence allowlist | MIT, Apache-2.0, BSD-2/3-Clause, ISC, 0BSD; **plus MPL-2.0 for dev-only tools that are never bundled or redistributed**, such as the automated accessibility engine. No other licence, and no MPL-2.0 code in any published package (enforced together with NFR-S-08) | Gate |
+| NFR-S-07 | Dev dependency licence allowlist | MIT, Apache-2.0, BSD-2/3-Clause, ISC, 0BSD; **plus MPL-2.0 for dev-only tools that are never bundled or redistributed**, such as the automated accessibility engine. No other licence, and no MPL-2.0 code in any published package (enforced together with NFR-S-08). Checked against each **direct** dev dependency's `license` field (ADR-0018); transitive dev-only packages are not gated | Gate |
 | NFR-S-08 | Published package contents | dist + types + README + LICENSE + NOTICE only; no source maps to source, no tests, no fixtures | Gate |
 
 **ASSUMPTION: every byte figure in NFR-S-02/03/04 and the count in NFR-S-06.** These should be re-baselined after the core engine spike, not before. The failure mode to avoid is setting a budget so tight that the accessibility and validation code cannot fit, then quietly raising it — adopters who relied on the published figure would rightly stop trusting the others.
