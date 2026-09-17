@@ -1,7 +1,7 @@
-import type { AnswerValue } from '../kernel/answer.js';
+import type { Answer } from '../kernel/answer.js';
 import type { Issue } from '../kernel/issue.js';
 import type { ItemPath } from '../kernel/path.js';
-import type { ItemDefinition } from '../definition/definition.js';
+import type { ItemDef } from '../definition/compile.js';
 
 /**
  * The visible projection (`04-domain.md` §1): effectively enabled nodes only,
@@ -10,8 +10,8 @@ import type { ItemDefinition } from '../definition/definition.js';
  */
 export interface VisibleNode {
   readonly path: ItemPath;
-  readonly item: ItemDefinition;
-  readonly answer: AnswerValue | undefined;
+  readonly item: ItemDef;
+  readonly answers: readonly Answer[];
 }
 
 export interface VisibleProjection {

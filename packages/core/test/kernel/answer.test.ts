@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isAnswer, isCoding } from '../../src/kernel/answer.js';
+import { copyAnswer, isAnswer, isCoding, sameAnswer } from '../../src/kernel/answer.js';
 
 describe('answers are checked, not trusted (04-domain.md §7.1)', () => {
   it.each([
@@ -53,5 +53,22 @@ describe('answers are checked, not trusted (04-domain.md §7.1)', () => {
     expect(isCoding({ code: 'a', system: 'urn:x' })).toBe(true);
     expect(isCoding({ code: 'a', system: 7 })).toBe(false);
     expect(isCoding(undefined)).toBe(false);
+  });
+});
+
+describe('answers stored by the session are copies (INV-S-10)', () => {
+  it('keeps only the fields the kit reads, frozen', () => {
+    const quantity = copyAnswer({ kind: 'quantity', value: { value: 70, unit: 'kg', comparator: '<' } as never });
+    expect(quantity).toEqual({ kind: 'quantity', value: { value: 70, unit: 'kg' } });
+    expect(Object.isFrozen(quantity) && Object.isFrozen(quantity.value)).toBe(true);
+    expect(copyAnswer({ kind: 'string', value: 'x' })).toEqual({ kind: 'string', value: 'x' });
+  });
+
+  it('compares answers structurally on those fields', () => {
+    expect(sameAnswer({ kind: 'coding', value: { system: 'a', code: 'b' } }, { kind: 'coding', value: { code: 'b', system: 'a' } })).toBe(true);
+    expect(sameAnswer({ kind: 'coding', value: { code: 'b', display: 'B' } }, { kind: 'coding', value: { code: 'b' } })).toBe(false);
+    expect(sameAnswer({ kind: 'quantity', value: { value: 1, unit: 'kg' } }, { kind: 'quantity', value: { value: 1, unit: 'g' } })).toBe(false);
+    expect(sameAnswer({ kind: 'integer', value: 1 }, { kind: 'decimal', value: 1 })).toBe(false);
+    expect(sameAnswer({ kind: 'date', value: '2024' }, { kind: 'date', value: '2024' })).toBe(true);
   });
 });

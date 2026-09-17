@@ -197,6 +197,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 | D12 | API report scope and the session entry point | Reports for `@fhirq/core` and `@fhirq/core/view`, view still `@alpha`; React, element and themes follow in M6–M8. `createSession(questionnaire, options?)` takes R4 JSON. The recompute trace is internal; tests import it by relative path |
 | D13 | Invariants that depend on M4's ports | M2 records value-set references and expression bindings, and neither fails load (INV-D-08, INV-D-09). INV-D-09's "no evaluator" diagnostic is raised from M2. `unresolved-options`, refusing a coded `SetAnswer` while options are unresolved, and lenient `answerExpression` as "no options" land in M4. ADR-0003's refusal on calculated items lands in M2 |
 | D14 | R4 TypeScript types | A hand-written minimal subset in `fhir/r4/types.ts`, headed as authored rather than generated; input is narrowed from `unknown` at runtime |
+| D15 | ADR-0009's pruning against its own Verification line *(raised in step 6, decided 2026-09-17)* | Settling stops at a node whose own condition and effective enablement did not change, as the Decision says. The NFR-P-09 test asserts the trace is contained in the scoped closure, and equals an independent BFS that expands only through nodes whose own or effective state differs between from-scratch evaluations before and after. ADR-0009's Verification carries the dated amendment |
 
 ---
 

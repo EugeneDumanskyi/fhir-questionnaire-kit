@@ -4,7 +4,7 @@ import { version } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { AMOUNT, SLICE, SMOKER } from '../../core/test/slice.js';
+import { AMOUNT, bool, SLICE, SMOKER } from '../../core/test/slice.js';
 
 /**
  * AC-6's Node half (M1): server rendering needs no DOM. This file runs twice,
@@ -38,7 +38,7 @@ describe(`server rendering on React ${version}`, () => {
 
   it('renders settled state from a host-owned session', () => {
     const session = createSession(SLICE);
-    session.dispatch({ type: 'SetAnswer', path: SMOKER, value: true });
+    session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(true) });
     session.dispatch({ type: 'RequestCompletion' });
 
     const html = renderToString(<Questionnaire session={session} />);

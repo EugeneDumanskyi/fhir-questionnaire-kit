@@ -168,3 +168,25 @@ export interface Questionnaire extends FhirElement {
   readonly code?: readonly Coding[];
   readonly item?: readonly QuestionnaireItem[];
 }
+
+export interface Identifier extends FhirElement {
+  readonly use?: 'usual' | 'official' | 'temp' | 'secondary' | 'old';
+  readonly type?: CodeableConcept;
+  readonly system?: string;
+  readonly value?: string;
+  readonly period?: unknown;
+  readonly assigner?: Reference;
+}
+
+/**
+ * The `QuestionnaireResponse` fields the host owns (AC-05.1.2). Stored verbatim
+ * and emitted as given; the kit never invents, infers or defaults any of them.
+ *
+ * @alpha M2 fixes the surface in `docs/07-api.md`.
+ */
+export interface HostIdentity {
+  readonly subject?: Reference;
+  readonly author?: Reference;
+  readonly encounter?: Reference;
+  readonly identifier?: Identifier;
+}

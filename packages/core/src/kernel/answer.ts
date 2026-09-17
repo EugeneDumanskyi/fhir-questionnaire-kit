@@ -80,3 +80,36 @@ function optionalText(value: unknown): boolean {
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+
+/**
+ * A frozen copy holding only the fields the kit reads, so a host that mutates
+ * the object it dispatched cannot reach into engine state afterwards.
+ */
+export function copyAnswer(answer: Answer): Answer {
+  switch (answer.kind) {
+    case 'coding': {
+      const { system, code, display } = answer.value;
+      return Object.freeze({ kind: answer.kind, value: Object.freeze(present({ system, code, display })) });
+    }
+    case 'quantity': {
+      const { value, unit, system, code } = answer.value;
+      return Object.freeze({ kind: answer.kind, value: Object.freeze({ value, ...present({ unit, system, code }) }) });
+    }
+    default:
+      return Object.freeze({ ...answer });
+  }
+}
+
+/** Structural equality over the fields the kit reads. */
+export function sameAnswer(a: Answer, b: Answer): boolean {
+  if (a.kind !== b.kind) return false;
+  if (typeof a.value !== 'object') return a.value === b.value;
+  const left: Readonly<Record<string, unknown>> = { ...a.value };
+  const right: Readonly<Record<string, unknown>> = { ...(b.value as object) };
+  return ['value', 'unit', 'system', 'code', 'display'].every((key) => left[key] === right[key]);
+}
+
+/** The string fields that are present, so a copy never carries an `undefined` property. */
+function present<T extends Readonly<Record<string, string | undefined>>>(fields: T): { [K in keyof T]?: string } {
+  return Object.fromEntries(Object.entries(fields).filter(([, value]) => typeof value === 'string')) as { [K in keyof T]?: string };
+}

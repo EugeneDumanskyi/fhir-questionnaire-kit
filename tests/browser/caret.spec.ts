@@ -44,7 +44,7 @@ async function probe(page: Page): Promise<Probe> {
 /** Waits until the session has settled the given answer: the cycle has run. */
 async function cycleSettled(page: Page, answer: string | undefined): Promise<void> {
   await page.waitForFunction(
-    (expected) => (window as unknown as TestWindow).fhirq.session.getSnapshot().nodes[1]?.answer === (expected ?? undefined),
+    (expected) => (window as unknown as TestWindow).fhirq.session.getSnapshot().nodes[1]?.answers[0]?.value === (expected ?? undefined),
     answer ?? null,
   );
 }
