@@ -189,7 +189,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 | D4 | R4 constructs the domain model does not cover | (a) Items nested under a question: `strict` rejects; `lenient` turns the children into unsupported placeholders with a diagnostic (INV-D-17). (b) `initial[x]` and `answerOption.initialSelected`: ignored with a diagnostic in both modes (INV-D-18). (c) Option values `Coding`, `string`, `integer` and `date` are supported; `time` and `Reference` options are handled like unsupported item types (INV-D-19). (d) R4 rules que-1, que-4, que-6, que-7 and que-10 are INV-D-01 rejections in both modes; que-0 is a warning and ignored. Of the other rules, que-2 is INV-D-02, que-12 is INV-D-16, que-8, que-11 and que-13 concern `initial[x]` (b), and que-3, que-5 and que-9 are not enforced. (a), (b) and (c) each get a `not supported` matrix row |
 | D5 | T3's premise | R4 is not silent: `enableWhen.question` resolves to the nearest occurrence along the ancestor axis, then preceding, then following. Inside a group, the nearest shared instance is that ancestor axis. From outside, R4's answer depends on document position; AC-02.5.4's rejection stays, T3 and `02-requirements.md` §17 are corrected, and the matrix reason reads "spec rule depends on document position; not supported" |
 | D6 | Where the conformance matrix lives; what an M2 fixture holds | Rows in `docs/conformance/matrix.json` as `{id, feature, status, reason, tests[]}`, shape-tested from M2; M10 enforces the links and renders the page. This brings §5's "rows from M3" forward for M2's own rows. An M2 fixture is `questionnaire.json` plus `scenario.json` (commands, expected enabled paths, expected diagnostic codes and paths); `expected-response.json` joins in M3 |
-| D7 | Benchmark fixtures and gate | A seeded, committed generator shaped by S0: 25 items, 500 items, and a ceiling labelled synthetic (1,000 items, 500 conditions, 50 instances × 20 items, depth 10). Baselines are committed JSON measured on the CI runner and change only through an explicit PR. The gate compares the median of ≥ 5 runs and fails above 20 % after one automatic re-run. P-08 heap is gated for regression; its 8 MB stays a target |
+| D7 | Benchmark fixtures and gate | A seeded, committed generator shaped by S0: 25 items, 500 items, and a ceiling labelled synthetic (1,000 items, 500 conditions, 50 instances × 20 items, depth 10). Baselines are committed JSON measured on the CI runner and change only through an explicit PR. The gate compares the median of ≥ 5 runs and fails above 20 % after one automatic re-run. P-08 heap is gated for regression; its 8 MB stays a target. **Revised 2026-09-17 (option (a), maintainer's decision):** five re-runs on unchanged `main` measured timings up to 2.2× apart across runner jobs and 25 % apart on one CPU model, but within about 1 % inside a job. Timings are therefore compared with the merge base benchmarked in the same job, runs alternating, failing above 20 % after one re-run; heap stays against the committed baseline; the committed timings are published reference figures |
 | D8 | NFR-P-04's 50 repeat instances | Deliberate headroom, recorded in `03-nfr.md` and tested at 50. No check against real response data |
 | D9 | M1's validation, view and renderers | `validateRequired` and the completion verdict stay wired until M3. `view/view.ts` changes only enough to compile against the new snapshot and keep rendering `boolean` and `string`. The browser test pages and the React SSR test switch to R4 JSON |
 | D10 | New dev dependencies | `fast-check` (MIT), `@stryker-mutator/core` and `@stryker-mutator/vitest-runner` (Apache-2.0), `@microsoft/api-extractor` (MIT). Benchmarks use Vitest's built-in `bench` |
@@ -212,9 +212,9 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 
-**Still open.**
-- **AC-9: the benchmark gate.** Unchanged code measured up to 2.2× apart across hosted runners, and 25 % apart on the same CPU model. A committed baseline at 20 % therefore fails on noise, so the job is not required. Its form (D7) is back with the maintainer. Heap (2.09–2.14 MB) and the absolute 25-item budgets are stable.
-- **The core bytes read against `03-nfr.md` §2's tripwire.** See the reading there.
+- **AC-9.** `scripts/bench-compare.mjs` in the `Benchmarks` job: timings against the merge base in the same job, heap against `benchmarks/baseline.json`, the 25-item absolute budgets, with a fixture that must fail. D7 was revised for it after a committed timing baseline failed on runner noise.
+
+**Still open.** The core bytes read against `03-nfr.md` §2's tripwire; see the reading there.
 
 **Found on the way.** Modifier extensions are rejected in both modes, because R4 forbids ignoring them (INV-D-01). The public `Questionnaire` type leaves nested R4 elements `unknown`, to keep fifteen R4 shapes out of NFR-U-05's count, which stands at 50 of 60 (`07-api.md` §2). Type-aware linting is on.
 
@@ -491,7 +491,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Core coverage ≥ 95 / 90 | M2 | NFR-Q-01 |
 | Mutation ≥ 80 on engine modules, incremental on PRs | M2 | NFR-Q-03, A6 |
 | Bundle budgets per entry point | M2 core · M5 view · M6 react · M7 element and IIFE · M8 themes | NFR-S-02/03 |
-| Benchmarks against committed baselines, > 20 % regression fails | M2 — **not yet required:** the timing gate's form is open after runner variance (M2 AC-9, D7) | `03-nfr.md` §1 |
+| Benchmarks: timings against the merge base in the same job, heap against the committed baseline, > 20 % regression fails | M2 (D7 as revised) | `03-nfr.md` §1 |
 | Recompute-set assertion | M2 | NFR-P-09 |
 | Round-trip property tests, ≥ 1,000 cases | M3 | NFR-Q-06 |
 | Conformance: every `supported` row links a passing test | M2 (rows appear, shape-tested; M2 D6), enforced M10 | NFR-Q-04, AC-13.4.2 |

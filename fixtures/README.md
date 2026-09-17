@@ -86,8 +86,14 @@ from a fixed seed, and `--check` fails if a committed file differs.
 | `large-500.json` | 500 items, S0's p90 | NFR-P-01 and P-02, held against the baseline |
 | `ceiling.json` | **Synthetic stress case**, not a real instrument: 1,000 items, 500 conditions, a repeating group of 20 items taken to 50 instances, nesting 10 | NFR-P-08 retained heap; the NFR-P-09 recompute-set test; reference timings that are reported, not gated |
 
-`pnpm bench` takes the median of five runs into `reports/bench/results.json`;
-`pnpm bench:compare` fails above 20 % of `benchmarks/baseline.json`. The
-baseline is measured on the CI runner and changes only through an explicit PR
-(`06-roadmap.md` M2 D7): download the `bench` artifact from a green run and
-write it with `node scripts/bench-compare.mjs <results.json> --update`.
+`pnpm bench` takes the median of five runs into `reports/bench/results.json`.
+With `--against <checkout>` it benchmarks another checkout in the same job,
+runs alternating, into `reports/bench/reference.json`; CI passes the merge
+base. `pnpm bench:compare` fails when a timing is more than 20 % over the
+reference run, when retained heap is more than 20 % over
+`benchmarks/baseline.json`, or when a 25-item absolute budget is broken.
+Timings are never compared with the committed file: hosted runners differ by
+up to 2× between jobs (`06-roadmap.md` M2 D7). The committed figures are
+published reference figures and change only through an explicit PR: download
+the `bench` artifact from a green run on `main` and write it with
+`node scripts/bench-compare.mjs --results <results.json> --update`.

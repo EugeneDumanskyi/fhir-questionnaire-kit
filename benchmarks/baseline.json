@@ -28,5 +28,5 @@
     }
   },
   "heapBytes": 2139368,
-  "$comment": "Measured on the CI runner. Change only through an explicit PR (M2 plan D7)."
+  "$comment": "Published reference figures, measured on the CI runner; the gate reads heapBytes only, and compares timings with the merge base in the same job. Change through an explicit PR (M2 plan D7)."
 }
