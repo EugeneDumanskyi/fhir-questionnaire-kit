@@ -22,19 +22,22 @@ async function instrument(page: Page): Promise<void> {
     Object.assign(window, { fhirqCsp: csp });
     document.addEventListener('securitypolicyviolation', (event) => csp.violations.push(event.violatedDirective), true);
 
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- kept to be called on the original receiver with .call
     const setAttribute = Element.prototype.setAttribute;
     Element.prototype.setAttribute = function (this: Element, name: string, value: string) {
       if (name.toLowerCase() === 'style') csp.writes.push('setAttribute');
       setAttribute.call(this, name, value);
     };
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- kept to be called on the original receiver with .call
     const createElement = Document.prototype.createElement;
     Document.prototype.createElement = function (this: Document, tag: string, options?: ElementCreationOptions) {
       if (tag.toLowerCase() === 'style') csp.writes.push('createElement');
       return createElement.call(this, tag, options);
-    } as typeof Document.prototype.createElement;
+    };
 
     const owner = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'style') !== undefined ? HTMLElement.prototype : Element.prototype;
     const style = Object.getOwnPropertyDescriptor(owner, 'style');
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- kept to be called on the original receiver with .call
     const getStyle = style?.get;
     if (getStyle === undefined) return;
     Object.defineProperty(owner, 'style', {

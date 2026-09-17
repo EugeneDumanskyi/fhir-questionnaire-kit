@@ -51,7 +51,7 @@ describe('the recompute set at the scale ceiling (M2 AC-5)', () => {
     for (const command of commands) {
       const before = oracle.evaluate();
       const answersBefore = JSON.stringify(oracle.answers.get(command.path) ?? []);
-      expect(session.dispatch({ ...command, path: command.path as ItemPath } as Command)).toEqual(oracle.dispatch(command));
+      expect(session.dispatch(command as Command)).toEqual(oracle.dispatch(command));
       const after = oracle.evaluate();
       const changed = JSON.stringify(oracle.answers.get(command.path) ?? []) !== answersBefore;
       const { pruned, closure } = expectedRecompute(oracle, command, changed, before, after);

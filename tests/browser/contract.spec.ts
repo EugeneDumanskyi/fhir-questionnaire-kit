@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-import { open, reach, type FormState, type Renderer } from './pages/serve.js';
+import { open, reach, type FormState } from './pages/serve.js';
 
 /**
  * M1 AC-4, ADR-0007: one DOM contract (docs/08-dom-contract.md), asserted
@@ -54,7 +54,7 @@ function describe(form: Locator) {
 }
 
 async function capture(page: Page, renderer: 'element' | 'react-19', state: FormState) {
-  await open(page, renderer as Renderer);
+  await open(page, renderer);
   await reach(page, state);
   const form = page.locator(FORM[renderer]);
   // Link URLs carry the renderer's id prefix; the DOM description already

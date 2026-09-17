@@ -82,9 +82,24 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
 
   {
-    // Type-aware linting is deliberately not switched on at M0: it needs a
-    // populated project graph to be worth its seconds in the fast lane
-    // (NFR-M-07), and it arrives with the engine in M2.
+    // Type-aware rules, switched on with the engine in M2 (step 12): about six
+    // seconds more in the fast lane, well inside NFR-M-07's 3 minutes. They need
+    // the project graph, so they cover the TypeScript the tsconfig projects
+    // include, plus the root config files through the default project. The
+    // playground is an app with its own dependencies and joins in M9.
+    files: ['packages/**/*.{ts,tsx}', 'tests/**/*.ts', '*.config.ts'],
+    // Lint tests lint virtual files that no project includes.
+    ignores: ['**/__lint-fixture__.ts'],
+    extends: [tseslint.configs.recommendedTypeCheckedOnly],
+    languageOptions: {
+      parserOptions: {
+        projectService: { allowDefaultProject: ['*.config.ts'] },
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+
+  {
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

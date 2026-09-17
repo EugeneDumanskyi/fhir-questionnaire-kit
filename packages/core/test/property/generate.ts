@@ -104,7 +104,7 @@ function build(raws: readonly RawItem[]): Generated {
     const group = item.kind === 'group' || item.kind === 'repeat';
     return {
       linkId: linkIdOf(index),
-      type: group ? 'group' : (item.kind as Answerable),
+      type: group ? 'group' : item.kind,
       authoredType: group ? 'group' : item.kind,
       text: '',
       required: false,
