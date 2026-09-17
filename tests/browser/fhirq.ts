@@ -5,7 +5,7 @@ export interface TestWindow {
     react?: string;
     session: {
       dispatch(command: { type: string }): unknown;
-      getSnapshot(): { cycle: number; nodes: { answer?: unknown }[] };
+      getSnapshot(): { cycle: number; nodes: { answers: readonly { value: unknown }[] }[] };
     };
   };
 }

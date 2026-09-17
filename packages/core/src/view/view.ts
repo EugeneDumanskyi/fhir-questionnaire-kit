@@ -142,8 +142,9 @@ export function createView(session: Session, options: ViewOptions): View {
     if (bound === undefined) {
       const clear = () => void session.dispatch({ type: 'ClearAnswer', path });
       bound = {
-        setYesNo: (value) => void session.dispatch({ type: 'SetAnswer', path, value }),
-        setText: (value) => (value === '' ? clear() : void session.dispatch({ type: 'SetAnswer', path, value })),
+        setYesNo: (value) => void session.dispatch({ type: 'SetAnswer', path, answers: [{ kind: 'boolean', value }] }),
+        setText: (value) =>
+          value === '' ? clear() : void session.dispatch({ type: 'SetAnswer', path, answers: [{ kind: 'string', value }] }),
         clear,
         leave: () => void session.dispatch({ type: 'NoteItemLeft', path }),
       };
@@ -161,7 +162,7 @@ export function createView(session: Session, options: ViewOptions): View {
   };
 
   const build = (state: SessionState, previous: ViewModel | undefined): ViewModel => {
-    const built = state.nodes.map(nodeView);
+    const built = state.nodes.filter(rendered).map(nodeView);
     const same = previous !== undefined && built.length === previous.nodes.length && built.every((node, i) => node === previous.nodes[i]);
     const nodes = same ? previous.nodes : built;
     const errorSummary = summarise(state, nodes, summaryId, messages, previous?.errorSummary ?? null);
@@ -188,6 +189,14 @@ export function createView(session: Session, options: ViewOptions): View {
   };
 }
 
+/**
+ * The two control kinds M1 built. Other item types reach the snapshot from M2
+ * but are not rendered until M5 writes their controls (M2 plan D9).
+ */
+function rendered(state: NodeState): boolean {
+  return state.item.type === 'boolean' || state.item.type === 'string';
+}
+
 function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages: Messages): ViewNode {
   const issues = state.surfaced && state.issues.length > 0
     ? state.issues.map((issue): ViewIssue => ({ rule: issue.code, message: ISSUE_MESSAGE[issue.code](messages) }))
@@ -203,8 +212,9 @@ function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages:
     clear: commands.clear,
     leave: commands.leave,
   };
+  const [answer] = state.answers;
   if (state.item.type === 'boolean') {
-    const value = typeof state.answer === 'boolean' ? state.answer : null;
+    const value = answer?.kind === 'boolean' ? answer.value : null;
     return {
       ...common,
       control: 'yes-no',
@@ -219,7 +229,7 @@ function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages:
   return {
     ...common,
     control: 'short-text',
-    value: typeof state.answer === 'string' ? state.answer : '',
+    value: answer?.kind === 'string' ? answer.value : '',
     set: commands.setText,
   };
 }

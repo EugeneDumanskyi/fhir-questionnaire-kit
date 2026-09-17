@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createSession, type DefinitionInput } from '../src/index.js';
+import { createSession, type Questionnaire } from '../src/index.js';
 import { createView, type ShortTextViewNode, type ViewModel, type YesNoViewNode } from '../src/view/index.js';
 import { fill, plural } from '../src/view/format.js';
 import { nodeIds, pathId } from '../src/view/ids.js';
-import { SLICE } from './slice.js';
+import { questionnaire, SLICE } from './slice.js';
 
-const setup = (input: DefinitionInput = SLICE) => {
+const setup = (input: Questionnaire = SLICE) => {
   const session = createSession(input);
   const view = createView(session, { idPrefix: 'fq' });
   return { session, view };
@@ -36,6 +36,17 @@ describe('view nodes', () => {
       ],
       ids: { control: 'fq-smoker-control', label: 'fq-smoker-label', description: 'fq-smoker-description', error: 'fq-smoker-error' },
     });
+  });
+
+  it('renders only the two control kinds M1 built; other types wait for M5 (M2 plan D9)', () => {
+    const { view } = setup(
+      questionnaire([
+        ...SLICE.item,
+        { linkId: 'age', type: 'integer', text: 'Age' },
+        { linkId: 'g', type: 'group', item: [{ linkId: 'inner', type: 'string', text: 'Inner' }] },
+      ]),
+    );
+    expect(view.getSnapshot().nodes.map((node) => node.path)).toEqual(['smoker', 'g/inner']);
   });
 
   it('returns the same model until the session changes', () => {
@@ -102,12 +113,12 @@ describe('view nodes', () => {
 
 describe('announcements, error summary and focus target (ADR-0007 verification, Node only)', () => {
   it('announces what changed and how many, once per cycle (INV-P-03)', () => {
-    const { view } = setup({
-      items: [
-        ...SLICE.items,
-        { linkId: 'since', type: 'string', text: 'Since when?', enableWhen: [{ question: 'smoker', operator: '=', answer: true }] },
-      ],
-    });
+    const { view } = setup(
+      questionnaire([
+        ...SLICE.item,
+        { linkId: 'since', type: 'string', text: 'Since when?', enableWhen: [{ question: 'smoker', operator: '=', answerBoolean: true }] },
+      ]),
+    );
     yesNo(view.getSnapshot()).set(true);
     expect(view.getSnapshot().announcement?.text).toBe('2 questions shown.');
     yesNo(view.getSnapshot()).set(false);
