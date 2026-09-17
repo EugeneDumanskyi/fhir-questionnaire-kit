@@ -198,10 +198,10 @@
   **Given** the same item with `enableBehavior = any`
   **When** exactly one condition holds
   **Then** the item is enabled.
-- **AC-02.3.3 — Default**
-  **Given** an item with multiple conditions and no `enableBehavior`
-  **When** it is evaluated
-  **Then** `all` is applied, matching the R4 default, and this is stated in the conformance matrix.
+- **AC-02.3.3 — Missing `enableBehavior`**
+  **Given** an item with more than one condition and no `enableBehavior`, which R4 does not allow (it defines no default: rule que-12 requires a value)
+  **When** the session is created
+  **Then** creation fails in `strict` mode naming the `linkId` path and, in `lenient` mode, `all` is applied with a diagnostic; the conformance matrix states both. *(Amended 2026-09-17: this criterion said `all` was the R4 default. `06-roadmap.md` M2 D1.)*
 
 #### US-02.4 — Conditions on groups
 **As** RES, **I want** a whole section to disappear at once, **so that** the form does not leave orphaned sub-questions behind.
@@ -235,7 +235,7 @@
 - **AC-02.5.4 — Conditions and repeating groups**
   **Given** a condition whose question item sits inside a repeating group
   **When** the session is created
-  **Then** if the dependent item is inside the same repeating group, the condition resolves within the same instance (AC-03.2.3); if the dependent item is outside that group, creation fails in `strict` mode naming both `linkId`s and, in `lenient` mode, the condition evaluates to false with a diagnostic. The engine never guesses "any instance" or "first instance", and the conformance matrix lists this as `not supported`.
+  **Then** if the dependent item is inside the same repeating group, the condition resolves within the same instance (AC-03.2.3); if the dependent item is outside that group, creation fails in `strict` mode naming both `linkId`s and, in `lenient` mode, the condition evaluates to false with a diagnostic. The engine never guesses "any instance" or "first instance". R4 does resolve the outside case, by document position (the nearest occurrence along the ancestor, then preceding, then following axis); the kit does not implement that rule, and the conformance matrix lists it as `not supported` for that reason.
 - **AC-02.5.5 — Conditions on calculated items**
   **Given** a condition whose question item takes its value from the expression seam (AC-07.3.3)
   **When** the session is created
@@ -993,7 +993,10 @@ Boundary clarifications added by analysis and domain modelling:
 - **Printing.** Brief excludes PDF generation but promises printable HTML. Scoped here as: a print stylesheet on the default theme only, expanding disabled-item handling and repeating groups sensibly. No pagination control, no headers/footers. **ASSUMPTION: print stylesheet is `Should`, not `Must`.**
 - **Reference backend** (Brief §9.5). **Recommendation: drop.** It adds a Docker surface, a synthetic-data obligation and a second thing that can break on an evaluator's machine, while serving no principle in §6 — the playground already shows STK the product working and the test suite gives EVL the evidence. Confirm.
 - **`amended` status.** Not supported; a completed session is final and editing means resuming into a new session (AC-05.1.4).
-- **Conditions that reach into a repeating group from outside it.** Not supported; rejected at load in `strict` mode (AC-02.5.4).
+- **Conditions that reach into a repeating group from outside it.** Not supported; rejected at load in `strict` mode (AC-02.5.4). R4 resolves them by document position, and the kit does not implement that rule.
+- **Items nested under a question.** R4 allows them; not supported. Rejected at load in `strict` mode; in `lenient` mode the children are unsupported placeholders with a diagnostic (`04-domain.md` INV-D-17).
+- **Initial values.** `initial[x]` and `answerOption.initialSelected` are ignored with a diagnostic in both load modes; items start empty (INV-D-18).
+- **`time` and `Reference` answer options.** Handled like an unsupported item type (INV-D-19).
 - **Conditions that test a calculated item.** Not supported; rejected at load in `strict` mode (AC-02.5.5).
 - **Expression extensions other than `calculatedExpression`.** Not supported; rejected at load in `strict` mode and degraded towards the safe side in `lenient` mode (AC-01.3.3). FHIRPath itself stays out of scope; a host may supply an evaluator for `calculatedExpression` only (US-07.3).
 - **Playground and docs analytics.** None; both sites deny all outbound connections through their Content Security Policy (AC-12.3.2, NFR-X-09).
@@ -1035,7 +1038,7 @@ Raised in `04-domain.md` §9 (and, for the last two rows, in ADR follow-ups) and
 | D6 | A throwing scoring function is handled like a throwing rule | AC-07.2.4 |
 | T1 | `completed` is final; `amended` is not supported | AC-05.1.4, §17 |
 | T2 | Resumed sessions always start `in-progress`; round-trip ignores `authored` and `status` | AC-06.1.2, AC-06.1.4 |
-| T3 | Conditions resolve within the same repeat instance; conditions crossing into a repeating group from outside are rejected in `strict` mode | AC-02.5.4, §17 |
+| T3 | Conditions resolve within the same repeat instance; conditions crossing into a repeating group from outside are rejected in `strict` mode (premise corrected 2026-09-17: R4 is not silent, `06-roadmap.md` M2 D5) | AC-02.5.4, §17 |
 | T4 | A disabled item counts as unanswered for every condition | AC-02.2.4 |
 | T5 | Removing a repeat instance is permanent; `discard` resets a disabled repeating group to one empty instance | AC-03.2.6, AC-05.2.6 |
 | T6 | Diagnostics for rejected stored answers name path and types, never the value | AC-06.3.2 |
