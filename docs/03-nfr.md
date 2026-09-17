@@ -12,7 +12,7 @@
 
 **Numbers are chosen to be defensible, not aspirational.** An adopter who asks "why 14 kB?" must get an answer better than "it sounded small". Where the answer is currently "it sounded right", the number is marked `ASSUMPTION:` and listed in §11 for correction.
 
-**Reference hardware.** All timing figures are measured on the CI runner class in NFR-M-07 unless a mobile figure is stated. **ASSUMPTION: a 2-core standard GitHub-hosted runner is the reference; mobile figures assume a mid-tier Android device at 4× CPU throttling in Lighthouse.**
+**Reference hardware.** All timing figures are measured on the CI runner class in NFR-M-07 unless a mobile figure is stated. **Reference: a 4-core standard GitHub-hosted `ubuntu-latest` runner, as observed for this public repository (recorded 2026-09-17, N1); it replaced a 2-core assumption. ASSUMPTION: mobile figures assume a mid-tier Android device at 4× CPU throttling in Lighthouse.**
 
 | Column | Meaning |
 |---|---|
@@ -232,7 +232,7 @@ Every number in this document that the brief did not fix. Correct these before m
 
 | # | Ref | Assumed value | Why it matters |
 |---|---|---|---|
-| N1 | §0 | 2-core CI runner + 4× throttled mobile as reference hardware. **Observed 2026-09-17 (M2):** `ubuntu-latest` gives this public repository **4 cores** (`nproc`) on varying AMD EPYC models (7763, 9V45, 9V74), and every M2 timing is from those runners. Open for the maintainer: record 4 cores as the observed reference, or keep 2 as the conservative one and read M2's figures as optimistic by up to 2× | All timing figures are meaningless without it |
+| N1 | §0 | 2-core CI runner + 4× throttled mobile as reference hardware. **Observed 2026-09-17 (M2):** `ubuntu-latest` gives this public repository **4 cores** (`nproc`) on varying AMD EPYC models (7763, 9V45, 9V74), and every M2 timing is from those runners. **Resolved 2026-09-17:** 4 cores is recorded as the observed reference. Runner CPU models still vary, which is why timing gates compare within one job (`06-roadmap.md` M2 D7) | All timing figures are meaningless without it |
 | N2 | NFR-P-01…09 | **Resolved 2026-09-16** by spike S0 (`00-s0-instrument-survey.md`, 300 instruments): NFR-P-04's ceiling and NFR-P-05 confirmed; NFR-P-01/02 re-anchored to 25-item and 500-item fixtures. **2026-09-17 (M2 step 10):** the millisecond figures are measured on the CI runner and committed as `benchmarks/baseline.json`; NFR-P-04's **50 repeat instances** is recorded as deliberate headroom rather than evidenced (M2 D8) | The ceiling was challenged first, as §1 asked, and held |
 | N3 | NFR-S-02/03/04 | Core ≤ 14 kB, view ≤ 5 kB, react ≤ 6 kB (excl. React, core and view), element ≤ 24 kB, `base.css` ≤ 4 kB, theme preset ≤ 3 kB, IIFE ≤ 30 kB. **S1 measured the slice on 2026-09-16** (element 5.84 kB standalone) **and extrapolated bands that straddle the core (at its top edge only), view, react, element and IIFE budgets** (§2 note, `00-s1-architecture-and-bytes.md`). **Approved 2026-09-17:** figures unchanged, still assumed; each is re-read when its budget gate switches on | Published competitive claim; re-baseline after the engine spike |
 | N4 | NFR-S-06 | ≤ 40 direct dev dependencies | Soft; keeps the dev toolchain small enough to audit, not a hard constraint |
