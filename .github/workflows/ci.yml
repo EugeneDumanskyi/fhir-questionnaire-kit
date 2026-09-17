@@ -14,9 +14,9 @@ permissions:
   contents: read
 
 jobs:
-  # The fast lane, and at M0 the only lane. NFR-M-07 gives it 3 minutes.
+  # The fast lane, and the only required check. NFR-M-07 gives it 3 minutes.
   # Budget, dependency, licence, packed-contents, coverage, mutation,
-  # accessibility and browser lanes switch on in the milestone that first
+  # accessibility and browser gates become blocking in the milestone that first
   # produces what they guard (06-roadmap.md §5). A gate that is red because its
   # subject does not exist teaches the team to ignore red.
   fast-lane:
@@ -60,3 +60,56 @@ jobs:
 
       - name: Unit tests
         run: pnpm test
+
+  # M1's spike proofs (S1, decision D5): the DOM contract, axe, hydration on
+  # React 18 and 19, caret and CSP in Chromium and WebKit, and the bundle
+  # report. Deliberately not a required check: SSR blocks from M6, CSP from M7,
+  # accessibility from M8 and budgets from M2 (06-roadmap.md §5).
+  spike-proofs:
+    name: Spike proofs (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Bundle report
+        run: pnpm measure
+
+      - name: Browser proofs
+        run: pnpm test:browser
+
+      - name: Upload the bundle report and the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: spike-proofs
+          path: |
+            reports/
+            playwright-report/
+          retention-days: 30

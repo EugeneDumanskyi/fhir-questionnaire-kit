@@ -18,8 +18,8 @@ const workspaceSources = [
 /**
  * One Vitest run over the workspace. Every project here is `environment: node`
  * with no DOM shim, on purpose: NFR-C-04 says the engine runs in Node, and a
- * jsdom default is how that claim quietly stops being tested. The renderers get
- * their own browser-backed projects when they have something to render (M6, M7).
+ * jsdom default is how that claim quietly stops being tested. Renderers are
+ * exercised in real browsers by Playwright (`pnpm test:browser`), not here.
  */
 export default defineConfig({
   test: {

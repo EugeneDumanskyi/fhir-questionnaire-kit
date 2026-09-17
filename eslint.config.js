@@ -122,6 +122,7 @@ export default tseslint.config(
       'eslint.config.js',
       'tools/**/*.js',
       '**/test/**/*.{js,ts,tsx}',
+      'tests/**/*.ts',
       'scripts/**/*.{js,mjs}',
     ],
     languageOptions: {
