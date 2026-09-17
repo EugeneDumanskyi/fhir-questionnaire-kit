@@ -322,3 +322,28 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 | [0017](adr/0017-fhirpath-excluded-evaluator-seam.md) | FHIRPath is excluded; expressions route through an evaluator seam |
 | [0018](adr/0018-build-and-verification-toolchain.md) | Build and verification toolchain under the licence allowlist |
 | [0019](adr/0019-static-client-only-playground-and-docs.md) | Playground and docs are static, client-only and run under a strict CSP |
+
+---
+
+## 11. Go/no-go on Architecture B after spike S1
+
+*M1 AC-9. Evidence: `00-s1-architecture-and-bytes.md`. **Recommendation, 2026-09-16: continue. Awaiting the maintainer's sign-off,** together with the AC-3 field-list review and the budget verdict in `03-nfr.md` §2.*
+
+**What S1 set out to break, and did not.** One DOM-free view model drove a React renderer and a keyed vanilla renderer to identical markup, roles, accessible names and ARIA relationships in every state of the slice, asserted by one contract suite (AC-4). Neither renderer needed a field naming an element, an ARIA attribute or a CSS property (AC-3), and neither computes visibility, validity, ids or response shape. Axe found nothing in 24 runs (AC-5); React 18 and 19 hydrated with no warnings (AC-6); the element kept caret and focus through cycles that change the focused input's own state, on Chromium and WebKit (AC-7); and it rendered under `style-src 'self'` with adopted stylesheets only (AC-8). None of S1's three kill criteria triggered.
+
+**What S1 did not settle.**
+- **R1 stays open.** The element's extrapolated band, 12.6–35.5 kB, straddles its 24 kB budget; the view's, 3.0–9.0 kB, straddles 5 kB. Architecture B is not what is at risk here — Architecture A would carry the same engine and theme, and a heavier BC6 in each renderer — but the published numbers may be.
+- **R2 is proven on two control kinds,** not fourteen. The drift ADR-0007 fears is gradual; the deny-list test that caught `code` in S1 carries into M5.
+- **Two accepted ADRs disagree on a name.** ADR-0020's `display` field is a CSS property under ADR-0007's review rule. M5 cannot finish its field list until one of them moves.
+- **Leaving an item is decided in both renderers** (focus containment), the one duplicated behaviour left. M5 decides whether the DOM contract states it or `view/` helps.
+
+**What M2 keeps from the spike** (P4: nothing is kept by default).
+
+| Kept, as a starting point | Rewritten | Why rewritten |
+|---|---|---|
+| `scripts/measure-bundles.mjs` and its test: the budget gate from M2 | `session/session.ts` | A naive full pass; ADR-0009's compiled graph and recompute set replace it |
+| `tests/browser/` harness and all five specs: they become the SSR (M6), CSP (M7) and accessibility (M8) gates | `definition/definition.ts` | Hand-built input and four checks; M2's R4 codec and INV-D-01…15 replace it |
+| `packages/core/test/deny-lists.ts` and `view-fields.test.ts`: the AC-3 check for M5 | `view/view.ts` | Two control kinds; M5 writes the full field list |
+| `view/ids.ts`, `view/format.ts` | `validation/required.ts` | One rule; M3 |
+| The element's inline-style lint bans and their must-fail tests | `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3 |
+| `@fhirq/themes` token-contract test; `docs/08-dom-contract.md` as the contract's first rows | `packages/react/src/questionnaire.tsx` | M6's hook, tiers and controlled mode |

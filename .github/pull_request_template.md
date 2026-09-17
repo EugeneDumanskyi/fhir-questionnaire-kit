@@ -18,6 +18,7 @@
 - [ ] Public API change: `docs/07-api.md`, the API report and a changeset, in this commit
 - [ ] Docs or ADRs updated if behaviour changed
 - [ ] No answer values in diagnostics, errors, events or logs (NFR-X-04)
+- [ ] View-model fields added or renamed: none names an HTML element, an ARIA attribute or a CSS property, and `view-fields.test.ts` passes (ADR-0007 review rule)
 
 ## What this does not cover
 
