@@ -33,8 +33,8 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 | **R3** | **Retired 2026-09-16. Effort budget.** NFR-Z-01 assumed 40–60 hours for everything below, and Brief §8 asked for confirmation "before milestone planning". §7 estimated roughly three times that; the number moved to ≈ 184 h and the cut ladder was declined in writing. | The number was never confirmed. It is the only input on which every scope decision hangs (N24). | The shape of the release, via the cut ladder in `03-nfr.md` §10. Cutting after building is waste; cutting now is planning. | **M0** (decision), §7 (cut ladder) |
 | **R4** | **Keyed DOM patching that never disturbs focus or caret.** ADR-0007 requires the element to patch, not rebuild; ADR-0014 forbids `<style>`, inline styles and `el.style`; `adoptedStyleSheets` must work at the iOS Safari 16.4 floor (A4). | Hand-written patching against a live, focused form is the classic source of subtle input bugs, and the CSP and shadow-DOM constraints remove the usual escape hatches. | The element's default UI, NFR-A-07, NFR-P-03, and A4's browser floor. | **M1** (thin proof), **M7** (full) |
 | **R5** | **React SSR with zero hydration warnings on 18 *and* 19,** with `useSyncExternalStore`, `useId`-prefixed ids and pending option state rendered identically on server and first client render (ADR-0015). | Two React majors, two id strategies to keep aligned, and a gate that fails the build on any console warning (AC-08.3.2). | NFR-C-08, AC-08.3.1/2, and ADR-0015's "SSR by construction" claim. | **M1** (thin proof), **M6** (full) |
-| **R6** | **Incremental evaluation correctness at scale.** Tarjan, topological ranks, scope-resolved edges inside repeat instances, single-writer queue, per-node object identity, and a recompute set asserted against an independent BFS closure (ADR-0009, NFR-P-09). | Hard, but *specified*. The unknown is only whether the performance figures (N2, themselves assumptions) survive contact with the scale ceiling. | Performance NFRs and the benchmark baselines — not the architecture. | **M2** |
-| **R7** | **The CI pipeline's own budget.** Twenty-one blocking gates (§5), three browser engines, mutation testing, 1,000 property cases, six consumer environments, all inside 10 minutes p95 (NFR-M-07, A6). | Measurable only once real code and real suites exist. | NFR-M-07 (a target, not a gate) and the merge experience; the documented relief valve is moving WebKit to nightly (ADR-0018). | **M2** (first measurement), **M11** (full pipeline) |
+| **R6** | **Retired 2026-09-17. Incremental evaluation correctness at scale.** Tarjan, topological ranks, scope-resolved edges inside repeat instances, single-writer queue, per-node object identity, and a recompute set asserted against an independent BFS closure (ADR-0009, NFR-P-09). | Hard, but *specified*. The unknown is only whether the performance figures (N2, themselves assumptions) survive contact with the scale ceiling. | Performance NFRs and the benchmark baselines — not the architecture. | **M2. Retired 2026-09-17:** incremental state equals an independent from-scratch oracle, and the traced recompute set equals an independent BFS, over generated questionnaires with nested repeats and at the 1,980-node ceiling. The figures survived the ceiling: 500-item creation 1.1–2.0 ms and a depth-5 cascade 0.05–0.08 ms on the runner, 2.1 MB retained heap. What stays open is the benchmark *gate*, not correctness (M2 AC-9) |
+| **R7** | **The CI pipeline's own budget.** Twenty-one blocking gates (§5), three browser engines, mutation testing, 1,000 property cases, six consumer environments, all inside 10 minutes p95 (NFR-M-07, A6). | Measurable only once real code and real suites exist. | NFR-M-07 (a target, not a gate) and the merge experience; the documented relief valve is moving WebKit to nightly (ADR-0018). | **M2** (first measurement), **M11** (full pipeline). **First reading 2026-09-17:** the blocking PR pipeline runs in about 3 min wall-clock — fast lane 36–40 s, engine gates 25 s, incremental mutation 2 min 50 s. Mutation briefly took 5 min 26 s, over S2's K1, and was relieved inside the lane rather than by moving WebKit (`00-s2-mutation-cost.md` §7). The runner has 4 cores, not N1's 2 |
 | **R8** | **Accessibility at full breadth.** 0 violations across demo forms × 4 tiers × 2 themes × 2 viewports × 2 renderers, plus contrast, target size, reflow, forced-colors and RTL (NFR-A-01…09). | Automated tooling catches roughly a third of real issues (`03-nfr.md` §5), so the residue surfaces only in manual passes, which are late and manual. | Brief §6 principle 4 and the claim the primary user checks hardest. | **M1** (one control, both renderers), **M8** (full) |
 | **R9** | **Retired 2026-09-16, with one figure carried forward. Performance anchors.** NFR-P-04's 1,000-item / 500-condition ceiling and NFR-P-05 are confirmed against 300 surveyed instruments; the 50-instance figure is not evidenced by any `Questionnaire` and moves to M2. | A survey of real instrument sizes has now been done (`00-s0-instrument-survey.md`). | Benchmark design, heap budget NFR-P-08, and possibly NFR-P-01/02's anchors. | **M0** (spike S0) |
 
@@ -198,6 +198,25 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 | D13 | Invariants that depend on M4's ports | M2 records value-set references and expression bindings, and neither fails load (INV-D-08, INV-D-09). INV-D-09's "no evaluator" diagnostic is raised from M2. `unresolved-options`, refusing a coded `SetAnswer` while options are unresolved, and lenient `answerExpression` as "no options" land in M4. ADR-0003's refusal on calculated items lands in M2 |
 | D14 | R4 TypeScript types | A hand-written minimal subset in `fhir/r4/types.ts`, headed as authored rather than generated; input is narrowed from `unknown` at runtime |
 | D15 | ADR-0009's pruning against its own Verification line *(raised in step 6, decided 2026-09-17)* | Settling stops at a node whose own condition and effective enablement did not change, as the Decision says. The NFR-P-09 test asserts the trace is contained in the scoped closure, and equals an independent BFS that expands only through nodes whose own or effective state differs between from-scratch evaluations before and after. ADR-0009's Verification carries the dated amendment |
+
+**Run on 2026-09-17, in PRs #14–#28 and the close-out.** Evidence per acceptance criterion:
+- **AC-1.** 50 named operator × type tests in `session/conditions.test.ts`; generated fixtures `fixtures/enablewhen-*`; 50 rows in `docs/conformance/matrix.json`; 0 gaps, checked against the engine's comparison table.
+- **AC-2.** The `cycle` fixture. Strict and lenient fixtures for INV-D-03, 04, 06, 13, 14 and 15, and for 02, 07, 16, 17, 18 and 19 as well.
+- **AC-3.** `session/cycle.test.ts` and the `chain-collapse` fixture.
+- **AC-4, AC-5 and AC-6.** `test/property/incremental.test.ts` (300 cases per property against `test/oracle.ts` and `test/bfs.ts`), `test/property/ceiling.test.ts`, and the `disabled-question-reads-unanswered` fixture.
+- **AC-7.** `session/repeats.test.ts` and the `repeat-instances` fixture.
+- **AC-8.** `session/refusals.test.ts`.
+- **AC-10.** Core coverage 99.8 % line and 98.8 % branch, and mutation 90.1 % on the runner, both required checks with a nightly full run.
+- **AC-11.** `@fhirq/core` at 10.16 kB of 14 kB, required.
+- **AC-12.** `docs/07-api.md`, `packages/core/etc/*.api.md` checked in CI, and the first changeset.
+
+Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
+
+**Still open.**
+- **AC-9: the benchmark gate.** Unchanged code measured up to 2.2× apart across hosted runners, and 25 % apart on the same CPU model. A committed baseline at 20 % therefore fails on noise, so the job is not required. Its form (D7) is back with the maintainer. Heap (2.09–2.14 MB) and the absolute 25-item budgets are stable.
+- **The core bytes read against `03-nfr.md` §2's tripwire.** See the reading there.
+
+**Found on the way.** Modifier extensions are rejected in both modes, because R4 forbids ignoring them (INV-D-01). The public `Questionnaire` type leaves nested R4 elements `unknown`, to keep fifteen R4 shapes out of NFR-U-05's count, which stands at 50 of 60 (`07-api.md` §2). Type-aware linting is on.
 
 ---
 
@@ -472,10 +491,10 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Core coverage ≥ 95 / 90 | M2 | NFR-Q-01 |
 | Mutation ≥ 80 on engine modules, incremental on PRs | M2 | NFR-Q-03, A6 |
 | Bundle budgets per entry point | M2 core · M5 view · M6 react · M7 element and IIFE · M8 themes | NFR-S-02/03 |
-| Benchmarks against committed baselines, > 20 % regression fails | M2 | `03-nfr.md` §1 |
+| Benchmarks against committed baselines, > 20 % regression fails | M2 — **not yet required:** the timing gate's form is open after runner variance (M2 AC-9, D7) | `03-nfr.md` §1 |
 | Recompute-set assertion | M2 | NFR-P-09 |
 | Round-trip property tests, ≥ 1,000 cases | M3 | NFR-Q-06 |
-| Conformance: every `supported` row links a passing test | M3 (rows appear), enforced M10 | NFR-Q-04, AC-13.4.2 |
+| Conformance: every `supported` row links a passing test | M2 (rows appear, shape-tested; M2 D6), enforced M10 | NFR-Q-04, AC-13.4.2 |
 | Throwing-stub no-network/no-storage test | M4 core · M6 react and themes · M7 element's single path | AC-14.6.1, NFR-X-01/02 |
 | `Intl`-only formatting: 0 hand-rolled date, number or unit formatting | M4 catalogue · M5 `view/` formats · M6/M7 supply the locale | NFR-I-04, ADR-0020 |
 | SSR hydration, 0 warnings, React 18 and 19 | M6 | NFR-C-08 |
@@ -484,7 +503,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Contrast, focus, target size, reflow, RTL | M8 | NFR-A-03…06, NFR-I-05 |
 | Lighthouse on the playground | M9 | NFR-P-06 |
 | Docs examples compiled and executed | M10 | NFR-Q-08 |
-| Dependency, packed-contents, licence, API-report gates with negative fixtures | M11 (API report from M2) | NFR-S-01/07/08, NFR-M-04 |
+| Dependency, packed-contents, licence, API-report gates with negative fixtures | M11 (API report required from M2, in `Engine gates`) | NFR-S-01/07/08, NFR-M-04 |
 | Consumer smoke tests, six environments | M11 | NFR-C-02 |
 
 ---
