@@ -151,10 +151,11 @@ The core package is organised by bounded context so that `04-domain.md` can be r
 | `session/` | BC2 | `kernel`, `definition` | `fhir/*`, `interchange`, `view` |
 | `validation/` | BC3 | `kernel`, `definition`, `session/projection` | `session` internals, `fhir/*` |
 | `interchange/` | BC4 | `kernel`, `definition`, `session/projection`, `session/snapshot`, `fhir/r4` | `session` internals |
+| `resume` (entry `@fhirq/core/resume`; ADR-0021) | BC4's way back in: snapshot, restore, decode, hydrate | `kernel`, `definition`, `session`, `interchange`, `fhir/r4` | — ; nothing reachable from `index` or `view` may import `resume`, `session/snapshot`, `interchange/decode` or `interchange/hydrate` |
 | `ports/` | BC5 | `kernel` | everything else; types only |
 | `view/` (entry `@fhirq/core/view`) | BC6, DOM-free half | `kernel`, public engine API | engine internals, DOM globals |
 
-The import restrictions are enforced by lint (NFR-M-06). One row is the architectural claim of US-05.3: `interchange/emit` can reach answers **only** through `session/projection`, so it has no way to read a disabled node (AC-05.3.2).
+The import restrictions are enforced by lint (NFR-M-06). ADR-0021 adds a bundle check as well: no input from the `resume` row may appear in the `@fhirq/core`, `@fhirq/core/view`, `@fhirq/element` or IIFE bundles. Only `session/session` and `session/snapshot` may import the session's internal state registry. One row is the architectural claim of US-05.3: `interchange/emit` can reach answers **only** through `session/projection`, so it has no way to read a disabled node (AC-05.3.2).
 
 ---
 
@@ -278,7 +279,7 @@ C4Container
 
 ## 8. New assumptions introduced by architecture
 
-Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were accepted on 2026-09-15; A3–A6 on 2026-09-16, in M0.** None is open.
+Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were accepted on 2026-09-15; A3–A6 on 2026-09-16, in M0; A7 on 2026-09-17, with ADR-0021.** A7's figure stays an `ASSUMPTION` until M3 measures it.
 
 | # | Ref | Assumption | Why it matters |
 |---|---|---|---|
@@ -288,6 +289,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 | A4 | NFR-C-01 | **Accepted 2026-09-16.** The iOS Safari 16.4 floor is load-bearing: constructable stylesheets, the element's CSP-safe styling mechanism, arrive there (ADR-0014). It is also the floor NFR-A-02's iOS screen-reader pair verifies each release | Lowering the floor costs a second, CSP-compatible styling mechanism carried in the bundle, against R1, which `06-roadmap.md` §1 already calls arithmetically tight |
 | A5 | AC-05.3.3 | **Accepted 2026-09-16.** Snapshots carry a format version; restore accepts the same format major only; a format change is a semver-major change of core (ADR-0010) | Otherwise "snapshots are not a migration format" has no mechanical meaning across library upgrades, and AC-05.3.3 has nothing to assert |
 | A6 | NFR-Q-03 | **Accepted 2026-09-16.** Mutation testing runs incrementally on changed engine modules per PR; the full run is nightly and blocks release, not merge (ADR-0018) | A full run will not fit NFR-M-07's 10 minutes (ADR-0018 option G). Accepted cost: a change that weakens tests in an unchanged file is caught nightly rather than at merge |
+| A7 | NFR-S-02 | **Accepted 2026-09-17 with ADR-0021.** `@fhirq/core/resume` ≤ 4 kB gzipped, excluding `@fhirq/core`; `@fhirq/react`'s budget also excludes it. Estimated from 5.8–11.6 kB minified (1.9–4.9 kB gzipped) and confirmed or amended by its first gate reading in M3 | Core's M2 reading tripped `03-nfr.md` §2's tripwire; moving resume code out of the main entry point keeps core's and the element's budgets without cutting the embed or the spec surface |
 
 ---
 
