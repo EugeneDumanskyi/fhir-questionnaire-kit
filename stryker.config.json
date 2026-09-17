@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "NFR-Q-03 on the enablement modules (06-roadmap.md M2, spike S2). Incremental on PRs, full nightly (ADR-0018, A6). Mutants run against the core suite only, in Node, through stryker.vitest.config.ts. The plugin is named because pnpm's isolated node_modules hides it from Stryker's auto-discovery.",
+  "packageManager": "pnpm",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "stryker.vitest.config.ts",
+    "related": false
+  },
+  "mutate": [
+    "packages/core/src/definition/graph.ts",
+    "packages/core/src/definition/scc.ts",
+    "packages/core/src/session/conditions.ts",
+    "packages/core/src/session/enablement.ts",
+    "packages/core/src/session/cycle.ts"
+  ],
+  "coverageAnalysis": "perTest",
+  "incremental": true,
+  "incrementalFile": "reports/stryker/incremental.json",
+  "reporters": ["clear-text", "progress", "html", "json"],
+  "htmlReporter": { "fileName": "reports/stryker/index.html" },
+  "jsonReporter": { "fileName": "reports/stryker/mutation.json" },
+  "thresholds": { "high": 90, "low": 80, "break": 80 },
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": "always"
+}

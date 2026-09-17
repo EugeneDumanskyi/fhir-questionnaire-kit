@@ -15,6 +15,7 @@ playwright-report/
 .tsbuild/
 .vite/
 .eslintcache
+.stryker-tmp/
 
 # Local environment
 .env

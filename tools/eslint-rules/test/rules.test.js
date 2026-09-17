@@ -5,6 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 import { Linter } from 'eslint';
 import { describe, expect, it } from 'vitest';
 
+import { CORE_MODULES } from '../../../eslint.config.js';
 import { fhirqPlugin } from '../src/index.js';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '');
@@ -117,5 +118,68 @@ describe('no-deep-imports', () => {
 
   it('passes on published entry points and same-package relative imports', () => {
     expect(lintFixture(`${fixtures}/${rule}/must-pass.ts`, rule, options)).toEqual([]);
+  });
+});
+
+describe('core-module-imports', () => {
+  const rule = 'core-module-imports';
+  const dir = `${fixtures}/${rule}/src`;
+  const options = { root: dir, modules: CORE_MODULES };
+  const lint = (file) => lintFixture(`${dir}/${file}`, rule, options);
+
+  it.each([
+    ['kernel/must-fail.ts', ['session/store']],
+    ['definition/must-fail.ts', ['fhir/r4/types', 'session/store', 'validation/rules']],
+    ['session/must-fail.ts', ['fhir/r4/types', 'validation/required', 'view/view']],
+    ['validation/must-fail.ts', ['session/store']],
+    ['view/must-fail.ts', ['session/session']],
+    ['fhir/r4/must-fail.ts', ['definition/compile']],
+  ])('fails %s on every import its §4.1 row does not allow', (file, targets) => {
+    const messages = lint(file);
+    expect(ruleIds(messages)).toEqual(Array(targets.length).fill(`fhirq/${rule}`));
+    targets.forEach((target, index) => expect(messages[index].message).toContain(`reaches ${target} from`));
+  });
+
+  it.each(['index.ts', 'definition/must-pass.ts', 'validation/must-pass.ts', 'view/must-pass.ts'])(
+    'passes %s',
+    (file) => {
+      expect(lint(file)).toEqual([]);
+    },
+  );
+
+  it('fails a file in a module the table does not list', () => {
+    const messages = lint('stray/must-fail.ts');
+    expect(messages).toHaveLength(1);
+    expect(messages[0].message).toContain('in no module of the §4.1 import table');
+  });
+
+  it('holds the rows 05-architecture.md §4.1 states', () => {
+    expect(CORE_MODULES.kernel).toEqual([]);
+    expect(CORE_MODULES.ports).toEqual(['kernel']);
+    expect(CORE_MODULES.session).not.toContain('validation');
+    expect(Object.entries(CORE_MODULES).filter(([, allowed]) => allowed.includes('fhir/r4'))).toEqual([
+      ['interchange', CORE_MODULES.interchange],
+    ]);
+  });
+});
+
+describe('no-fhir-shapes-outside-codec', () => {
+  const rule = 'no-fhir-shapes-outside-codec';
+  const options = { allow: [`${fixtures}/${rule}/fhir/**`] };
+
+  it('fails on a resourceType declared, quoted and read outside the codec', () => {
+    const messages = lintFixture(`${fixtures}/${rule}/must-fail.ts`, rule, options);
+    expect(ruleIds(messages)).toEqual(Array(4).fill(`fhirq/${rule}`));
+    expect(messages[0].message).toContain('ADR-0016');
+  });
+
+  it('passes on domain types', () => {
+    expect(lintFixture(`${fixtures}/${rule}/must-pass.ts`, rule, options)).toEqual([]);
+  });
+
+  it('passes inside the codec, and only because it is allowed', () => {
+    const codec = `${fixtures}/${rule}/fhir/codec.ts`;
+    expect(lintFixture(codec, rule, options)).toEqual([]);
+    expect(lintFixture(codec, rule, { allow: [] })).toHaveLength(2);
   });
 });
