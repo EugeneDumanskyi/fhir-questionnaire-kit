@@ -422,7 +422,7 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 
 | ID | Invariant | Strict | Lenient | Source |
 |---|---|---|---|---|
-| INV-D-01 | The input is a FHIR R4 `Questionnaire` that satisfies R4 rules que-1, que-4, que-6, que-7 and que-10. | Reject | Reject | AC-01.1.3; `06-roadmap.md` M2 D4 |
+| INV-D-01 | The input is a FHIR R4 `Questionnaire` that satisfies R4 rules que-1, que-4, que-6, que-7 and que-10, and carries no modifier extension (R4 forbids a processor to ignore one it does not understand, and the kit understands none). | Reject | Reject | AC-01.1.3; `06-roadmap.md` M2 D4 |
 | INV-D-02 | Every `linkId` is unique across the whole item tree. | Reject | Reject | AC-01.1.3 |
 | INV-D-03 | Every item type is in the supported set. | Reject, listing every offending `linkId` + type | Placeholder; excluded from validation and emission; diagnostic | AC-01.3.1, AC-01.3.2 |
 | INV-D-04 | Every condition's question `linkId` exists. | Reject | Condition evaluates `false`; diagnostic | AC-02.5.2 |
