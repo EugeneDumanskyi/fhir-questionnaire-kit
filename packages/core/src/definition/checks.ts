@@ -138,9 +138,10 @@ function checkShape(input: ItemInput, path: string, add: Add): boolean {
     placeholder = true;
   }
   if (input.type !== 'group' && input.children.length > 0) add('items-under-question', 'strict', path);
-  for (const option of input.options) {
-    if (option.value !== null) continue;
-    add('unsupported-option-type', 'strict', path, { detail: option.valueType });
+  // Once per value type: two `time` options are one finding, not two.
+  const unsupported = new Set(input.options.flatMap((option) => (option.value === null ? [option.valueType] : [])));
+  for (const valueType of unsupported) {
+    add('unsupported-option-type', 'strict', path, { detail: valueType });
     placeholder = true;
   }
   if (input.hasInitial) add('initial-value-ignored', 'never', path);

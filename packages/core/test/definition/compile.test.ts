@@ -345,6 +345,18 @@ describe('the strict/lenient matrix (04-domain.md §5.1)', () => {
     expect(ok(input, 'lenient').items[0]).toMatchObject({ type: null, options: [{ kind: 'string', value: 'a' }] });
   });
 
+  it('INV-D-19: names an item once per unsupported value type, however many options share it', () => {
+    const time = { value: null, valueType: 'Time' };
+    const input = definition([item('slot', 'choice', { options: [time, time, { value: null, valueType: 'Reference' }, time] })]);
+    expect(compile(input, 'strict')).toEqual({
+      ok: false,
+      findings: [
+        { code: 'unsupported-option-type', severity: 'error', path: 'slot', related: [], detail: 'Time' },
+        { code: 'unsupported-option-type', severity: 'error', path: 'slot', related: [], detail: 'Reference' },
+      ],
+    });
+  });
+
   it('strict mode lists every rejecting finding at once, and leaves warnings out of the error', () => {
     const result = compile(
       definition([
