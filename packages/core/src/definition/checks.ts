@@ -37,7 +37,7 @@ const ORDERED: readonly Operator[] = ['=', '!=', '>', '<', '>=', '<='];
  * M2 plan D3: which answer kinds and operators a condition may use against
  * each question type. Anything else is INV-D-06 and evaluates `false`.
  */
-const COMPARABLE: Readonly<Record<ItemType, { readonly kinds: readonly AnswerKind[]; readonly operators: readonly Operator[] }>> = {
+export const COMPARABLE: Readonly<Record<ItemType, { readonly kinds: readonly AnswerKind[]; readonly operators: readonly Operator[] }>> = {
   group: { kinds: [], operators: [] },
   display: { kinds: [], operators: [] },
   boolean: { kinds: ['boolean'], operators: EQUALITY },
