@@ -115,6 +115,30 @@ export function addInstance(store: Store, group: ItemNode): Instance {
   return instance;
 }
 
+/**
+ * `discard` on a repeating group that becomes disabled (INV-S-13, T5): back to
+ * its creation state, one empty instance. A group that already has exactly
+ * one instance keeps it, since its descendants lose their answers as they
+ * flip in the same cycle; otherwise every instance is destroyed and one is
+ * added with a fresh ordinal. Returns the nodes created.
+ */
+export function resetInstances(store: Store, group: ItemNode): ItemNode[] {
+  if (group.instances.length === 1) return [];
+  for (const instance of [...group.instances]) removeInstance(store, instance);
+  return subtree(addInstance(store, group).children);
+}
+
+/** Every node in these subtrees, in document order. */
+export function subtree(roots: readonly ItemNode[]): ItemNode[] {
+  const out: ItemNode[] = [];
+  const visit = (node: ItemNode): void => {
+    out.push(node);
+    for (const child of childNodes(node)) visit(child);
+  };
+  for (const root of roots) visit(root);
+  return out;
+}
+
 /** Removes an instance and destroys its nodes and their answers (INV-S-25). Positions close up (INV-S-21). */
 export function removeInstance(store: Store, instance: Instance): void {
   const { instances } = instance.group;
@@ -136,13 +160,7 @@ export function childNodes(node: ItemNode): ItemNode[] {
 
 /** Every node in document order: pre-order, instances in position order. */
 export function inDocumentOrder(store: Store): ItemNode[] {
-  const out: ItemNode[] = [];
-  const visit = (node: ItemNode): void => {
-    out.push(node);
-    for (const child of childNodes(node)) visit(child);
-  };
-  for (const root of store.roots) visit(root);
-  return out;
+  return subtree(store.roots);
 }
 
 /** The instance of repeating group `scope` that `node` sits in, or `null` if it sits in none. */
@@ -185,17 +203,13 @@ export function dependentNodes(store: Store, question: ItemNode): ItemNode[] {
  */
 function descend(store: Store, children: readonly ItemNode[], scope: number, target: number): ItemNode[] {
   const chain: number[] = [];
-  for (let id = target; id !== scope; id = slot(store.definition.items, id).parent) chain.unshift(id);
+  for (let id = slot(store.definition.items, target).parent; id !== scope; id = slot(store.definition.items, id).parent) chain.unshift(id);
   let level: readonly ItemNode[] = children;
-  for (const [step, id] of chain.entries()) {
-    const matches = level.filter((node) => node.def.id === id);
-    if (step === chain.length - 1) return matches;
-    level = matches.flatMap(childNodes);
-  }
-  return [];
+  for (const id of chain) level = level.filter((node) => node.def.id === id).flatMap(childNodes);
+  return level.filter((node) => node.def.id === target);
 }
 
 function first(nodes: ReadonlySet<ItemNode>): ItemNode | undefined {
-  for (const node of nodes) return node;
-  return undefined;
+  const [node] = nodes;
+  return node;
 }
