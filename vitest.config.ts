@@ -23,6 +23,19 @@ const workspaceSources = [
  */
 export default defineConfig({
   test: {
+    /**
+     * `pnpm test:coverage`. Report-only until the gates switch on: core at
+     * 95 % line / 90 % branch from M2 (NFR-Q-01), adapters at 85 / 80 from M6
+     * and M7 (NFR-Q-02). The renderers are proven in browsers, so their Node
+     * coverage here understates them.
+     */
+    coverage: {
+      provider: 'v8',
+      include: ['packages/*/src/**/*.{ts,tsx}'],
+      exclude: ['**/*.d.ts'],
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+    },
     projects: [
       {
         test: {

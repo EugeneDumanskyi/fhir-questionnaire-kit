@@ -143,7 +143,7 @@ Step-by-step hours were not logged in a form that can calibrate P1, so this spik
 
 ## 8. Not covered
 
-R4 parsing; the dependency graph and incrementality; repeats, options, hydration and snapshots; ports; the catalogue's override and fallback; `Intl` date and number formatting; tiers 2–4; Firefox (M7); the axe matrix beyond Chromium (M8); screen-reader passes; the fixture pair and conformance row for `enableWhen` (D7); coverage and mutation gates, not measured here (coverage tooling is not installed); `pnpm build` and `dist`; the playground; `docs/07-api.md` and the API report (D1). React 18 was proven in development builds only; production builds do not print hydration warnings.
+R4 parsing; the dependency graph and incrementality; repeats, options, hydration and snapshots; ports; the catalogue's override and fallback; `Intl` date and number formatting; tiers 2–4; Firefox (M7); the axe matrix beyond Chromium (M8); screen-reader passes; the fixture pair and conformance row for `enableWhen` (D7); the coverage and mutation gates (coverage was measured after the run, report-only, on 2026-09-17 with `pnpm test:coverage`: core 100 % line / 98.6 % branch, React 94.3 % / 90.0 % from the SSR test alone, the element 0 % in Node because its proofs run in browsers; mutation is M2); `pnpm build` and `dist`; the playground; `docs/07-api.md` and the API report (D1). React 18 was proven in development builds only; production builds do not print hydration warnings.
 
 ## 9. Reproducing this
 
