@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 jobs:
-  # The fast lane, and the only required check. NFR-M-07 gives it 3 minutes.
-  # Budget, dependency, licence, packed-contents, coverage, mutation,
+  # The fast lane. NFR-M-07 gives it 3 minutes. Required, with the engine gates
+  # and incremental mutation from M2. Dependency, licence, packed-contents,
   # accessibility and browser gates become blocking in the milestone that first
   # produces what they guard (06-roadmap.md §5). A gate that is red because its
   # subject does not exist teaches the team to ignore red.
@@ -61,12 +61,63 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
-  # Spike S2 (06-roadmap.md M2): what incremental mutation testing costs on
-  # the runner. Not a required check; step 12 decides what blocks. The
-  # incremental file travels in the Actions cache, keyed per branch with main
-  # as the fallback (ADR-0018, A6).
+  # The engine's M2 gates, required: core coverage at 95 % line / 90 % branch
+  # from its own Node suite (NFR-Q-01), and the @fhirq/core bundle budget
+  # (NFR-S-02). The other entry points are measured and reported, and are gated
+  # from the milestone that builds each (scripts/budgets.json `gated`).
+  engine-gates:
+    name: Engine gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Core coverage, 95 % line and 90 % branch
+        run: pnpm test:coverage:core
+
+      - name: Bundle budget, @fhirq/core
+        run: pnpm measure --check
+
+      - name: Upload the coverage summary and the bundle report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-gates
+          path: |
+            coverage/coverage-summary.json
+            reports/bundle-sizes.md
+          retention-days: 30
+
+  # Mutation score ≥ 80 % on the enablement modules (NFR-Q-03), required from
+  # M2. Spike S2 measured it (docs/00-s2-mutation-cost.md): about 2 min
+  # incrementally on this runner. The incremental file travels in the Actions
+  # cache, keyed per branch with main as the fallback, and the nightly full run
+  # refreshes main's (ADR-0018, A6).
   mutation:
-    name: Mutation, incremental (non-blocking)
+    name: Mutation, incremental
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -129,7 +180,8 @@ jobs:
   # NFR-P-01, P-02 and P-08 against the committed baseline (M2 plan D7): the
   # median of five runs, failing above 20 % after one automatic re-run. The
   # baseline is measured here, on this runner class, and changes only through
-  # an explicit PR. Not a required check until step 12.
+  # an explicit PR. Not required: unchanged code measured 2× apart across
+  # hosted runners, so the gate's form is back with the maintainer (M2 step 12).
   bench:
     name: Benchmarks (non-blocking)
     runs-on: ubuntu-latest

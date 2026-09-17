@@ -1,0 +1,66 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The full mutation run (NFR-Q-03, A6). Pull requests run incrementally; this
+  # runs every mutant against main, and its score is the score of record: a
+  # loaded developer machine counts timeouts as kills (00-s2-mutation-cost.md
+  # §5). It blocks a release, not a merge. It also refreshes main's incremental
+  # file, which pull requests fall back to.
+  mutation-full:
+    name: Mutation, full run
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Mutation test, every mutant
+        run: |
+          start=$(date +%s)
+          pnpm test:mutation --force
+          echo "mutation wall-clock: $(( $(date +%s) - start )) s"
+
+      - name: Save the incremental result for main
+        if: ${{ success() }}
+        uses: actions/cache/save@v4
+        with:
+          path: reports/stryker/incremental.json
+          key: stryker-main-${{ github.sha }}-nightly-${{ github.run_id }}
+
+      - name: Upload the mutation report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-full
+          path: reports/stryker/
+          retention-days: 90

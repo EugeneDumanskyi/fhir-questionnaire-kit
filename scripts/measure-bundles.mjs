@@ -4,7 +4,11 @@
  * way NFR-S-02 defines each one.
  *
  *   node scripts/measure-bundles.mjs            report only (M1)
- *   node scripts/measure-bundles.mjs --check    exit 1 on any budget overrun (the gate, from M2)
+ *   node scripts/measure-bundles.mjs --check    exit 1 when a gated entry is over budget or bundles node_modules
+ *
+ * An entry is gated from the milestone that builds it (`budgets.json` `gated`,
+ * `06-roadmap.md` §5): core from M2, the others from M5–M8. Every entry is
+ * still measured and reported.
  *
  * Writes reports/bundle-sizes.json and reports/bundle-sizes.md.
  */
@@ -103,6 +107,11 @@ export function modules(metafile) {
     .sort((a, b) => b.bytes - a.bytes);
 }
 
+/** The rows that fail the gate: gated entries over budget or bundling anything from node_modules. */
+export function failures(rows, gated) {
+  return rows.filter((row) => gated.includes(row.name) && (row.over || row.nodeModules.length > 0));
+}
+
 export function compare(results, budgets) {
   return results.map((result) => {
     const budget = budgets[result.name] ?? null;
@@ -172,7 +181,7 @@ export async function measure(entry) {
 
 async function main() {
   const check = process.argv.includes('--check');
-  const { entries: budgets } = JSON.parse(await readFile(new URL('./budgets.json', import.meta.url), 'utf8'));
+  const { entries: budgets, gated } = JSON.parse(await readFile(new URL('./budgets.json', import.meta.url), 'utf8'));
   const results = [];
   for (const entry of ENTRIES) results.push(await measure(entry));
   const rows = compare(results, budgets);
@@ -183,10 +192,10 @@ async function main() {
   writeFileSync(`${root}reports/bundle-sizes.md`, renderMarkdown(rows, generated));
 
   for (const row of rows) {
-    console.log(`${row.over ? 'OVER' : 'ok  '} ${row.name.padEnd(28)} ${kB(row.gzip).padStart(6)} kB gzip  (budget ${row.budget === null ? '—' : kB(row.budget)} kB)`);
+    const gate = gated.includes(row.name) ? 'gated' : 'report only';
+    console.log(`${row.over ? 'OVER' : 'ok  '} ${row.name.padEnd(28)} ${kB(row.gzip).padStart(6)} kB gzip  (budget ${row.budget === null ? '—' : kB(row.budget)} kB, ${gate})`);
   }
-  const failures = rows.filter((row) => row.over || row.nodeModules.length > 0);
-  if (check && failures.length > 0) process.exitCode = 1;
+  if (check && failures(rows, gated).length > 0) process.exitCode = 1;
 }
 
 if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {

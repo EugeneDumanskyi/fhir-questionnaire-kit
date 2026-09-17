@@ -1,6 +1,7 @@
 {
-  "$comment": "NFR-S-02 and NFR-S-03, minified + gzipped, in bytes (1 kB = 1,000 bytes). Report-only in M1; the gate blocks per entry point from M2 (06-roadmap.md §5).",
+  "$comment": "NFR-S-02 and NFR-S-03, minified + gzipped, in bytes (1 kB = 1,000 bytes). Report-only in M1; the gate blocks per entry point from the milestone that builds it (06-roadmap.md §5). `gated` lists the entries `measure --check` fails on: core from M2.",
   "unit": "bytes",
+  "gated": ["@fhirq/core"],
   "entries": {
     "@fhirq/core": 14000,
     "@fhirq/core/view": 5000,
