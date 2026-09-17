@@ -17,6 +17,13 @@ import { buildGraph } from './graph.js';
  * is `checks.ts`; cycles and depth are `graph.ts`.
  */
 
+/**
+ * `strict` (the default) rejects a questionnaire with any construct the kit
+ * does not support, listing every finding; `lenient` loads it, degrading each
+ * construct towards the safe side with a diagnostic (`04-domain.md` §5.1).
+ *
+ * @beta
+ */
 export type LoadMode = 'strict' | 'lenient';
 
 /** A condition the session evaluates. `never` is one that load degraded to `false` (INV-D-04, 06, 13, 14). */

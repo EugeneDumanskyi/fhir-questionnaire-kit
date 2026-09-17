@@ -9,16 +9,32 @@ import { isRepeatingGroup, type ItemNode, type Store } from './store.js';
  * JavaScript with a malformed command gets a reason back too.
  */
 
+/**
+ * Everything a host can ask of a session. Each command runs as one cycle;
+ * one that cannot apply is refused with a reason, never thrown.
+ *
+ * @beta
+ */
 export type Command =
+  /** Replaces the node's answers (AC-02.1.1). More than one only on a repeating question. */
   | { readonly type: 'SetAnswer'; readonly path: ItemPath; readonly answers: readonly Answer[] }
+  /** Removes every answer on the node. */
   | { readonly type: 'ClearAnswer'; readonly path: ItemPath }
   /** Appends an empty instance to the repeating group at `path` (AC-03.2.1). */
   | { readonly type: 'AddRepeatInstance'; readonly path: ItemPath }
   /** Destroys the instance with this ordinal and its answers (AC-03.2.2, AC-03.2.6). */
   | { readonly type: 'RemoveRepeatInstance'; readonly path: ItemPath; readonly ordinal: number }
+  /** The respondent left the item: its issues surface (SM-03). */
   | { readonly type: 'NoteItemLeft'; readonly path: ItemPath }
+  /** Completes the session, or is refused with `validation-errors` and surfaces every issue (SM-01). */
   | { readonly type: 'RequestCompletion' };
 
+/**
+ * Why a command was refused. A refusal changes nothing, except that a refused
+ * completion surfaces every issue.
+ *
+ * @beta
+ */
 export type RefusalReason =
   | 'malformed-command'
   | 'unknown-path'

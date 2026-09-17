@@ -17,7 +17,7 @@ import { childNodes, type ItemNode, type Store } from './store.js';
  * What a host may know about an item's definition. Built once per item; the
  * compiled definition's graph internals are not part of it.
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export interface ItemDefinition {
   readonly linkId: LinkId;
@@ -40,7 +40,7 @@ export interface ItemDefinition {
  * An effectively enabled item node. Object identity is kept across cycles
  * while nothing about it changed.
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export interface NodeState {
   readonly path: ItemPath;

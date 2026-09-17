@@ -3,6 +3,8 @@ import type { Diagnostic } from './diagnostic.js';
 /**
  * Integration error codes. Authoring problems are diagnostics, or, in `strict`
  * mode, one `definition-rejected` listing every finding (AC-01.3.1).
+ *
+ * @beta
  */
 export type FhirqErrorCode = 'definition-rejected' | 'invalid-path' | 'invalid-options';
 
@@ -11,7 +13,7 @@ export type FhirqErrorCode = 'definition-rejected' | 'invalid-path' | 'invalid-o
  * what and where, by code and path. Neither ever holds an answer value
  * (NFR-X-04).
  *
- * @alpha M2 fixes the surface in `docs/07-api.md`.
+ * @beta
  */
 export class FhirqError extends Error {
   readonly code: FhirqErrorCode;

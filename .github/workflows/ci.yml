@@ -62,9 +62,11 @@ jobs:
         run: pnpm test
 
   # The engine's M2 gates, required: core coverage at 95 % line / 90 % branch
-  # from its own Node suite (NFR-Q-01), and the @fhirq/core bundle budget
-  # (NFR-S-02). The other entry points are measured and reported, and are gated
-  # from the milestone that builds each (scripts/budgets.json `gated`).
+  # from its own Node suite (NFR-Q-01), the @fhirq/core bundle budget
+  # (NFR-S-02), and the API report (NFR-M-04): a public surface that differs
+  # from packages/core/etc/*.api.md fails until the PR commits the new report.
+  # The other entry points are measured and reported, and are gated from the
+  # milestone that builds each (scripts/budgets.json `gated`).
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest
@@ -101,6 +103,9 @@ jobs:
       - name: Bundle budget, @fhirq/core
         run: pnpm measure --check
 
+      - name: API report, @fhirq/core and @fhirq/core/view
+        run: pnpm api:check
+
       - name: Upload the coverage summary and the bundle report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -109,6 +114,7 @@ jobs:
           path: |
             coverage/coverage-summary.json
             reports/bundle-sizes.md
+            reports/api/
           retention-days: 30
 
   # Mutation score ≥ 80 % on the enablement modules (NFR-Q-03), required from

@@ -4,12 +4,20 @@
  * answer value (NFR-X-04, INV-D-10): codes, paths and authored names only.
  */
 
+/**
+ * `error` for a finding that rejects a `strict` load, `warning` for one that
+ * never does, `info` for a remark.
+ *
+ * @beta
+ */
 export type Severity = 'error' | 'warning' | 'info';
 
 /**
  * Load findings, one code per invariant, plus the runtime ones. A finding that
  * rejects the load in `strict` mode is `error` in both modes, so a lenient
  * host can tell a degraded item from a mere remark; the rest are `warning`.
+ *
+ * @beta
  */
 export type DiagnosticCode =
   /* INV-D-01: not an R4 Questionnaire, or an R4 rule-severity constraint broken. */
@@ -39,7 +47,14 @@ export type DiagnosticCode =
   /* Runtime */
   | 'listener-threw';
 
+/**
+ * A finding about the questionnaire, or a runtime one such as a listener that
+ * threw. Codes and paths only (NFR-X-04).
+ *
+ * @beta
+ */
 export interface Diagnostic {
+  /** Which rule: one code per invariant. */
   readonly code: DiagnosticCode;
   readonly severity: Severity;
   /**

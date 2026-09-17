@@ -1,15 +1,22 @@
 import { parseDate, parseDateTime } from './temporal.js';
 
-/** Answer values the S1 slice's session still uses. Removed when M2's session replaces it. */
-export type AnswerValue = boolean | string;
-
-/** A coded value. Compared on `system` and `code`; `display` is for people (M2 plan D3). */
+/**
+ * A coded value. Compared on `system` and `code`; `display` is for people (M2 plan D3).
+ *
+ * @beta
+ */
 export interface Coding {
   readonly system?: string;
   readonly code?: string;
   readonly display?: string;
 }
 
+/**
+ * A measured amount. Compared only when `system` and `code` are identical: no
+ * unit conversion (M2 plan D3).
+ *
+ * @beta
+ */
 export interface Quantity {
   readonly value: number;
   readonly unit?: string;
@@ -22,6 +29,8 @@ export interface Quantity {
  * the item's: a `text` item holds `string` answers, and a `choice` item holds
  * whichever kind its options have (M2 plan D4). FHIR `date` and `dateTime`
  * stay distinct strings with their precision as written.
+ *
+ * @beta
  */
 export type Answer =
   | { readonly kind: 'boolean'; readonly value: boolean }
@@ -33,6 +42,11 @@ export type Answer =
   | { readonly kind: 'coding'; readonly value: Coding }
   | { readonly kind: 'quantity'; readonly value: Quantity };
 
+/**
+ * The `kind` tag of an `Answer`.
+ *
+ * @beta
+ */
 export type AnswerKind = Answer['kind'];
 
 const INT32_MIN = -2_147_483_648;

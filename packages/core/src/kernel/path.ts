@@ -10,6 +10,8 @@ import { FhirqError } from './error.js';
  * never position, so a path stays the same when other instances come and go
  * (AC-03.4.1, `04-domain.md` T11). A node computes its path once, when it is
  * created, and the session keys every table on that one string.
+ *
+ * @beta
  */
 export type ItemPath = string & { readonly __brand: 'ItemPath' };
 
@@ -18,6 +20,8 @@ export type ItemPath = string & { readonly __brand: 'ItemPath' };
  * `itemPath('meds', 2, 'dose')`. A number is the ordinal of the repeating group
  * named just before it. Throws `FhirqError` with `invalid-path` on anything
  * else, since a malformed path is an integration error, not a respondent's.
+ *
+ * @beta
  */
 export function itemPath(...parts: readonly (string | number)[]): ItemPath {
   let path: ItemPath | null = null;
