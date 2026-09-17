@@ -61,6 +61,71 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+  # Spike S2 (06-roadmap.md M2): what incremental mutation testing costs on
+  # the runner. Not a required check; step 12 decides what blocks. The
+  # incremental file travels in the Actions cache, keyed per branch with main
+  # as the fallback (ADR-0018, A6).
+  mutation:
+    name: Mutation, incremental (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore the incremental result
+        uses: actions/cache/restore@v4
+        with:
+          path: reports/stryker/incremental.json
+          key: stryker-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            stryker-${{ github.head_ref || github.ref_name }}-
+            stryker-main-
+
+      - name: Mutation test
+        run: |
+          echo "cores: $(nproc)"
+          start=$(date +%s)
+          pnpm test:mutation
+          echo "mutation wall-clock: $(( $(date +%s) - start )) s"
+
+      - name: Save the incremental result
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@v4
+        with:
+          path: reports/stryker/incremental.json
+          key: stryker-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
+
+      - name: Upload the mutation report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation
+          path: reports/stryker/
+          retention-days: 30
+
   # M1's spike proofs (S1, decision D5): the DOM contract, axe, hydration on
   # React 18 and 19, caret and CSP in Chromium and WebKit, and the bundle
   # report. Deliberately not a required check: SSR blocks from M6, CSP from M7,
