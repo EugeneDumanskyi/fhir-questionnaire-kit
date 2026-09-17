@@ -28,6 +28,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/coverage/**',
       '**/*.tsbuildinfo',
+      '.tsbuild/**',
       // Deliberate violations, linted only by the rules' own tests.
       'tools/eslint-rules/test/fixtures/**',
     ],
