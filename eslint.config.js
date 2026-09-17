@@ -18,6 +18,31 @@ const ENTRY_POINTS = {
  */
 const NETWORK_ALLOWED = ['packages/element/src/default-resolver.ts'];
 
+const NO_DEFAULT_EXPORT = {
+  selector: 'ExportDefaultDeclaration',
+  message:
+    'No default exports: a named export is what the API report, the deep-import rule and a reader all read (NFR-M-04).',
+};
+
+/**
+ * ADR-0014: the element styles itself only through adopted constructable
+ * stylesheets. A `<style>` element or a `style` attribute is blocked by a
+ * strict CSP (NFR-C-07), and an `el.style` write is an inline style by another
+ * route. `packages/element/test/style-bans.test.ts` holds a must-fail case for
+ * each selector.
+ */
+const STYLE_MESSAGE =
+  'The element styles only through adopted stylesheets (ADR-0014): no <style> element, no style attribute, no .style write.';
+const NO_INLINE_STYLE = [
+  "CallExpression[callee.property.name='createElement'][arguments.0.value=/^style$/i]",
+  "CallExpression[callee.property.name=/^(setAttribute|setAttributeNS|toggleAttribute)$/][arguments.0.value=/^style$/i]",
+  "CallExpression[callee.property.name='setAttributeNS'][arguments.1.value=/^style$/i]",
+  "AssignmentExpression > MemberExpression.left[property.name='style']",
+  "AssignmentExpression > MemberExpression.left[object.property.name='style']",
+  "CallExpression[callee.object.property.name='style']",
+  "MemberExpression[property.name='attributeStyleMap']",
+].map((selector) => ({ selector, message: STYLE_MESSAGE }));
+
 /** Where prose is allowed to live (NFR-I-01). The catalogue itself is M4. */
 const CATALOGUE = ['packages/core/src/**/messages/**'];
 
@@ -55,14 +80,7 @@ export default tseslint.config(
         'error',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'ExportDefaultDeclaration',
-          message:
-            'No default exports: a named export is what the API report, the deep-import rule and a reader all read (NFR-M-04).',
-        },
-      ],
+      'no-restricted-syntax': ['error', NO_DEFAULT_EXPORT],
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
@@ -81,6 +99,11 @@ export default tseslint.config(
     /* ADR-0007: the engine and the presentation model are DOM-free. */
     files: ['packages/core/src/**/*.ts'],
     rules: { 'fhirq/no-dom-in-core': 'error' },
+  },
+
+  {
+    files: ['packages/element/src/**/*.ts'],
+    rules: { 'no-restricted-syntax': ['error', NO_DEFAULT_EXPORT, ...NO_INLINE_STYLE] },
   },
 
   {
