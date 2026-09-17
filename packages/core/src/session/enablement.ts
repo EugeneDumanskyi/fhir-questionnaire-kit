@@ -1,6 +1,15 @@
 import { ownCondition, type QuestionState } from './conditions.js';
 import { MinHeap } from './heap.js';
-import { childNodes, dependentNodes, inDocumentOrder, questionNode, type ItemNode, type Store } from './store.js';
+import {
+  childNodes,
+  dependentNodes,
+  inDocumentOrder,
+  isRepeatingGroup,
+  questionNode,
+  resetInstances,
+  type ItemNode,
+  type Store,
+} from './store.js';
 
 /**
  * ADR-0009 cycle step 3: settle enablement.
@@ -23,8 +32,6 @@ export interface Settlement {
   readonly recomputed: readonly ItemNode[];
   /** Nodes whose effective enablement changed. */
   readonly flipped: readonly ItemNode[];
-  /** Whether `discard` erased any answer. */
-  readonly erased: boolean;
 }
 
 const settleOrder = (a: ItemNode, b: ItemNode): boolean =>
@@ -45,7 +52,6 @@ export function settle(store: Store, retention: RetentionPolicy, cycle: number, 
 
   const recomputed: ItemNode[] = [];
   const flipped: ItemNode[] = [];
-  let erased = false;
   for (let node = heap.pop(); node !== undefined; node = heap.pop()) {
     if (node.destroyed) continue;
     recomputed.push(node);
@@ -57,15 +63,24 @@ export function settle(store: Store, retention: RetentionPolicy, cycle: number, 
     if (effective !== node.effective) {
       node.effective = effective;
       flipped.push(node);
-      if (!effective && retention === 'discard' && node.answers.length > 0) {
-        node.answers = [];
-        erased = true;
-      }
+      if (!effective && retention === 'discard') discard(store, node).forEach(queue);
     }
     for (const child of childNodes(node)) queue(child);
     for (const dependent of dependentNodes(store, node)) queue(dependent);
   }
-  return { recomputed, flipped, erased };
+  return { recomputed, flipped };
+}
+
+/**
+ * SM-02 and SM-05 under `discard`, as a node becomes disabled: its answers go,
+ * and a repeating group goes back to one empty instance (AC-05.2.6). Returns
+ * the nodes a reset created, which are queued like any other so every one of
+ * them is evaluated this cycle.
+ */
+function discard(store: Store, node: ItemNode): readonly ItemNode[] {
+  if (isRepeatingGroup(node.def)) return resetInstances(store, node);
+  node.answers = [];
+  return [];
 }
 
 /**

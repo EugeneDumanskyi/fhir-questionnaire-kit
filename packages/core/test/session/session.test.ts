@@ -95,7 +95,7 @@ describe('one command, one cycle, one notification (INV-S-33)', () => {
     expect(session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(true) })).toEqual({ outcome: 'applied' });
 
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(listener.mock.calls[0]?.[0]).toEqual({ command: 'SetAnswer', enabled: [AMOUNT], disabled: [], surfaced: [], completion: null, responseChanged: true });
+    expect(listener.mock.calls[0]?.[0]).toEqual({ command: 'SetAnswer', enabled: [AMOUNT], disabled: [], surfaced: [], added: [], removed: [], completion: null, responseChanged: true });
     expect(visiblePaths(session)).toEqual([SMOKER, AMOUNT]);
     expect(session.getSnapshot().cycle).toBe(1);
   });
@@ -186,6 +186,7 @@ describe('refused commands are no-op cycles with a reason (04-domain.md §7.1)',
     { linkId: 'note', type: 'display', text: 'Thanks' },
     { linkId: 'weight', type: 'decimal', extension: [{ url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression', valueExpression: { language: 'text/fhirpath', expression: '1' } }] },
     { linkId: 'colours', type: 'string', repeats: true },
+    { linkId: 'story', type: 'text' },
     { linkId: 'kind', type: 'choice', answerOption: [{ valueString: 'x' }] },
     { linkId: 'other', type: 'open-choice', answerOption: [{ valueCoding: { code: 'x' } }] },
   ]);
@@ -229,6 +230,7 @@ describe('refused commands are no-op cycles with a reason (04-domain.md §7.1)',
     expect(session.dispatch({ type: 'SetAnswer', path: itemPath('colours'), answers: [...text('red'), ...text('blue')] })).toEqual({ outcome: 'applied' });
     expect(session.dispatch({ type: 'SetAnswer', path: itemPath('other'), answers: text('something else') })).toEqual({ outcome: 'applied' });
     expect(session.dispatch({ type: 'SetAnswer', path: itemPath('kind'), answers: text('x') })).toEqual({ outcome: 'applied' });
+    expect(session.dispatch({ type: 'SetAnswer', path: itemPath('story'), answers: text('long') })).toEqual({ outcome: 'applied' });
     expect(answersAt(session, 'colours')).toEqual([...text('red'), ...text('blue')]);
   });
 

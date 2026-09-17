@@ -8,7 +8,16 @@ import { settle, settleInitial, type RetentionPolicy } from './enablement.js';
 import { guard, isCommand, type Command, type RefusalReason } from './guard.js';
 import type { Validator, VisibleProjection } from './projection.js';
 import { publicItem, publishNodes, visibleNodes, type NodeState } from './publish.js';
-import { createStore, dependentNodes, inDocumentOrder, type ItemNode, type Store } from './store.js';
+import {
+  addInstance,
+  createStore,
+  dependentNodes,
+  inDocumentOrder,
+  removeInstance,
+  subtree,
+  type ItemNode,
+  type Store,
+} from './store.js';
 import { recordTrace } from './trace.js';
 
 /**
@@ -42,6 +51,9 @@ export interface SessionChange {
   /** Nodes that became disabled, in document order. */
   readonly disabled: readonly ItemPath[];
   readonly surfaced: readonly ItemPath[];
+  /** Repeat instances this cycle added and removed, by instance path (`meds[2]`). */
+  readonly added: readonly ItemPath[];
+  readonly removed: readonly ItemPath[];
   readonly completion: 'refused' | 'completed' | null;
   /** Whether the emitted response would differ: an answer on an enabled node changed, appeared or disappeared. */
   readonly responseChanged: boolean;
@@ -124,7 +136,9 @@ export function createResponseSession(definition: Definition, settings: SessionS
     if (typeof target === 'string') return { outcome: 'refused', reason: target };
 
     settleRun += 1;
-    const settlement = settle(store, settings.retention, settleRun, apply(command, target));
+    const firstNew = store.sequence;
+    const instances = { added: [] as ItemPath[], removed: [] as ItemPath[] };
+    const settlement = settle(store, settings.retention, settleRun, apply(command, target, instances));
     recordTrace(session, settlement.recomputed.map((node) => node.path));
     const next = evaluate();
 
@@ -143,12 +157,14 @@ export function createResponseSession(definition: Definition, settings: SessionS
     settled = next;
     if (nodes === state.nodes && completion === null) return { outcome: 'unchanged' };
 
-    const flips = flipsInDocumentOrder(store, settlement.flipped, next.visible);
+    const flips = flipsInDocumentOrder(store, settlement.flipped, next.visible, firstNew);
     const change: SessionChange = {
       command: command.type,
       enabled: flips.enabled,
       disabled: flips.disabled,
       surfaced: surfaced.length > 0 ? surfaced : NO_PATHS,
+      added: instances.added.length > 0 ? instances.added : NO_PATHS,
+      removed: instances.removed.length > 0 ? instances.removed : NO_PATHS,
       completion,
       responseChanged: !sameSignature(previous.answered, next.answered),
     };
@@ -163,8 +179,21 @@ export function createResponseSession(definition: Definition, settings: SessionS
     return completion === 'refused' ? { outcome: 'refused', reason: 'validation-errors' } : { outcome: 'applied' };
   };
 
-  const apply = (command: Command, target: ItemNode | null): ItemNode[] => {
+  const apply = (command: Command, target: ItemNode | null, instances: { added: ItemPath[]; removed: ItemPath[] }): ItemNode[] => {
     if (target === null) return [];
+    if (command.type === 'AddRepeatInstance') {
+      const instance = addInstance(store, target);
+      instances.added.push(instance.path);
+      return subtree(instance.children);
+    }
+    if (command.type === 'RemoveRepeatInstance') {
+      const instance = target.instances.find((candidate) => candidate.ordinal === command.ordinal);
+      if (instance !== undefined) {
+        instances.removed.push(instance.path);
+        removeInstance(store, instance);
+      }
+      return [];
+    }
     if (command.type === 'SetAnswer' && !sameAnswers(target.answers, command.answers)) {
       target.answers = Object.freeze(command.answers.map(copyAnswer));
       return dependentNodes(store, target);
@@ -241,12 +270,18 @@ function sameAnswers(a: ItemNode['answers'], b: ItemNode['answers']): boolean {
   return a.length === b.length && a.every((answer, index) => sameAnswer(answer, slot(b, index)));
 }
 
+/**
+ * The nodes that flipped, as paths in document order. A node created this
+ * cycle (by an added instance, or a `discard` reset) did not become enabled:
+ * it appeared, which `added` reports.
+ */
 function flipsInDocumentOrder(
   store: Store,
   flipped: readonly ItemNode[],
   visible: readonly ItemNode[],
+  firstNew: number,
 ): { enabled: readonly ItemPath[]; disabled: readonly ItemPath[] } {
-  const live = flipped.filter((node) => !node.destroyed);
+  const live = flipped.filter((node) => !node.destroyed && node.sequence < firstNew);
   const enabled = new Set(live.filter((node) => node.effective));
   const disabled = new Set(live.filter((node) => !node.effective));
   return {
