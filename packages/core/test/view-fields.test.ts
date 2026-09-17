@@ -44,9 +44,9 @@ describe('view-model field list (ADR-0007 review rule, M1 AC-3)', () => {
     expect([...names.keys()].sort()).toEqual(
       [
         'announcement', 'choices', 'clear', 'completed', 'control', 'cycle', 'description', 'entries',
-        'error', 'errorSummary', 'focusTarget', 'heading', 'headingId', 'id', 'ids', 'invalid', 'issues',
+        'error', 'errorSummary', 'focusId', 'focusTarget', 'heading', 'headingId', 'id', 'ids', 'invalid', 'issues',
         'label', 'leave', 'message', 'nodes', 'path', 'required', 'requiredMarker', 'rule', 'selected',
-        'set', 'target', 'text', 'value',
+        'set', 'text', 'value',
       ].sort(),
     );
   });

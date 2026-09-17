@@ -327,7 +327,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 
 ## 11. Go/no-go on Architecture B after spike S1
 
-*M1 AC-9. Evidence: `00-s1-architecture-and-bytes.md`. **Decision: continue.** Recommended 2026-09-16; approved by the maintainer 2026-09-17, together with the budget verdict in `03-nfr.md` §2. The AC-3 field-list review is still open.*
+*M1 AC-9. Evidence: `00-s1-architecture-and-bytes.md`. **Decision: continue.** Recommended 2026-09-16; approved by the maintainer 2026-09-17, together with the budget verdict in `03-nfr.md` §2 and the AC-3 field-list review.*
 
 **What S1 set out to break, and did not.** One DOM-free view model drove a React renderer and a keyed vanilla renderer to identical markup, roles, accessible names and ARIA relationships in every state of the slice, asserted by one contract suite (AC-4). Neither renderer needed a field naming an element, an ARIA attribute or a CSS property (AC-3), and neither computes visibility, validity, ids or response shape. Axe found nothing in 24 runs (AC-5); React 18 and 19 hydrated with no warnings (AC-6); the element kept caret and focus through cycles that change the focused input's own state, on Chromium and WebKit (AC-7); and it rendered under `style-src 'self'` with adopted stylesheets only (AC-8). None of S1's three kill criteria triggered.
 

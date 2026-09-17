@@ -154,7 +154,7 @@ export function summaryPart(form: HTMLElement) {
     const list = el('ul', 'fhirq-summary-list', 'error-summary-list');
     for (const entry of summary.entries) {
       const link = el('a', 'fhirq-summary-link', 'error-summary-link', el('li', 'fhirq-summary-entry', 'error-summary-entry', list));
-      link.href = `#${entry.target}`;
+      link.href = `#${entry.focusId}`;
       link.textContent = entry.message;
     }
     section.replaceChildren(heading, list);

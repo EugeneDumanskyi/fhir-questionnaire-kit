@@ -127,7 +127,7 @@ describe('announcements, error summary and focus target (ADR-0007 verification, 
       id: 'fq-summary',
       headingId: 'fq-summary-heading',
       heading: 'There is a problem',
-      entries: [{ path: 'amount', message: 'Answer this question: How much do you smoke per day?', target: 'fq-amount-control' }],
+      entries: [{ path: 'amount', message: 'Answer this question: How much do you smoke per day?', focusId: 'fq-amount-control' }],
     });
     expect(model.focusTarget).toEqual({ id: 'fq-summary', cycle: 2 });
     expect(model.announcement?.text).toBe('The form was not completed. 1 answer needs attention.');

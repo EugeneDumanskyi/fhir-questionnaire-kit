@@ -70,8 +70,8 @@ export interface ErrorSummaryEntry {
   readonly path: string;
   /** The issue and the question it is about, so the link makes sense out of context. */
   readonly message: string;
-  /** The id to move focus to: the node's control. */
-  readonly target: string;
+  /** The id to move focus to: the node's control. Not `target`, which on `<a>` names a browsing context. */
+  readonly focusId: string;
 }
 
 export interface ErrorSummary {
@@ -236,7 +236,7 @@ function summarise(
     node.issues.map((issue): ErrorSummaryEntry => ({
       path: node.path,
       message: fill(messages.errorSummaryEntry, { message: issue.message, label: node.label }),
-      target: node.ids.control,
+      focusId: node.ids.control,
     })),
   );
   if (entries.length === 0) return null;
