@@ -11,6 +11,8 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./base.css": "./dist/base.css",
+    "./default.css": "./dist/default.css",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",

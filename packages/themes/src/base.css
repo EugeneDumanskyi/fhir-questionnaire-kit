@@ -1,0 +1,132 @@
+/*
+ * @fhirq/themes/base.css — the structural stylesheet (ADR-0013, ADR-0014).
+ *
+ * Reads --fhirq-* tokens only: no literal colour or spacing values, logical
+ * properties only (NFR-I-05). Class names are the DOM contract's
+ * (docs/08-dom-contract.md), shared by the React renderer in light DOM and the
+ * element in its shadow root. S1 slice: the tokens two controls need.
+ */
+
+:host {
+  display: block;
+}
+
+.fhirq-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fhirq-space-4);
+  font-family: var(--fhirq-font-family);
+  font-size: var(--fhirq-font-size);
+  line-height: var(--fhirq-line-height);
+  color: var(--fhirq-color-text);
+  background-color: var(--fhirq-color-background);
+}
+
+.fhirq-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fhirq-space-2);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.fhirq-label {
+  padding: 0;
+  font-weight: var(--fhirq-font-weight-strong);
+}
+
+.fhirq-required {
+  margin-inline-start: var(--fhirq-space-1);
+  color: var(--fhirq-color-error);
+}
+
+.fhirq-control {
+  box-sizing: border-box;
+  min-block-size: var(--fhirq-target-size);
+  max-inline-size: 100%;
+  padding-block: var(--fhirq-space-2);
+  padding-inline: var(--fhirq-space-3);
+  font: inherit;
+  color: var(--fhirq-color-text);
+  background-color: var(--fhirq-color-control-background);
+  border: var(--fhirq-border-width) solid var(--fhirq-color-border);
+  border-radius: var(--fhirq-radius);
+}
+
+.fhirq-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fhirq-space-4);
+}
+
+.fhirq-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fhirq-space-2);
+  min-block-size: var(--fhirq-target-size);
+}
+
+.fhirq-radio {
+  inline-size: var(--fhirq-radio-size);
+  block-size: var(--fhirq-radio-size);
+  margin: 0;
+  accent-color: var(--fhirq-color-accent);
+}
+
+.fhirq-control:focus-visible,
+.fhirq-radio:focus-visible,
+.fhirq-summary:focus-visible,
+.fhirq-summary-link:focus-visible {
+  outline: var(--fhirq-focus-width) solid var(--fhirq-color-focus);
+  outline-offset: var(--fhirq-focus-offset);
+}
+
+.fhirq-control[aria-invalid='true'],
+.fhirq-choices[aria-invalid='true'] {
+  border-color: var(--fhirq-color-error);
+  border-inline-start: var(--fhirq-error-bar-width) solid var(--fhirq-color-error);
+  padding-inline-start: var(--fhirq-space-3);
+}
+
+.fhirq-error {
+  color: var(--fhirq-color-error);
+  font-weight: var(--fhirq-font-weight-strong);
+}
+
+.fhirq-error-message {
+  margin: 0;
+}
+
+.fhirq-summary {
+  padding: var(--fhirq-space-4);
+  border: var(--fhirq-border-width) solid var(--fhirq-color-error);
+  border-inline-start-width: var(--fhirq-error-bar-width);
+  border-radius: var(--fhirq-radius);
+}
+
+.fhirq-summary-heading {
+  margin-block: 0 var(--fhirq-space-2);
+  font-size: var(--fhirq-font-size-heading);
+}
+
+.fhirq-summary-list {
+  margin: 0;
+  padding-inline-start: var(--fhirq-space-4);
+}
+
+.fhirq-summary-link {
+  color: var(--fhirq-color-error);
+}
+
+/* Visually hidden, still announced. The one-pixel box is the technique, not a
+   spacing value. */
+.fhirq-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

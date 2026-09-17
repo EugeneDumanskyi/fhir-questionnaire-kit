@@ -1,0 +1,49 @@
+/*
+ * @fhirq/themes/default.css — the default token preset: values only
+ * (ADR-0013). Light by default, dark under prefers-color-scheme.
+ *
+ * `:root` serves light DOM (React); `:host` serves the element's shadow root.
+ * A host overriding a token on any ancestor, or on the element itself, wins.
+ * Colour pairs are chosen for WCAG 2.2 AA contrast; M8 measures them.
+ */
+
+:root,
+:host {
+  --fhirq-font-family: inherit;
+  --fhirq-font-size: 1rem;
+  --fhirq-font-size-heading: 1.25rem;
+  --fhirq-font-weight-strong: 600;
+  --fhirq-line-height: 1.5;
+  --fhirq-space-1: 0.25rem;
+  --fhirq-space-2: 0.5rem;
+  --fhirq-space-3: 0.75rem;
+  --fhirq-space-4: 1rem;
+  --fhirq-radius: 0.25rem;
+  --fhirq-border-width: 1px;
+  --fhirq-error-bar-width: 4px;
+  --fhirq-focus-width: 3px;
+  --fhirq-focus-offset: 2px;
+  --fhirq-target-size: 2.75rem;
+  --fhirq-radio-size: 1.5rem;
+
+  --fhirq-color-text: #1b1b1f;
+  --fhirq-color-background: #ffffff;
+  --fhirq-color-control-background: #ffffff;
+  --fhirq-color-border: #5c5f66;
+  --fhirq-color-accent: #1d4ed8;
+  --fhirq-color-focus: #1d4ed8;
+  --fhirq-color-error: #b3261e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  :host {
+    --fhirq-color-text: #e8e8ec;
+    --fhirq-color-background: #121316;
+    --fhirq-color-control-background: #1c1d21;
+    --fhirq-color-border: #9a9ca3;
+    --fhirq-color-accent: #93b4ff;
+    --fhirq-color-focus: #93b4ff;
+    --fhirq-color-error: #ffb4ab;
+  }
+}
