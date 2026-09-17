@@ -1,0 +1,12 @@
+{
+  "name": "@fhirq/react-18",
+  "version": "0.0.0",
+  "private": true,
+  "description": "React 18 for the React adapter's second-major proofs (NFR-C-03). Its own workspace package so React 18 and 19 never share a node_modules under hoist=false and strict peers. Dev-only; never published.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "devDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
