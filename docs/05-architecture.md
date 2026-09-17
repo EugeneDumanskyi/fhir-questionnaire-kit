@@ -2,7 +2,7 @@
 
 *Phase: solution architecture. Input: `03-nfr.md`, `04-domain.md` (with `01-brief.md`, `02-requirements.md` and ADR-0001–0006 for context). Output: candidate architectures, trade-offs against the NFRs, a recommendation, C4 context and container views, and ADR-0007–0019. Next: milestones → build.*
 
-**Status:** Architecture B (§4, ADR-0007) was accepted on 2026-09-15, and so were tensions AT1–AT4 (§9). Assumptions A1 and A2 (§8) were accepted into NFR-S-02. ADR-0008 to ADR-0019 remain Proposed, and so do assumptions A3–A6 and tension AT5.
+**Status:** Architecture B (§4, ADR-0007) was accepted on 2026-09-15, and so were tensions AT1–AT4 (§9). Assumptions A1 and A2 (§8) were accepted into NFR-S-02. ADR-0008 to ADR-0019 and ADR-0020 were accepted on 2026-09-16 (`06-roadmap.md` §6 decision 2), and so were assumptions A3–A6; tension AT5 was confirmed out of v1 the same day. Spike S1 confirmed Architecture B on 2026-09-17 (§11).
 
 ---
 
@@ -121,7 +121,7 @@ One default UI, delivered as a custom element and wrapped for React.
 
 ## 4. Recommendation
 
-**Architecture B**, recorded as ADR-0007 and **accepted on 2026-09-15**. It forces the decisions below; apart from ADR-0007 they remain Proposed:
+**Architecture B**, recorded as ADR-0007 and **accepted on 2026-09-15**. It forces the decisions below, all accepted on 2026-09-16:
 
 | Concern | Decision | ADR |
 |---|---|---|
