@@ -10,6 +10,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { availableParallelism, cpus } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 import { build } from 'esbuild';
@@ -61,12 +62,15 @@ async function main() {
   const results = {
     runs,
     node: process.version,
+    // Shared runners vary in hardware; the model tells a slower machine from a regression.
+    cpu: { model: cpus()[0]?.model ?? null, cores: availableParallelism() },
     benchmarks: Object.fromEntries(
       Object.entries(samples).map(([name, figure]) => [name, { medianMs: median(figure.median), p99Ms: median(figure.p99) }]),
     ),
     heapBytes: median(heap),
   };
   writeFileSync(`${out}/results.json`, `${JSON.stringify(results, null, 2)}\n`);
+  console.log(`${results.cpu.cores} cores, ${results.cpu.model}`);
   for (const [name, figure] of Object.entries(results.benchmarks)) {
     console.log(`${figure.medianMs.toFixed(4).padStart(10)} ms median  ${figure.p99Ms.toFixed(4).padStart(10)} ms p99  ${name}`);
   }
