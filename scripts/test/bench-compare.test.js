@@ -3,28 +3,40 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { ABSOLUTE, compare, TOLERANCE } from '../bench-compare.mjs';
-import { median, readVitest } from '../bench-run.mjs';
+import { median, readVitest, runOrder } from '../bench-run.mjs';
 import { FIXTURES, render } from '../gen-bench-fixtures.mjs';
 
 const read = (name) => JSON.parse(readFileSync(new URL(`./fixtures/bench/${name}.json`, import.meta.url), 'utf8'));
 
-describe('the benchmark gate (M2 plan D7)', () => {
-  it('passes figures within 20 % of the baseline, and never gates a reference figure', () => {
+describe('the benchmark gate (M2 plan D7, revised)', () => {
+  it('passes timings within 20 % of the merge base, and never gates a reference figure', () => {
     expect(TOLERANCE).toBe(0.2);
-    expect(compare(read('within'), read('baseline'))).toEqual([]);
+    expect(compare(read('within'), read('baseline'), read('baseline'))).toEqual([]);
   });
 
   it('fails the fixture that must fail, naming every reason', () => {
-    const failures = compare(read('regressed'), read('baseline'));
+    const failures = compare(read('regressed'), read('baseline'), read('baseline'));
     expect(failures.map((failure) => failure.name)).toEqual([
       'NFR-P-01 create session > small-25',
       'NFR-P-02 one answer, cascade depth 5 > small-25',
-      'NFR-P-01 create session > large-500',
       'NFR-P-08 retained heap',
     ]);
     expect(failures[0].reason).toContain('over the 50 ms budget');
-    expect(failures[1].reason).toContain('21 % over the baseline');
-    expect(failures[2].reason).toBe('missing from the results');
+    expect(failures[1].reason).toContain("21 % over the merge base's");
+    expect(failures[2].reason).toContain('over the baseline');
+  });
+
+  it('compares timings only with the reference run, never with the committed figures', () => {
+    const slowMachine = read('within');
+    const committed = { ...read('baseline'), benchmarks: { 'NFR-P-01 create session > small-25': { medianMs: 0.01, p99Ms: 0.02 } } };
+    expect(compare(slowMachine, null, committed)).toEqual([]);
+    expect(compare(slowMachine, slowMachine, committed)).toEqual([]);
+  });
+
+  it('skips a benchmark the merge base does not have, and one this run removed', () => {
+    const reference = read('baseline');
+    const added = { ...read('within'), benchmarks: { ...read('within').benchmarks, 'NFR-P-02 new > case': { medianMs: 9, p99Ms: 9 } } };
+    expect(compare(added, reference, reference)).toEqual([]);
   });
 
   it('holds the absolute budgets NFR-P-01 and NFR-P-02 state for the 25-item fixture', () => {
@@ -33,6 +45,14 @@ describe('the benchmark gate (M2 plan D7)', () => {
 });
 
 describe('bench-run helpers', () => {
+  it('alternates which checkout runs first', () => {
+    expect([0, 1, 2].map((run) => runOrder(['head', 'base'], run))).toEqual([
+      ['head', 'base'],
+      ['base', 'head'],
+      ['head', 'base'],
+    ]);
+  });
+
   it('takes the median of odd and even samples', () => {
     expect(median([5, 1, 3])).toBe(3);
     expect(median([4, 1, 3, 2])).toBe(2.5);

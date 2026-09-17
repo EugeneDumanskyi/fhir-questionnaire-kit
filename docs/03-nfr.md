@@ -28,7 +28,7 @@ The primary user is a clinical team; forms are long, devices are often old table
 
 | ID | Requirement | Number | Type |
 |---|---|---|---|
-| NFR-P-01 | Session creation, including initial `enableWhen` evaluation, measured on **two** committed fixtures: 25 items (the observed median) and 500 items (the observed p90) | 25-item fixture ≤ 50 ms p95. 500-item fixture: **1.55 ms median, 6.9 ms p99**, measured 2026-09-17 on the CI runner and held by the 20 % regression gate against `benchmarks/baseline.json` | Gate |
+| NFR-P-01 | Session creation, including initial `enableWhen` evaluation, measured on **two** committed fixtures: 25 items (the observed median) and 500 items (the observed p90) | 25-item fixture ≤ 50 ms p95. 500-item fixture: **1.55 ms median, 6.9 ms p99**, measured 2026-09-17 on the CI runner and published in `benchmarks/baseline.json` (1.05–1.97 ms across runner models); held by the 20 % regression gate against the merge base | Gate |
 | NFR-P-02 | Re-evaluation after one answer change, cascade depth 5, on the same two fixtures | 25-item fixture ≤ 5 ms p95, ≤ 16 ms p99. 500-item fixture: **0.064 ms median, 0.10 ms p99**, measured and held the same way | Gate |
 | NFR-P-03 | Keystroke to painted character in a text item | ≤ 16 ms (one 60 fps frame) on reference hardware | Target |
 | NFR-P-04 | Scale ceiling supported and tested | 1,000 items; 500 `enableWhen` conditions; 50 instances of a repeating group; 20 items per repeat instance — **confirmed 2026-09-16** against 300 surveyed instruments (`00-s0-instrument-survey.md`), except the 50-instance figure, which a `Questionnaire` cannot evidence | Gate + Published |
@@ -44,7 +44,7 @@ What the survey did contradict is the *benchmark anchor*, not the ceiling. Real 
 
 S0 carries one further consequence for M2's fixture design, outside these numbers: size and logic are anti-correlated in the real corpus. Not one of the 200 LOINC-derived panels sampled carries a single `enableWhen`, `repeats` or calculated expression, and the most conditional instrument found has 161 conditions over 697 items. A fixture that is simultaneously at every ceiling is a synthetic stress case and is labelled as one.
 
-**Note on measurement.** Performance gates run as a benchmark suite with a fixed fixture set, comparing against a committed baseline. Regressions > 20% fail the build even when still inside the absolute number, because a silent 19% drift per release is how budgets die.
+**Note on measurement.** Performance gates run as a benchmark suite with a fixed fixture set. Regressions > 20% fail the build even when still inside the absolute number, because a silent 19% drift per release is how budgets die. **Revised 2026-09-17 (`06-roadmap.md` M2 D7):** unchanged code measured up to 2.2× apart across hosted runner jobs and about 1 % apart within one, so a timing is compared with the pull request's merge base benchmarked in the same job, never with a committed figure. Retained heap does not vary by runner and is compared with `benchmarks/baseline.json`, whose timings are published reference figures. **What this gives up:** drift in steps each under 20 % is not caught per PR. The published figures are re-measured and compared by hand at each release.
 
 ---
 

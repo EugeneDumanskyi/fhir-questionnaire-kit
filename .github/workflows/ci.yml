@@ -183,17 +183,20 @@ jobs:
           path: reports/stryker/
           retention-days: 30
 
-  # NFR-P-01, P-02 and P-08 against the committed baseline (M2 plan D7): the
-  # median of five runs, failing above 20 % after one automatic re-run. The
-  # baseline is measured here, on this runner class, and changes only through
-  # an explicit PR. Not required: unchanged code measured 2× apart across
-  # hosted runners, so the gate's form is back with the maintainer (M2 step 12).
+  # NFR-P-01, P-02 and P-08 (M2 plan D7, revised 2026-09-17). Hosted runners
+  # differ by up to 2× between jobs and about 1 % within one, so timings are
+  # compared with the merge base benchmarked in this same job, runs
+  # alternating, and fail above 20 %. Retained heap is stable across runners
+  # and fails above 20 % of benchmarks/baseline.json; the 25-item absolute
+  # budgets always apply. One automatic re-run before failing.
   bench:
-    name: Benchmarks (non-blocking)
+    name: Benchmarks
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -218,15 +221,33 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Benchmarks, five runs
-        run: pnpm bench
-
-      - name: Compare with the baseline, re-running once before failing
-        if: ${{ hashFiles('benchmarks/baseline.json') != '' }}
+      # A pull request is compared with its merge base; a push to main with the
+      # commit before it. A base without the benchmark suite has nothing to
+      # compare, and only the budgets and heap are checked.
+      - name: Check out and install the merge base
+        id: base
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
         run: |
+          if [ -n "$BASE_REF" ]; then base=$(git merge-base "origin/$BASE_REF" HEAD); else base="$BEFORE"; fi
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then echo "no base commit"; exit 0; fi
+          git worktree add --detach "$RUNNER_TEMP/base" "$base"
+          if [ ! -f "$RUNNER_TEMP/base/packages/core/bench/session.bench.ts" ]; then echo "the base has no benchmarks"; exit 0; fi
+          (cd "$RUNNER_TEMP/base" && pnpm install --frozen-lockfile)
+          echo "dir=$RUNNER_TEMP/base" >> "$GITHUB_OUTPUT"
+          echo "base: $base"
+
+      - name: Benchmarks, five runs against the merge base, re-running once before failing
+        env:
+          BASE_DIR: ${{ steps.base.outputs.dir }}
+        run: |
+          against=()
+          if [ -n "$BASE_DIR" ]; then against=(--against "$BASE_DIR"); fi
+          pnpm bench "${against[@]}"
           if ! pnpm bench:compare; then
             echo "Over the tolerance; re-running the benchmarks once."
-            pnpm bench
+            pnpm bench "${against[@]}"
             pnpm bench:compare
           fi
 
@@ -235,7 +256,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bench
-          path: reports/bench/results.json
+          path: |
+            reports/bench/results.json
+            reports/bench/reference.json
           retention-days: 30
 
   # M1's spike proofs (S1, decision D5): the DOM contract, axe, hydration on
