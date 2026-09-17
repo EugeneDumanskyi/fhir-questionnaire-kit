@@ -262,6 +262,19 @@ describe('enablement and retention (SM-02)', () => {
     expect(answersAt(session, AMOUNT)).toEqual(text('5'));
   });
 
+  it('restores a retained answer through several hide-and-show cycles, unchanged (ADR-0002)', () => {
+    const session = createSession(SLICE);
+    session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(true) });
+    session.dispatch({ type: 'SetAnswer', path: AMOUNT, answers: text('5') });
+    const retained = answersAt(session, AMOUNT);
+    for (let round = 0; round < 3; round += 1) {
+      session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(false) });
+      expect(session.dispatch({ type: 'SetAnswer', path: AMOUNT, answers: text('6') })).toEqual({ outcome: 'refused', reason: 'node-disabled' });
+      session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(true) });
+    }
+    expect(answersAt(session, AMOUNT)).toBe(retained);
+  });
+
   it('erases a hidden answer in the same cycle under discard, and restores nothing (INV-S-13)', () => {
     const session = createSession(SLICE, { retention: 'discard' });
     session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(true) });
