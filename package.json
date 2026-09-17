@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "measure": "node scripts/measure-bundles.mjs",
     "changeset": "changeset",
     "clean": "tsc --build --clean tsconfig.json"
   },
