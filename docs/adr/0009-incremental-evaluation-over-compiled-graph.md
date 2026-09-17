@@ -10,6 +10,7 @@
 The engine is the product (E02). After each command, every derived fact must be settled before anyone observes the session: enablement, retention effects, calculated values, validation, rule outcomes and scores (INV-S-05). The requirements pin down how that must perform and behave:
 
 - **Speed.** ≤ 5 ms p95 to re-evaluate after one change on a 200-item form with a cascade depth of 5 (NFR-P-02), and ≤ 50 ms to create a session (NFR-P-01).
+  *Amended 2026-09-17 (`06-roadmap.md` M2 close-out).* Spike S0 re-anchored both figures on 2026-09-16: the 200-item form sat in the trough of a bimodal distribution, so NFR-P-01 and NFR-P-02 are now measured on a 25-item fixture, which carries the absolute budgets, and a 500-item fixture, whose figures were set by M2's first measurement (`03-nfr.md` §1). The decision does not depend on the anchor.
 - **Scale.** 1,000 items, 500 conditions and 50 repeat instances (NFR-P-04), within 8 MB of heap (NFR-P-08).
 - **Incrementality.** Only transitive dependents are recomputed, **asserted by a test** (NFR-P-09, INV-S-07).
 - **Determinism.** The result is independent of declaration order (INV-S-06).
@@ -94,6 +95,7 @@ settles within one further cycle because any later change re-runs both.
 - Property test (fast-check): random questionnaires and command sequences. Assert that incremental settled state equals a from-scratch evaluation of the same stored state (option A used as the test oracle), and that shuffling declaration order does not change the result.
 - Re-entrancy tests: a subscriber that issues a command, and a resolver settling during a cycle, each produce two notifications in order, and no subscriber observes a partially settled view.
 - Benchmarks for NFR-P-01, P-02, P-07 and P-08 against committed baselines, failing on a > 20% regression (`03-nfr.md` §1).
+  *Amended 2026-09-17 (`06-roadmap.md` M2 plan decision D7, as revised).* NFR-P-07 is response emission and is benchmarked when M3 builds it; M2 benchmarks P-01, P-02 and P-08. Hosted runners measured unchanged code up to 2.2× apart between jobs, so timings are compared with the merge base benchmarked in the same job, not with committed figures; retained heap is compared with the committed baseline. Both fail on a > 20% regression.
 
 **Follow-ups**
 - None outstanding. The calculated-item ordering question that stood here was
