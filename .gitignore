@@ -8,6 +8,7 @@ docs/00-idea.md
 node_modules/
 dist/
 coverage/
+reports/
 *.tsbuildinfo
 .tsbuild/
 .vite/

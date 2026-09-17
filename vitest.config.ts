@@ -78,6 +78,14 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'scripts',
+          root: './scripts',
+          environment: 'node',
+          include: ['test/**/*.test.js'],
+        },
+      },
+      {
+        test: {
           name: 'eslint-rules',
           root: './tools/eslint-rules',
           environment: 'node',
