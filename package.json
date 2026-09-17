@@ -11,10 +11,11 @@
   },
   "scripts": {
     "dev": "pnpm --filter @fhirq/playground dev",
-    "typecheck": "tsc --build --force tsconfig.json",
+    "typecheck": "tsc --build --force tsconfig.json && tsc -p tests/browser",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:browser": "playwright test",
     "measure": "node scripts/measure-bundles.mjs",
     "changeset": "changeset",
     "clean": "tsc --build --clean tsconfig.json"

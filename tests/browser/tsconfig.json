@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* Browser proofs: Playwright specs run in Node, the pages they build run in
+       the browser, so both libs are in scope. Not a composite project: the
+       pages compile workspace sources directly, as esbuild bundles them, so
+       this is checked with `tsc -p` and emits nothing. */
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@fhirq/core": ["../../packages/core/src/index.ts"],
+      "@fhirq/core/view": ["../../packages/core/src/view/index.ts"],
+      "@fhirq/react": ["../../packages/react/src/index.ts"],
+      "@fhirq/element": ["../../packages/element/src/index.ts"],
+      "react": ["../../packages/react/node_modules/@types/react"],
+      "react/*": ["../../packages/react/node_modules/@types/react/*"],
+      "react-dom/*": ["../../packages/react/node_modules/@types/react-dom/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../../playwright.config.ts", "../../packages/element/src/css.d.ts"]
+}
