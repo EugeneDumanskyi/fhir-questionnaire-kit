@@ -83,4 +83,6 @@ interface ViewOptions {
 
 ## Follow-ups
 
+**`display` under ADR-0007's review rule: resolved 2026-09-17 (M1 AC-3 review).** `display` is also a CSS property, and ADR-0007's checklist fails a view-model field that names one. The name stands and is allowed as a coincidence, as `label` and `clear` are: here it means formatted text, which is FHIR's own sense of the word (`Coding.display`), not styling. M5 adds it to `ALLOWED_COINCIDENCES` in `packages/core/test/deny-lists.ts`, with this ADR as the reason, in the change that adds the field.
+
 The **product half of `03-nfr.md` §12 #9 stays open**: which locale the packages should default to, and whether NFR-I-03's single built-in locale is the right call for a clinical buyer operating outside English. Neither changes this decision — they choose a default for a parameter this ADR makes explicit. Closing them needs a product answer, not an architectural one.

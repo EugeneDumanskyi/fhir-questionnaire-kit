@@ -86,6 +86,10 @@ export const CSS_PROPERTIES = words(`
  * with its reason. The rule is about fields that describe markup or styling;
  * these are domain names an accepted ADR gave the field. Every entry here is a
  * question for the AC-3 reviewer, not a silent pass.
+ *
+ * `display` (ADR-0020's formatted text) is already decided as the third, on
+ * 2026-09-17. It is added here with the field in M5, not before: the test
+ * requires every entry to be in use.
  */
 export const ALLOWED_COINCIDENCES: Readonly<Record<string, string>> = {
   label: 'ADR-0007 Decision names the view node field "label" and the id "label" (the item text); it is not <label>',
