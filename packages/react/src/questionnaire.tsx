@@ -151,9 +151,9 @@ function YesNo({ node, marker }: { readonly node: YesNoViewNode; readonly marker
 }
 
 function Summary({ summary }: { readonly summary: ErrorSummary }): ReactElement {
-  const onClick = (event: MouseEvent<HTMLAnchorElement>, target: string) => {
+  const onClick = (event: MouseEvent<HTMLAnchorElement>, focusId: string) => {
     event.preventDefault();
-    event.currentTarget.ownerDocument.getElementById(target)?.focus();
+    event.currentTarget.ownerDocument.getElementById(focusId)?.focus();
   };
   return (
     <section className="fhirq-summary" part="error-summary" id={summary.id} tabIndex={-1} aria-labelledby={summary.headingId}>
@@ -163,7 +163,7 @@ function Summary({ summary }: { readonly summary: ErrorSummary }): ReactElement 
       <ul className="fhirq-summary-list" part="error-summary-list">
         {summary.entries.map((entry) => (
           <li key={`${entry.path} ${entry.message}`} className="fhirq-summary-entry" part="error-summary-entry">
-            <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.target}`} onClick={(event) => onClick(event, entry.target)}>
+            <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId)}>
               {entry.message}
             </a>
           </li>

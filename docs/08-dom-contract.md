@@ -24,7 +24,7 @@
 | `errorSummary` (when not `null`) | `section`, first child of the form | `fhirq-summary` | `error-summary` | `id` = `errorSummary.id`, `tabindex="-1"`, `aria-labelledby` = `errorSummary.headingId` |
 | `errorSummary.heading` | `h2` | `fhirq-summary-heading` | `error-summary-heading` | `id` = `errorSummary.headingId` |
 | `errorSummary.entries` | `ul` | `fhirq-summary-list` | `error-summary-list` | — |
-| each entry | `li` > `a` | `fhirq-summary-entry` > `fhirq-summary-link` | `error-summary-entry` > `error-summary-link` | `href` = `#` + `entry.target`; activating it moves focus to that id |
+| each entry | `li` > `a` | `fhirq-summary-entry` > `fhirq-summary-link` | `error-summary-entry` > `error-summary-link` | `href` = `#` + `entry.focusId`; activating it moves focus to that id |
 | `nodes` | one item root each, in order, after the summary | see §3 | | |
 | `announcement` | `div`, last child of the form | `fhirq-status` | `status` | `role="status"`; text is written after the render that produced it, never during it |
 
