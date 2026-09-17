@@ -12,6 +12,7 @@ import { createResponseSession, type Session } from './session/session.js';
 import { validateRequired } from './validation/required.js';
 
 export type { AnswerValue } from './kernel/answer.js';
+export type { Diagnostic, DiagnosticCode, Severity } from './kernel/diagnostic.js';
 export { FhirqError, type FhirqErrorCode } from './kernel/error.js';
 export type { Issue, IssueCode } from './kernel/issue.js';
 export { itemPath, type ItemPath } from './kernel/path.js';
@@ -19,7 +20,6 @@ export type { ConditionInput, DefinitionInput, ItemDefinition, ItemInput, ItemTy
 export type {
   Command,
   CommandResult,
-  Diagnostic,
   NodeState,
   RefusalReason,
   Session,

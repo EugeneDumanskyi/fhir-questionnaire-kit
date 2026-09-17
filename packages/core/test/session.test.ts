@@ -46,7 +46,9 @@ describe('session creation', () => {
       attempt();
     } catch (error) {
       expect(error).toMatchObject({ code: 'definition-rejected', message: 'definition-rejected' });
-      expect(['a', 'b']).toContain((error as FhirqError).linkId);
+      const [finding] = (error as FhirqError).findings;
+      expect(['a', 'b']).toContain(finding?.path);
+      expect(finding).toMatchObject({ severity: 'error', related: [], detail: null });
     }
   });
 });
@@ -127,7 +129,7 @@ describe('one command, one cycle, one notification (INV-S-33)', () => {
     session.dispatch({ type: 'SetAnswer', path: SMOKER, value: true });
 
     expect(after).toHaveBeenCalledTimes(1);
-    expect(session.diagnostics).toEqual([{ code: 'listener-threw' }]);
+    expect(session.diagnostics).toEqual([{ code: 'listener-threw', severity: 'warning', path: null, related: [], detail: null }]);
   });
 
   it('stops notifying after unsubscribe', () => {
