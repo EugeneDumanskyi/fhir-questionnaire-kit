@@ -111,8 +111,8 @@ export interface ViewModel {
  * @alpha S1 spike surface.
  */
 export interface View {
-  subscribe(listener: () => void): () => void;
-  getSnapshot(): ViewModel;
+  readonly subscribe: (listener: () => void) => () => void;
+  readonly getSnapshot: () => ViewModel;
 }
 
 interface Commands {

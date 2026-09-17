@@ -64,9 +64,14 @@ describe('session creation from R4 JSON (AC-01.1.1, M2 plan D12)', () => {
 
   it('rejects what is not an R4 Questionnaire in both modes (INV-D-01)', () => {
     for (const loadMode of ['strict', 'lenient'] as const) {
-      expect(() => createSession({ resourceType: 'Patient' } as unknown as Questionnaire, { loadMode })).toThrow(
-        expect.objectContaining({ code: 'definition-rejected', findings: [expect.objectContaining({ code: 'not-a-questionnaire' })] }),
-      );
+      let thrown: unknown;
+      try {
+        createSession({ resourceType: 'Patient' } as unknown as Questionnaire, { loadMode });
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown).toBeInstanceOf(FhirqError);
+      expect(thrown).toMatchObject({ code: 'definition-rejected', findings: [{ code: 'not-a-questionnaire' }] });
     }
   });
 

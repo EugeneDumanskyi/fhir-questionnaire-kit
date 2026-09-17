@@ -14,6 +14,8 @@ const filePath = fileURLToPath(new URL('../src/__lint-fixture__.ts', import.meta
 
 const styleViolations = async (code: string) => {
   const [result] = await eslint.lintText(code, { filePath });
+  // A file that does not parse reports no violations, which would pass every rejection silently.
+  expect((result?.messages ?? []).filter((message) => message.fatal === true)).toEqual([]);
   return (result?.messages ?? []).filter((message) => message.message.includes('ADR-0014')).length;
 };
 

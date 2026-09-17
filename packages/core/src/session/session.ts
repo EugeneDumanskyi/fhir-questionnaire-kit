@@ -78,9 +78,9 @@ export interface SessionState {
  * @alpha M2 fixes the surface in `docs/07-api.md`.
  */
 export interface Session {
-  subscribe(listener: (change: SessionChange) => void): () => void;
-  getSnapshot(): SessionState;
-  dispatch(command: Command): CommandResult;
+  readonly subscribe: (listener: (change: SessionChange) => void) => () => void;
+  readonly getSnapshot: () => SessionState;
+  readonly dispatch: (command: Command) => CommandResult;
   /** Load findings, then runtime ones as they happen. */
   readonly diagnostics: readonly Diagnostic[];
 }

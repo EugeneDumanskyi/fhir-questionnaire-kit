@@ -188,7 +188,10 @@ describe('path-derived ids (INV-P-02)', () => {
     expect(pathId('a b')).toBe('a_20_b');
     expect(pathId('a_20_b')).toBe('a_5f_20_5f_b');
     expect(pathId('1.2-x')).toBe('1.2-x');
-    const ids = ['a', 'a-control', 'summary', 'summary-heading'].flatMap((path) => Object.values(nodeIds('p', path)));
+    const ids = ['a', 'a-control', 'summary', 'summary-heading'].flatMap((path) => {
+      const { control, label, description, error } = nodeIds('p', path);
+      return [control, label, description, error];
+    });
     expect(new Set([...ids, 'p-summary', 'p-summary-heading']).size).toBe(ids.length + 2);
   });
 });

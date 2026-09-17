@@ -100,7 +100,7 @@ let assets: Promise<ReadonlyMap<string, Asset>> | undefined;
 async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
   const js = (body: string): Asset => ({ body, type: 'text/javascript' });
   const page = (body: string): Asset => ({ body, type: 'text/html' });
-  const css = async (path: string): Promise<Asset> => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
+  const css = (path: string): Asset => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
   const [element, react19, react18, ssr19, ssr18] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
     bundle('tests/browser/pages/react-client.tsx', 19),
@@ -124,8 +124,8 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
     ['/react-19.js', js(react19)],
     ['/react-18.html', reactPage(18, ssr18)],
     ['/react-18.js', js(react18)],
-    ['/base.css', await css('packages/themes/src/base.css')],
-    ['/default.css', await css('packages/themes/src/default.css')],
+    ['/base.css', css('packages/themes/src/base.css')],
+    ['/default.css', css('packages/themes/src/default.css')],
   ]);
 }
 

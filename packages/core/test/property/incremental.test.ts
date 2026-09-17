@@ -34,7 +34,10 @@ function start(input: DefinitionInput, policy: Retention): Session {
 }
 
 const snapshot = (session: Session) =>
-  session.getSnapshot().nodes.map((node) => ({ path: node.path as string, answers: node.answers, instances: node.instances }));
+  session.getSnapshot().nodes.map((node) => {
+    const path: string = node.path;
+    return { path, answers: node.answers, instances: node.instances };
+  });
 
 const asCommand = (command: ModelCommand) => ({ ...command, path: command.path as ItemPath }) as Command;
 
