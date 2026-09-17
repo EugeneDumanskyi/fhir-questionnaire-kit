@@ -1,9 +1,10 @@
 import { Buffer } from 'node:buffer';
+import { readFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
-import { compare, ENTRIES, gzipSize, measure, modules, nodeModulesInputs, renderMarkdown, SOURCES } from '../measure-bundles.mjs';
+import { compare, ENTRIES, failures, gzipSize, measure, modules, nodeModulesInputs, renderMarkdown, SOURCES } from '../measure-bundles.mjs';
 
 describe('measure-bundles', () => {
   it('gzips at maximum compression, never larger than the default level', () => {
@@ -33,6 +34,20 @@ describe('measure-bundles', () => {
       { path: 'packages/core/src/b.ts', bytes: 30 },
       { path: 'packages/core/src/a.ts', bytes: 10 },
     ]);
+  });
+
+  it('fails only gated entries, on an overrun or a node_modules input (M2: core only)', () => {
+    const row = (name, over, nodeModules = []) => ({ name, over, nodeModules });
+    const rows = [row('@fhirq/core', true), row('@fhirq/react', true), row('@fhirq/element', false, ['node_modules/x/index.js'])];
+    expect(failures(rows, ['@fhirq/core']).map((failing) => failing.name)).toEqual(['@fhirq/core']);
+    expect(failures(rows, ['@fhirq/core', '@fhirq/element']).map((failing) => failing.name)).toEqual(['@fhirq/core', '@fhirq/element']);
+    expect(failures([row('@fhirq/core', false)], ['@fhirq/core'])).toEqual([]);
+  });
+
+  it('gates @fhirq/core from M2, and only entries that have a budget', () => {
+    const { entries, gated } = JSON.parse(readFileSync(new URL('../budgets.json', import.meta.url), 'utf8'));
+    expect(gated).toEqual(['@fhirq/core']);
+    for (const name of gated) expect(entries[name]).toBeTypeOf('number');
   });
 
   it('compares against budgets and marks only a figure above its budget as over', () => {
