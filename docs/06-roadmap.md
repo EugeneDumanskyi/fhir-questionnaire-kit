@@ -28,7 +28,7 @@ Ranked by how much is genuinely *unknown* multiplied by how much would have to b
 
 | # | Risk | Why it is an unknown | What a bad answer invalidates | Retired by |
 |---|---|---|---|---|
-| **R1** | **The element's byte budget is arithmetically tight.** NFR-S-02 gives `@fhirq/element` ≤ 24 kB *standalone, including core, view and the default theme*. Core alone is budgeted at 14 kB and view at 5 kB, so 19 kB is committed before a single line of DOM code or a single byte of embedded CSS (ADR-0014 embeds `base.css` plus a preset as strings). | Every byte figure is flagged `ASSUMPTION` (N3) and `03-nfr.md` §2 says explicitly to re-baseline *after the engine spike*. Nobody has measured a line of this code. | The published competitive claim (Brief §4), possibly NFR-S-02 itself, possibly ADR-0014's decision to embed the theme in the bundle. | **M1** (measure), **M7** (hold). **Measured by S1 on 2026-09-16, not retired:** the element's extrapolated band is 12.6–35.5 kB and the view's 3.0–9.0 kB, both straddling their budgets. Open until the budget gates read real code, core first at M2 (`00-s1-architecture-and-bytes.md`) |
+| **R1** | **The element's byte budget is arithmetically tight.** NFR-S-02 gives `@fhirq/element` ≤ 24 kB *standalone, including core, view and the default theme*. Core alone is budgeted at 14 kB and view at 5 kB, so 19 kB is committed before a single line of DOM code or a single byte of embedded CSS (ADR-0014 embeds `base.css` plus a preset as strings). | Every byte figure is flagged `ASSUMPTION` (N3) and `03-nfr.md` §2 says explicitly to re-baseline *after the engine spike*. Nobody has measured a line of this code. | The published competitive claim (Brief §4), possibly NFR-S-02 itself, possibly ADR-0014's decision to embed the theme in the bundle. | **M1** (measure), **M7** (hold). **Measured by S1 on 2026-09-16, not retired:** the element's extrapolated band is 12.6–35.5 kB and the view's 3.0–9.0 kB, both straddling their budgets. Open until the budget gates read real code, core first at M2 (`00-s1-architecture-and-bytes.md`). **Core's M2 reading tripped `03-nfr.md` §2's tripwire (2026-09-17); ADR-0021 holds the budgets by moving resume code to `@fhirq/core/resume` (M3), then, on measured readings, table-driven patchers (decided at M5) and an element-figure amendment (decided at M7)** |
 | **R2** | **View-model sufficiency.** Architecture B is accepted on the claim that a DOM-free semantic view model can carry every BC6 behaviour — ids, ARIA state, announcements, error summary, focus targets, the tier-3 contract — for both a React renderer and a keyed vanilla renderer, without becoming a virtual DOM (ADR-0007's own named risk). | It has never been written. The failure mode is gradual: fields named after elements, then a tree of them, then a renderer that cannot skip unchanged nodes. | ADR-0007 — the accepted architecture. Falling back to Architecture A doubles BC6 (its rejection reason) and moves that code under the weaker NFR-Q-02 gate. | **M1** (proof of concept), **M5** (full). **Proven on two control kinds by S1, 2026-09-16:** one contract, no markup-named fields; go/no-go *continue*, approved 2026-09-17 (`05-architecture.md` §11) |
 | **R3** | **Retired 2026-09-16. Effort budget.** NFR-Z-01 assumed 40–60 hours for everything below, and Brief §8 asked for confirmation "before milestone planning". §7 estimated roughly three times that; the number moved to ≈ 184 h and the cut ladder was declined in writing. | The number was never confirmed. It is the only input on which every scope decision hangs (N24). | The shape of the release, via the cut ladder in `03-nfr.md` §10. Cutting after building is waste; cutting now is planning. | **M0** (decision), §7 (cut ladder) |
 | **R4** | **Keyed DOM patching that never disturbs focus or caret.** ADR-0007 requires the element to patch, not rebuild; ADR-0014 forbids `<style>`, inline styles and `el.style`; `adoptedStyleSheets` must work at the iOS Safari 16.4 floor (A4). | Hand-written patching against a live, focused form is the classic source of subtle input bugs, and the CSP and shadow-DOM constraints remove the usual escape hatches. | The element's default UI, NFR-A-07, NFR-P-03, and A4's browser floor. | **M1** (thin proof), **M7** (full) |
@@ -228,6 +228,7 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 - `session/projection`: the one read path, with the module import table of `05-architecture.md` §4.1 enforced by lint so that `interchange/` has no way to reach a disabled node.
 - `validation/`: built-in rules (required, `maxLength`, min/max value, `maxDecimalPlaces`, date syntax versus range, quantity unit present, min/max occurs); cross-field rule registration with declared inputs; surfacing SM-03 including `blur-then-live` and D4's "never reverts"; the ordered, serializable validation result; the completion verdict feeding SM-01.
 - `interchange/`: `encodeResponse`, snapshot and restore, `decodeResponse` and the hydration policy of `04-domain.md` §8 in full — drift, orphans, quarantine, repeat reconstruction, dropping answers that land on disabled nodes, always entering `in-progress`.
+- The `@fhirq/core/resume` entry point (ADR-0021): `snapshot`, `restoreSession` and `hydrateSession` as top-level functions; emission stays in `@fhirq/core`. The session's state registry, the lint rows and the bundle-inputs check from ADR-0021's Verification; its budget, API report and deep-import allowance.
 - Conformance fixture pairs for each of these spec behaviours, with matrix rows.
 
 **Out of scope.** Host collaborators other than cross-field rules, which are needed to finish surfacing (M4). Anything presentational (M5). Message text beyond keys — the catalogue lands in M4, so issues carry codes and keys here.
@@ -243,6 +244,7 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 8. Surfacing never reverts from live to quiet, including across hide and show (D4, AC-04.2.4).
 9. Completion is refused with the validation result and no status change when any error-severity issue exists; `completed` refuses all subsequent answer and repeat commands (INV-S-30/31).
 10. Core coverage and mutation gates hold with validation and emission modules included (NFR-Q-01, NFR-Q-03).
+11. No input from `session/snapshot`, `interchange/decode`, `interchange/hydrate` or `src/resume.ts` reaches the `@fhirq/core`, view or element bundles, with a must-fail fixture; `@fhirq/core/resume` is inside its 4 kB budget with the gate blocking, or its figure is amended by ADR from that reading (ADR-0021, A7); `@fhirq/core` stays inside 14 kB.
 
 **Spike.** None. Every behaviour here is pinned by an invariant or an acceptance criterion; the work is volume, not discovery.
 
@@ -300,6 +302,7 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 8. Core coverage and mutation gates hold with `view/` included (NFR-Q-01, NFR-Q-03).
 9. Every row of the `05-architecture.md` §4.1 import table is enforced by lint — the table is complete once `view/` lands — with a fixture per row that must fail (NFR-M-06). M3 AC-3 already covers the `interchange/` row.
 10. `docs/07-api.md`, the API report and a changeset reflect the new exports; the total public surface is re-counted against NFR-U-05's 60.
+11. ADR-0021's rung-2 reading is recorded in `03-nfr.md` §2: the element projected from the measured core, view and theme gates plus S1's renderer range. If its centre is over 24 kB, M7 builds table-driven patchers.
 
 **Spike.** None — S1 already answered the open question; what remains is volume under a review rule.
 
@@ -347,7 +350,7 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 
 **Acceptance criteria.**
 1. A plain HTML page with one script tag and one element renders a working form with no bundler, transpiler or framework (AC-09.1.1).
-2. `@fhirq/element` standalone and the IIFE both hold the budgets M1 established, with the gate blocking (NFR-S-02, NFR-S-03).
+2. `@fhirq/element` standalone and the IIFE both hold the budgets M1 established, with the gate blocking (NFR-S-02, NFR-S-03). If they do not with M5's rung 2 in place, the ADR amending the element and IIFE figures to the measured numbers lands in this milestone (ADR-0021, rung 3); the theme stays embedded.
 3. Under `script-src 'self'; style-src 'self'` the element renders with 0 `<style>` elements, 0 `style` attributes and 0 `el.style` writes (NFR-C-07, ADR-0014), verified in Chromium, Firefox and WebKit.
 4. A host page with hostile global CSS leaves layout and controls intact, and no library style reaches the host page (AC-09.2.1).
 5. Typing continuously into a text item across multiple cycles never loses focus or caret position, and a focused control is never replaced (ADR-0007, NFR-A-07, NFR-P-03).
@@ -490,7 +493,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Cyclomatic complexity ≤ 15 per function, named exceptions carrying an inline justification | M0 (rule), real bite from M2 | NFR-M-02 |
 | Core coverage ≥ 95 / 90 | M2 | NFR-Q-01 |
 | Mutation ≥ 80 on engine modules, incremental on PRs | M2 | NFR-Q-03, A6 |
-| Bundle budgets per entry point | M2 core · M5 view · M6 react · M7 element and IIFE · M8 themes | NFR-S-02/03 |
+| Bundle budgets per entry point | M2 core · M3 `core/resume` and the resume bundle-inputs check (ADR-0021) · M5 view · M6 react · M7 element and IIFE · M8 themes | NFR-S-02/03 |
 | Benchmarks: timings against the merge base in the same job, heap against the committed baseline, > 20 % regression fails | M2 (D7 as revised) | `03-nfr.md` §1 |
 | Recompute-set assertion | M2 | NFR-P-09 |
 | Round-trip property tests, ≥ 1,000 cases | M3 | NFR-Q-06 |

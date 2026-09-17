@@ -28,10 +28,11 @@ Numbers are assigned in order of writing and never reused. A superseded ADR stay
 | [0018](0018-build-and-verification-toolchain.md) | Build and verification toolchain under the licence allowlist | Accepted 2026-09-16 | `05-architecture.md` §9 AT1; E14 |
 | [0019](0019-static-client-only-playground-and-docs.md) | Playground and docs are static, client-only and run under a strict CSP | Accepted 2026-09-16 | `05-architecture.md` §9 AT4; E12 |
 | [0020](0020-explicit-locale-formatted-in-the-view-model.md) | Values are formatted in the view model from an explicit locale | Accepted 2026-09-16 | `03-nfr.md` §12 #9; NFR-I-04 |
+| [0021](0021-resume-entry-point-and-staged-element-budget.md) | Resume code ships as its own core entry point, and the element budget is held by ranked, measured reductions | Accepted 2026-09-17 | `03-nfr.md` §2 tripwire; NFR-S-02 |
 
 ## NFR-M-05 coverage
 
-NFR-M-05 requires at least ten ADRs at v1.0 covering the topics below. With the architecture phase written, every topic has an ADR; the count is twenty.
+NFR-M-05 requires at least ten ADRs at v1.0 covering the topics below. With the architecture phase written, every topic has an ADR; the count is twenty-one.
 
 | Topic | ADR |
 |---|---|

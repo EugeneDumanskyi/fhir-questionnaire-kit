@@ -85,6 +85,7 @@ settles within one further cycle because any later change re-runs both.
 
 **Costs accepted**
 - **Mutable internals.** Correctness rests on the private store being touched only inside the cycle. It is enforced by module privacy (ES private fields) and covered by mutation testing, not by immutability.
+  *Amended 2026-09-17 (ADR-0021).* The session keeps its store in a closure, and the recompute trace and, from M3, the snapshot and restore path reach it through module-internal `WeakMap` registries keyed by the public session. Privacy is therefore enforced by lint on which modules may import those registries (`05-architecture.md` §4.1), not by the language.
 - **Rules and scorers must declare inputs.** This makes registration one argument longer (NFR-U-03), and an incomplete declaration causes stale results rather than an error.
 - **Session creation walks the whole graph once.** That is O(items + edges), well inside NFR-P-01, but it is the one non-incremental path, and restore and hydrate take it too.
 - **Hand-written graph algorithms** (Tarjan, heap, scope resolution) are ~200 lines of core code with high mutation-testing value and high cost if wrong.
