@@ -8,7 +8,7 @@ const ENTRY_POINTS = {
   '@fhirq/core': ['@fhirq/core', '@fhirq/core/view'],
   '@fhirq/react': ['@fhirq/react'],
   '@fhirq/element': ['@fhirq/element'],
-  '@fhirq/themes': ['@fhirq/themes'],
+  '@fhirq/themes': ['@fhirq/themes', '@fhirq/themes/base.css', '@fhirq/themes/default.css'],
 };
 
 /**
