@@ -12,6 +12,7 @@ const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 const workspaceSources = [
   { find: /^@fhirq\/core$/, replacement: here('./packages/core/src/index.ts') },
   { find: /^@fhirq\/core\/view$/, replacement: here('./packages/core/src/view/index.ts') },
+  { find: /^@fhirq\/core\/resume$/, replacement: here('./packages/core/src/resume.ts') },
   { find: /^@fhirq\/react$/, replacement: here('./packages/react/src/index.ts') },
 ];
 

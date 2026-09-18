@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
-import { compare, ENTRIES, failures, gzipSize, measure, modules, nodeModulesInputs, renderMarkdown, SOURCES } from '../measure-bundles.mjs';
+import { compare, ENTRIES, failures, gzipSize, measure, modules, nodeModulesInputs, renderMarkdown, RESUME_ONLY, resumeInputs, SOURCES } from '../measure-bundles.mjs';
 
 describe('measure-bundles', () => {
   it('gzips at maximum compression, never larger than the default level', () => {
@@ -44,9 +44,42 @@ describe('measure-bundles', () => {
     expect(failures([row('@fhirq/core', false)], ['@fhirq/core'])).toEqual([]);
   });
 
-  it('gates @fhirq/core from M2, and only entries that have a budget', () => {
+  it('fails any entry that reaches the resume path, gated or not (ADR-0021)', () => {
+    const row = (name, resume) => ({ name, over: false, nodeModules: [], resume });
+    expect(failures([row('@fhirq/element', ['packages/core/src/resume.ts']), row('@fhirq/core', [])], []).map((failing) => failing.name)).toEqual(['@fhirq/element']);
+    expect(failures([{ name: '@fhirq/core/resume', over: false, nodeModules: [] }], [])).toEqual([]);
+  });
+
+  it('finds resume inputs in a metafile by repository path', () => {
+    const metafile = { inputs: { '/repo/packages/core/src/session/snapshot.ts': {}, 'packages/core/src/session/session.ts': {}, 'packages/core/src/resume.ts': {} } };
+    expect(resumeInputs(metafile)).toEqual(['packages/core/src/session/snapshot.ts', 'packages/core/src/resume.ts']);
+    expect(RESUME_ONLY).toEqual(expect.arrayContaining(['packages/core/src/interchange/decode.ts', 'packages/core/src/interchange/hydrate.ts']));
+  });
+
+  it('catches a main entry point that imports restoreSession (the must-fail fixture)', async () => {
+    const leaky = await measure({ name: 'leaky', entry: 'scripts/test/fixtures/bundle-inputs/leaky-core.ts', external: [], resumeFree: true });
+    expect(leaky.resume).toEqual(expect.arrayContaining(['packages/core/src/resume.ts', 'packages/core/src/session/snapshot.ts']));
+    expect(failures([leaky], [])).toHaveLength(1);
+  });
+
+  it('keeps core, view and the element free of the resume path, and measures resume without core', async () => {
+    const byName = Object.fromEntries(ENTRIES.map((entry) => [entry.name, entry]));
+    const core = await measure(byName['@fhirq/core']);
+    expect(core.resume).toEqual([]);
+    expect(ENTRIES.filter((entry) => entry.resumeFree === true).map((entry) => entry.name)).toEqual([
+      '@fhirq/core',
+      '@fhirq/core/view',
+      '@fhirq/element',
+      '@fhirq/element (IIFE)',
+    ]);
+    const resume = await measure(byName['@fhirq/core/resume'], new Set(core.inputs));
+    expect(resume.modules.map((m) => m.path)).not.toContain('packages/core/src/session/session.ts');
+    expect(resume.modules.map((m) => m.path)).toContain('packages/core/src/session/snapshot.ts');
+  });
+
+  it('gates @fhirq/core from M2 and @fhirq/core/resume from M3, and only entries that have a budget', () => {
     const { entries, gated } = JSON.parse(readFileSync(new URL('../budgets.json', import.meta.url), 'utf8'));
-    expect(gated).toEqual(['@fhirq/core']);
+    expect(gated).toEqual(['@fhirq/core', '@fhirq/core/resume']);
     for (const name of gated) expect(entries[name]).toBeTypeOf('number');
   });
 
@@ -71,7 +104,7 @@ describe('measure-bundles', () => {
       [{ name: '@fhirq/core', minified: 3000, gzip: 1500, budget: 1000, over: true, nodeModules: ['x'], modules: [{ path: 'p.ts', bytes: 3000 }] }],
       '2026-09-16T00:00:00.000Z',
     );
-    expect(md).toContain('| `@fhirq/core` | 3.00 kB | 1.50 kB | 1.00 kB | **over** -0.50 kB | **1** |');
+    expect(md).toContain('| `@fhirq/core` | 3.00 kB | 1.50 kB | 1.00 kB | **over** -0.50 kB | **1** | — |');
     expect(md).toContain('| p.ts | 3000 |');
   });
 
@@ -79,6 +112,7 @@ describe('measure-bundles', () => {
     expect(ENTRIES.map((entry) => entry.name)).toEqual([
       '@fhirq/core',
       '@fhirq/core/view',
+      '@fhirq/core/resume',
       '@fhirq/react',
       '@fhirq/element',
       '@fhirq/element (IIFE)',

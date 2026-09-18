@@ -47,7 +47,12 @@ export type DiagnosticCode =
   | 'inapplicable-constraint'
   /* Runtime (INV-V-05) */
   | 'listener-threw'
-  | 'rule-threw';
+  | 'rule-threw'
+  /* Hydration (`04-domain.md` §8, INV-E-08 … E-10) */
+  | 'version-drift'
+  | 'orphan-answer'
+  | 'quarantined-answer'
+  | 'hydrated-answer-disabled';
 
 /**
  * A finding about the questionnaire, or a runtime one such as a listener that
@@ -72,13 +77,21 @@ export interface Diagnostic {
    * extension URL, an R4 constraint key, an operator. Never an answer value.
    */
   readonly detail: string | null;
+  /**
+   * Hydration and restore only (INV-E-09): what the questionnaire expects — an
+   * answer kind, a canonical, an answer count. Never a stored value.
+   */
+  readonly expected?: string;
+  /** What the stored response or snapshot has instead, in the same terms. Never a stored value. */
+  readonly found?: string;
 }
 
 export function diagnostic(
   code: DiagnosticCode,
   severity: Severity,
   path: string | null,
-  extra: { readonly related?: readonly string[]; readonly detail?: string } = {},
+  extra: { readonly related?: readonly string[]; readonly detail?: string; readonly expected?: string; readonly found?: string } = {},
 ): Diagnostic {
-  return { code, severity, path, related: extra.related ?? [], detail: extra.detail ?? null };
+  const { related = [], detail = null, expected, found } = extra;
+  return { code, severity, path, related, detail, ...(expected === undefined ? {} : { expected }), ...(found === undefined ? {} : { found }) };
 }

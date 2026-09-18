@@ -855,7 +855,7 @@ Hydration is a short, synchronous process rather than a long-running machine, bu
 6. **Enter `InProgress`** with status `in-progress` (§9 T2) and start SM-04 resolutions.
 7. **Return the session with its diagnostics.** Whether to proceed on drift or quarantine is the host's call; the library has already done everything it will do.
 
-Restore from a snapshot skips steps 2–5: a snapshot is engine state produced by the same engine version against the same Definition, so it is trusted to be internally consistent. **Confirmed (AC-05.3.3):** a snapshot records the Definition canonical it was taken against, and restoring against a different one is refused rather than degraded — snapshots are not a migration format.
+Restore from a snapshot skips steps 2–5: a snapshot is engine state produced by the same engine version against the same Definition, so it is trusted to be internally consistent. **Confirmed (AC-05.3.3):** a snapshot records the Definition canonical it was taken against, and restoring against a different one is refused rather than degraded — snapshots are not a migration format. A path or answer the Definition cannot hold is refused the same way (`snapshot-mismatch`), and a snapshot of another format as `snapshot-format` (A5).
 
 ---
 

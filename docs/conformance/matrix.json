@@ -997,6 +997,25 @@
         "packages/core/test/conformance/fixtures.test.ts > emission: completed, with nothing answered and no identity",
         "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)"
       ]
+    },
+    {
+      "id": "snapshot.restore",
+      "feature": "A snapshot restores the exact session, retained answers, ordinals, surfacing and status included (AC-05.3.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/resume/snapshot.test.ts > snapshot and restore (US-05.3, INV-E-07)",
+        "packages/core/test/property/restore.test.ts > restore from a snapshot (M3 AC-2, INV-E-07)"
+      ]
+    },
+    {
+      "id": "snapshot.mismatch",
+      "feature": "A snapshot restored against another canonical or version is refused, naming both (AC-05.3.3)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/resume/snapshot.test.ts > snapshot and restore (US-05.3, INV-E-07)"
+      ]
     }
   ]
 }

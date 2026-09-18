@@ -14,6 +14,7 @@ const text = (path) => readFileSync(new URL(path, root), 'utf8');
 const ENTRY_POINTS = [
   { name: '@fhirq/core', report: 'packages/core/etc/core.api.md' },
   { name: '@fhirq/core/view', report: 'packages/core/etc/core-view.api.md' },
+  { name: '@fhirq/core/resume', report: 'packages/core/etc/core-resume.api.md' },
   { name: '@fhirq/react', source: 'packages/react/src/index.ts' },
   { name: '@fhirq/element', source: 'packages/element/src/index.ts' },
   { name: '@fhirq/themes', source: 'packages/themes/src/index.ts' },
@@ -37,6 +38,7 @@ describe('the public API surface (NFR-U-05)', () => {
     expect(Object.fromEntries(ENTRY_POINTS.map((entry) => [entry.name, symbols(entry).length]))).toEqual({
       '@fhirq/core': 32,
       '@fhirq/core/view': 15,
+      '@fhirq/core/resume': 2,
       '@fhirq/react': 2,
       '@fhirq/element': 2,
       '@fhirq/themes': 1,

@@ -21,8 +21,8 @@
     "test:mutation": "stryker run",
     "bench": "node scripts/bench-run.mjs",
     "bench:compare": "node scripts/bench-compare.mjs",
-    "api:check": "tsc --build packages/core && api-extractor run -c packages/core/api-extractor.json && api-extractor run -c packages/core/api-extractor.view.json",
-    "api:update": "tsc --build packages/core && api-extractor run --local -c packages/core/api-extractor.json && api-extractor run --local -c packages/core/api-extractor.view.json",
+    "api:check": "tsc --build packages/core && api-extractor run -c packages/core/api-extractor.json && api-extractor run -c packages/core/api-extractor.view.json && api-extractor run -c packages/core/api-extractor.resume.json",
+    "api:update": "tsc --build packages/core && api-extractor run --local -c packages/core/api-extractor.json && api-extractor run --local -c packages/core/api-extractor.view.json && api-extractor run --local -c packages/core/api-extractor.resume.json",
     "measure": "node scripts/measure-bundles.mjs",
     "changeset": "changeset",
     "clean": "tsc --build --clean tsconfig.json"

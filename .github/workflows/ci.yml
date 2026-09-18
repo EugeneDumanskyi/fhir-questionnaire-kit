@@ -61,10 +61,11 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
-  # The engine's M2 gates, required: core coverage at 95 % line / 90 % branch
-  # from its own Node suite (NFR-Q-01), the @fhirq/core bundle budget
-  # (NFR-S-02), and the API report (NFR-M-04): a public surface that differs
-  # from packages/core/etc/*.api.md fails until the PR commits the new report.
+  # The engine's gates, required: core coverage at 95 % line / 90 % branch
+  # from its own Node suite (NFR-Q-01), the @fhirq/core and, from M3,
+  # @fhirq/core/resume bundle budgets with the resume bundle-inputs check
+  # (NFR-S-02, ADR-0021), and the API reports (NFR-M-04): a public surface that
+  # differs from packages/core/etc/*.api.md fails until the PR commits the new report.
   # The other entry points are measured and reported, and are gated from the
   # milestone that builds each (scripts/budgets.json `gated`).
   engine-gates:
@@ -100,10 +101,10 @@ jobs:
       - name: Core coverage, 95 % line and 90 % branch
         run: pnpm test:coverage:core
 
-      - name: Bundle budget, @fhirq/core
+      - name: Bundle budgets, @fhirq/core and @fhirq/core/resume, and resume inputs
         run: pnpm measure --check
 
-      - name: API report, @fhirq/core and @fhirq/core/view
+      - name: API reports, @fhirq/core, @fhirq/core/view and @fhirq/core/resume
         run: pnpm api:check
 
       - name: Upload the coverage summary and the bundle report
