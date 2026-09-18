@@ -1,0 +1,31 @@
+{
+  "behaviour": "A value constraint its item type cannot have: minValue on a string (INV-D-20)",
+  "cases": [
+    {
+      "name": "strict rejects",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "inapplicable-constraint",
+          "path": "nickname",
+          "detail": "minValue"
+        }
+      ]
+    },
+    {
+      "name": "lenient ignores it with a diagnostic",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "inapplicable-constraint",
+          "path": "nickname",
+          "detail": "minValue",
+          "severity": "error"
+        }
+      ],
+      "enabled": [
+        "nickname"
+      ]
+    }
+  ]
+}

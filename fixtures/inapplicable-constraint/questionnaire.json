@@ -1,0 +1,20 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:inapplicable-constraint",
+  "version": "1",
+  "status": "draft",
+  "title": "inapplicable-constraint",
+  "item": [
+    {
+      "linkId": "nickname",
+      "text": "Nickname",
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 1
+        }
+      ]
+    }
+  ]
+}

@@ -7,8 +7,11 @@ import {
   EXPRESSION_EXTENSIONS,
   ITEM_CONTROL,
   ITEM_CONTROL_SYSTEM,
+  MAX_DECIMAL_PLACES,
   MAX_OCCURS,
+  MAX_VALUE,
   MIN_OCCURS,
+  MIN_VALUE,
   RENDERING_XHTML,
 } from './extensions.js';
 
@@ -52,6 +55,16 @@ const CONDITION_ANSWERS: ReadonlyMap<string, AnswerKind | null> = new Map([
   ['answerCoding', 'coding'],
   ['answerQuantity', 'quantity'],
   ['answerReference', null],
+]);
+
+/** `minValue` and `maxValue`: R4 allows these six; `time` and `instant` bound no supported item (INV-D-20). */
+const LIMIT_VALUES: ReadonlyMap<string, AnswerKind | null> = new Map([
+  ['valueInteger', 'integer'],
+  ['valueDecimal', 'decimal'],
+  ['valueDate', 'date'],
+  ['valueDateTime', 'dateTime'],
+  ['valueTime', null],
+  ['valueInstant', null],
 ]);
 
 /** `answerOption.value[x]`: the kinds M2 plan D4c supports, and the two it does not. */
@@ -161,6 +174,9 @@ function readItem(json: Json, parent: ItemPath | null, index: number, findings: 
     options: optionalArray(json, 'answerOption', path, findings).flatMap((option, i) => readOption(option, path, i, findings)),
     valueSet: optionalString(json, 'answerValueSet', path, findings) ?? null,
     maxLength: optionalInteger(json['maxLength'], path, 'maxLength', findings),
+    minValue: limitExtension(json, MIN_VALUE, path, findings),
+    maxValue: limitExtension(json, MAX_VALUE, path, findings),
+    maxDecimalPlaces: integerExtension(json, MAX_DECIMAL_PLACES, path, findings),
     minOccurs: integerExtension(json, MIN_OCCURS, path, findings),
     maxOccurs: integerExtension(json, MAX_OCCURS, path, findings),
     itemControl: readItemControl(json),
@@ -287,7 +303,7 @@ function readExpressions(json: Json, path: string | null, findings: Findings): E
   });
 }
 
-/** `questionnaire-minOccurs` and `-maxOccurs` carry a non-negative `valueInteger`. */
+/** `questionnaire-minOccurs`, `-maxOccurs` and `maxDecimalPlaces` carry a non-negative `valueInteger`. */
 function integerExtension(json: Json, url: string, path: string, findings: Findings): number | null {
   const extension = extensions(json).find((candidate) => candidate['url'] === url);
   if (extension === undefined) return null;
@@ -295,6 +311,19 @@ function integerExtension(json: Json, url: string, path: string, findings: Findi
   if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) return value;
   findings.add('malformed', path, url);
   return null;
+}
+
+/** `minValue` and `maxValue` carry one `value[x]` of the kinds R4 lists. */
+function limitExtension(json: Json, url: string, path: string, findings: Findings): OptionInput | null {
+  const extension = extensions(json).find((candidate) => candidate['url'] === url);
+  if (extension === undefined) return null;
+  const choice = onlyChoice(extension, 'value', LIMIT_VALUES);
+  const value = choice === null ? undefined : typedValue(choice.kind, extension[choice.key]);
+  if (choice === null || value === undefined) {
+    findings.add('malformed', path, url);
+    return null;
+  }
+  return { value, valueType: choice.key.slice('value'.length) };
 }
 
 function readItemControl(json: Json): string | null {

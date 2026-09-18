@@ -818,6 +818,26 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > retention: discard"
       ]
+    },
+    {
+      "id": "definition.inapplicable-constraint",
+      "feature": "A `minValue`, `maxValue`, `maxDecimalPlaces` or occurs constraint on an item type it cannot apply to (INV-D-20)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > inapplicable-constraint: strict rejects",
+        "packages/core/test/conformance/fixtures.test.ts > inapplicable-constraint: lenient ignores it with a diagnostic",
+        "packages/core/test/definition/constraints.test.ts > constraint extensions at load (INV-D-20)"
+      ]
+    },
+    {
+      "id": "extension.min-max-value.time",
+      "feature": "`minValue` and `maxValue` of type `time` or `instant`",
+      "status": "not supported",
+      "reason": "No supported item holds a `time` or an `instant`, so none can take such a limit (INV-D-20)",
+      "tests": [
+        "packages/core/test/definition/constraints.test.ts > constraint extensions at load (INV-D-20)"
+      ]
     }
   ]
 }
