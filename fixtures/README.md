@@ -1,14 +1,16 @@
 # `fixtures/`
 
 Conformance fixtures: one `Questionnaire` per behaviour, plus what the
-behaviour under test needs (a command script, expected diagnostics and, from
-M3, an expected `QuestionnaireResponse`).
+behaviour under test needs: a command script, expected diagnostics and issues,
+and from M3 stored and expected `QuestionnaireResponse`s.
 
 **From M2** each behaviour directory holds `questionnaire.json` and
-`scenario.json`; `expected-response.json` joins them in M3, when the engine
-emits a response (`06-roadmap.md` M2 plan D6). Each case is linked from a row
-of `docs/conformance/matrix.json`. M10 renders the matrix and enforces every
-link against a passing run (NFR-Q-04, AC-13.4.2).
+`scenario.json`. **From M3** it may also hold R4 `QuestionnaireResponse`s: one a
+case hydrates from (`response.json` and the like), and one a case must emit at
+its end (`expected-response.json` and the like). A scenario names each file it
+uses, and a directory holds no response file that no case names. Each case is
+linked from a row of `docs/conformance/matrix.json`. M10 renders the matrix and
+enforces every link against a passing run (NFR-Q-04, AC-13.4.2).
 
 ## The scenario (`scenario.json`)
 
@@ -24,6 +26,8 @@ the public `createSession`, as a host would, and replays each case as the test
       "name": "strict rejects",
       "loadMode": "strict",                 // or "lenient"
       "retention": "discard",               // optional; the default is retain-exclude
+      "hostIdentity": { "subject": { "reference": "Patient/1" } },  // optional, as SessionOptions takes it
+      "hydrate": "response.json",           // optional: resume from this stored response instead of starting empty
       // Either the load is rejected, with these findings in this order…
       "rejected": [{ "code": "dependency-cycle", "path": "a", "related": ["a", "b"] }],
       // …or it loads, with these diagnostics and these enabled node paths, in document order.
@@ -39,15 +43,21 @@ the public `createSession`, as a host would, and replays each case as the test
         }
       ],
       // Optional: the answers on some node paths at the end.
-      "answers": { "q": [{ "kind": "boolean", "value": true }] }
+      "answers": { "q": [{ "kind": "boolean", "value": true }] },
+      // Optional: the validation result at the end, in order, on the fields each names.
+      "issues": [{ "code": "max-length", "path": "q", "params": { "limit": 5 } }],
+      // Optional: the response the session emits at the end, with `authored` fixed at 2026-01-01T00:00:00Z.
+      "response": "expected-response.json"
     }
   ]
 }
 ```
 
 A finding or diagnostic is compared on the fields it names: `code` and `path`
-always, `related`, `detail` and `severity` where given. `detail` holds an item
-type, a value type or an extension URL, never an answer.
+always, `related`, `detail`, `severity`, `expected` and `found` where given.
+`detail` holds an item type, a value type or an extension URL; `expected` and
+`found` hold answer kinds, canonicals or counts. Never an answer. An expected
+response is compared whole: it holds answers, which is what a response is for.
 
 **Generated fixtures.** The `enablewhen-<type>` directories are written by
 `scripts/gen-conformance-fixtures.mjs` from a truth table, not by the engine; a

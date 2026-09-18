@@ -1,6 +1,6 @@
 # FHIR Questionnaire Kit — Public API
 
-*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12). The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M3 adds emission, snapshots and hydration; M4 adds the ports.*
+*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M4 adds the ports.*
 
 **Status, 2026-09-18.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
 
@@ -27,14 +27,14 @@
 | Entry point | Symbols | Report |
 |---|---:|---|
 | `@fhirq/core` | 32 | `packages/core/etc/core.api.md` |
-| `@fhirq/core/resume` | 2 | `packages/core/etc/core-resume.api.md` |
+| `@fhirq/core/resume` | 3 | `packages/core/etc/core-resume.api.md` |
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
 | `@fhirq/react` | 2 | from M6 |
 | `@fhirq/element` | 2 | from M7 |
 | `@fhirq/themes` | 1 | from M8 |
-| **Total** | **54 of 60** | |
+| **Total** | **55 of 60** | |
 
-M3 may add at most 5 symbols (`06-roadmap.md` M3 D3); emission is 2 of them and snapshot and restore 2 more. Six remain for hydration, M4 (the four ports) and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types.
+**Allocation (`06-roadmap.md` M3 D3).** M3 had at most 5 symbols and used 5: `emitResponse` and `QuestionnaireResponse` in `@fhirq/core`, and `snapshot`, `restoreSession` and `hydrateSession` in `@fhirq/core/resume`. It paid for the rest in shapes rather than names: cross-field rules are an inline field of `SessionOptions`, the resume functions reuse `SessionOptions`, and a snapshot is typed as JSON. Five symbols remain, for M4's ports and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types; if M4 needs more than five, that is an NFR-U-05 decision, not a quiet overrun.
 
 ## 3. `@fhirq/core`
 
@@ -67,6 +67,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `invalid-options` | An option the session cannot read, including a rule that names an unknown `linkId` or items in repeats that share no instance | empty |
 | `invalid-path` | `itemPath` was given something that is not a path | empty |
 | `unknown-session` | `emitResponse` or `snapshot` was given an object that is not a session | empty |
+| `response-rejected` | `hydrateSession` was given something that is not an R4 `QuestionnaireResponse` | Every finding |
 | `snapshot-mismatch` | `restoreSession` was given a snapshot taken against another canonical or version, or one holding paths this questionnaire does not have | A `version-drift` finding naming both canonicals, or the path |
 | `snapshot-format` | `restoreSession` was given something that is not a snapshot of this format | empty |
 
@@ -170,7 +171,7 @@ An `ItemPath` addresses one node. Its segments are `linkId`s joined by `/`, and 
 - `error`: a finding that rejects a `strict` load. It stays `error` in a lenient load, so a host can tell a degraded item from a remark.
 - `warning`: a finding that never rejects.
 
-There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`.
+There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`, and hydration's four (§4.3). A hydration diagnostic may also carry `expected` and `found`: two answer kinds, two canonicals or two answer counts, never a value (INV-E-09).
 
 ### 3.7 Validation
 
@@ -204,7 +205,6 @@ createSession(questionnaire, {
 - **A rule that throws** contributes nothing and becomes one `rule-threw` diagnostic per rule, naming `rules[i]`, never the thrown text (INV-V-05).
 - **A snapshot does not hold rules,** so `restoreSession` needs the same ones.
 
-
 ### 3.8 Emission
 
 ```ts
@@ -225,17 +225,17 @@ A hidden item is absent, never present with an empty answer, whatever the retent
 ## 4. `@fhirq/core/resume`
 
 ```ts
-import { restoreSession, snapshot } from '@fhirq/core/resume';
+import { hydrateSession, restoreSession, snapshot } from '@fhirq/core/resume';
 ```
 
-A third entry point (ADR-0021), so that hosts that never resume, and the element, do not carry this code. Its functions take the `Questionnaire`, `Session` and `SessionOptions` of `@fhirq/core`, and return a `Session`. `hydrateSession` joins them with hydration.
+A third entry point (ADR-0021), so that hosts that never resume, and the element, do not carry this code. Its functions take the `Questionnaire`, `QuestionnaireResponse`, `Session` and `SessionOptions` of `@fhirq/core`, and return a `Session`.
 
 ### 4.1 Two ways back, deliberately different
 
 | | Source | Keeps retained answers | Keeps surfacing and status | Across questionnaire versions |
 |---|---|---|---|---|
 | **Restore** | A snapshot | Yes | Yes | No: refused |
-| **Hydrate** (next) | An emitted response | No: never emitted | No: always `in-progress`, nothing surfaced | Yes, with diagnostics |
+| **Hydrate** | An emitted response | No: never emitted | No: always `in-progress`, nothing surfaced | Yes, with diagnostics |
 
 A host that wants hidden answers to survive a reload persists the snapshot. The snapshot is engine state, not a clinical record: it holds answers the response leaves out, so it needs the same care as the response.
 
@@ -247,12 +247,26 @@ A host that wants hidden answers to survive a reload persists the snapshot. The 
   - `options.rules` supplies the cross-field rules, which a snapshot does not hold.
   - Another canonical or version is refused with `snapshot-mismatch`, naming both: a snapshot is not a migration format (AC-05.3.3). A different format is `snapshot-format` (A5).
 
+### 4.3 Hydration
+
+**`hydrateSession(questionnaire, response, options?)`** resumes from a stored `QuestionnaireResponse` (US-06.1, `04-domain.md` §8). It loads every answer that fits, rebuilds repeat instances at their stored counts in stored order, settles enablement, and starts `in-progress` whatever the stored status. The host identity is `options.hostIdentity`, or else the response's own `subject`, `author`, `encounter` and `identifier`.
+
+What does not fit is never loaded and never emitted. It is a `warning` in `session.diagnostics`, in document order:
+
+| Code | When | Names |
+|---|---|---|
+| `version-drift` | The stored canonical names another `url` or version | `expected` and `found` canonicals |
+| `orphan-answer` | A stored `linkId` the questionnaire does not have, or not at that place | The path |
+| `quarantined-answer` | An answer the item cannot hold; several on a single-answer item; a single-answer item stored twice; an answer on a group or a calculated item | The path, `expected` and `found` kinds or counts |
+| `hydrated-answer-disabled` | An answer on an item that is disabled once everything is loaded | The path |
+
+Hydration never fails because of content (INV-E-08). It throws only `definition-rejected` and `invalid-options`, as `createSession` does, and `response-rejected` for something that is not an R4 `QuestionnaireResponse`. A session emitted, hydrated and emitted again gives the same response, `authored` and `status` aside (INV-E-06).
+
 ## 5. `@fhirq/core/view` (`@alpha`)
 
 M1's presentation-model spike: `createView(session, options)` returns a `View` with `subscribe` and `getSnapshot`, and a `ViewModel` of yes/no and short-text nodes with their ids, issues, announcement, error summary and focus target (ADR-0007). It renders only `boolean` and `string` items until M5 replaces it with the full view model. Its report notes three types it reaches without exporting them: two from `@fhirq/core`, which API Extractor does not follow across a package's two entry points, and one internal base interface. M5 resolves both when it fixes the view's surface.
 
 ## 6. Not in the API yet
 
-- **M3:** hydration.
 - **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports, and the message catalogue's overrides.
 - **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.

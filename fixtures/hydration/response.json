@@ -1,0 +1,93 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:hydration|1",
+  "status": "completed",
+  "authored": "2025-03-01T10:00:00+01:00",
+  "item": [
+    {
+      "linkId": "smoker",
+      "answer": [
+        {
+          "valueBoolean": false
+        }
+      ]
+    },
+    {
+      "linkId": "amount",
+      "answer": [
+        {
+          "valueInteger": 20
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "item": [
+        {
+          "linkId": "name",
+          "answer": [
+            {
+              "valueString": "first"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "item": [
+        {
+          "linkId": "name",
+          "answer": [
+            {
+              "valueString": "second"
+            }
+          ]
+        },
+        {
+          "linkId": "taking",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "dose",
+          "answer": [
+            {
+              "valueString": "5 mg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "gone",
+      "answer": [
+        {
+          "valueString": "x"
+        }
+      ]
+    },
+    {
+      "linkId": "tags",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "born",
+      "answer": [
+        {
+          "valueDate": "1980"
+        },
+        {
+          "valueDate": "1981"
+        }
+      ]
+    }
+  ]
+}

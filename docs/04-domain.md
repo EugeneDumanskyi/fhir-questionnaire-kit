@@ -848,7 +848,7 @@ Hydration is a short, synchronous process rather than a long-running machine, bu
 3. **Walk stored items against the Definition, in document order.**
    - Unknown `linkId` → `orphan-answer` diagnostic; skip the item and its subtree (AC-06.1.3).
    - Answer type incompatible with the item definition → `quarantined-answer` diagnostic with path, expected and found type, **no value**; not loaded (AC-06.3.2, §9 T6).
-   - More answers than a non-repeating item allows → `quarantined-answer`; none loaded (AC-06.3.3 — partial loading would pick a winner silently).
+   - More answers than a non-repeating item allows → `quarantined-answer`; none loaded (AC-06.3.3 — partial loading would pick a winner silently). The same for a non-repeating item stored more than once, an answer on a group, and an answer on a calculated item (ADR-0003).
    - Repeating group → one instance per stored occurrence, ordinals `0…n-1` in stored order (INV-E-11). Counts outside `min`/`max` are accepted and surface through SM-05.
 4. **Settle enablement** against the loaded answers (AC-06.1.1).
 5. **Drop answers that landed on disabled nodes**, raising `hydrated-answer-disabled` (§9 T7). After this step, no hydrated node is in SM-02 `DR`.
@@ -856,6 +856,8 @@ Hydration is a short, synchronous process rather than a long-running machine, bu
 7. **Return the session with its diagnostics.** Whether to proceed on drift or quarantine is the host's call; the library has already done everything it will do.
 
 Restore from a snapshot skips steps 2–5: a snapshot is engine state produced by the same engine version against the same Definition, so it is trusted to be internally consistent. **Confirmed (AC-05.3.3):** a snapshot records the Definition canonical it was taken against, and restoring against a different one is refused rather than degraded — snapshots are not a migration format. A path or answer the Definition cannot hold is refused the same way (`snapshot-mismatch`), and a snapshot of another format as `snapshot-format` (A5).
+
+Hydration diagnostics are `warning`s, in document order of the Definition, stored `linkId`s it does not have last; each names a path and, where there is one, `expected` and `found` — two answer kinds, two canonicals or two counts, never a value (INV-E-09, `06-roadmap.md` M3 D8).
 
 ---
 

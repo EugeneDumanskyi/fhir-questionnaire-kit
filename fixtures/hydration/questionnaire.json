@@ -1,0 +1,67 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:hydration",
+  "version": "2",
+  "status": "draft",
+  "title": "hydration",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "type": "boolean"
+    },
+    {
+      "linkId": "amount",
+      "text": "How many a day?",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "type": "group",
+      "repeats": true,
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "type": "string"
+        },
+        {
+          "linkId": "taking",
+          "text": "Taking it?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "dose",
+          "text": "Dose",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "taking",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "tags",
+      "text": "Tags",
+      "type": "string",
+      "repeats": true
+    },
+    {
+      "linkId": "born",
+      "text": "Born",
+      "type": "date"
+    }
+  ]
+}

@@ -58,7 +58,7 @@ describe('measure-bundles', () => {
 
   it('catches a main entry point that imports restoreSession (the must-fail fixture)', async () => {
     const leaky = await measure({ name: 'leaky', entry: 'scripts/test/fixtures/bundle-inputs/leaky-core.ts', external: [], resumeFree: true });
-    expect(leaky.resume).toEqual(expect.arrayContaining(['packages/core/src/resume.ts', 'packages/core/src/session/snapshot.ts']));
+    expect(leaky.resume).toEqual(expect.arrayContaining(RESUME_ONLY));
     expect(failures([leaky], [])).toHaveLength(1);
   });
 

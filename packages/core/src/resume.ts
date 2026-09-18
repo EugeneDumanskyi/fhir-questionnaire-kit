@@ -1,16 +1,20 @@
 /**
  * `@fhirq/core/resume`: the ways back into a session (ADR-0021). A snapshot
- * and its restore keep everything, retained answers included (AC-05.3.1).
- * Emission stays in `@fhirq/core`.
+ * and its restore keep everything, retained answers included (AC-05.3.1);
+ * hydration starts from an emitted `QuestionnaireResponse` and keeps what it
+ * holds, enabled answers only (AC-06.1.1). Emission stays in `@fhirq/core`.
  *
  * A separate entry point so that a host that never resumes, and the element,
  * never carry this code: nothing reachable from `@fhirq/core` or
  * `@fhirq/core/view` imports it, which lint and the bundle-inputs check hold.
  */
 
-import type { Questionnaire, Session, SessionOptions } from './index.js';
+import type { Questionnaire, QuestionnaireResponse, Session, SessionOptions } from './index.js';
+import { decodeResponse } from './fhir/r4/decode.js';
+import { FhirqError } from './kernel/error.js';
+import { hydrationState } from './interchange/hydrate.js';
 import { invalidOptions, open } from './open.js';
-import { readSnapshot, restore, takeSnapshot } from './session/snapshot.js';
+import { readSnapshot, restore, startFrom, takeSnapshot } from './session/snapshot.js';
 
 /**
  * The session's full stored state as JSON (AC-05.3.1): every node's answers,
@@ -56,3 +60,27 @@ export function restoreSession(questionnaire: Questionnaire, snapshot: unknown, 
   return restore(definition, { ...settings, hostIdentity: saved.hostIdentity }, validate, saved);
 }
 
+/**
+ * A session resumed from a stored `QuestionnaireResponse` and its questionnaire
+ * (US-06.1, `04-domain.md` §8). Every answer that fits is loaded, repeat
+ * instances are rebuilt at their stored counts, enablement settles against
+ * them, and the session is `in-progress` whatever the stored status. What does
+ * not fit is a diagnostic in `session.diagnostics`, never loaded and never
+ * emitted: `version-drift`, `orphan-answer`, `quarantined-answer`, and
+ * `hydrated-answer-disabled` for an answer that lands on a disabled item. Each
+ * names paths and types, never a value. The host identity is `options`', or
+ * else the response's `subject`, `author`, `encounter` and `identifier`.
+ *
+ * Throws `FhirqError`: `definition-rejected` and `invalid-options` as
+ * `createSession` does, and `response-rejected` with findings for anything that
+ * is not an R4 `QuestionnaireResponse`. Never for its content (INV-E-08).
+ *
+ * @beta
+ */
+export function hydrateSession(questionnaire: Questionnaire, response: QuestionnaireResponse, options: SessionOptions = {}): Session {
+  const { definition, settings, validate } = open(questionnaire, options);
+  const decoded = decodeResponse(response);
+  if (!decoded.ok) throw new FhirqError('response-rejected', decoded.findings);
+  const hostIdentity = settings.hostIdentity ?? decoded.response.identity;
+  return startFrom(definition, { ...settings, hostIdentity }, validate, hydrationState(definition, decoded.response));
+}
