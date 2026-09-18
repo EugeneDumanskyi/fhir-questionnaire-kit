@@ -54,6 +54,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `loadMode` | `strict` rejects any construct the kit does not support, listing every finding; `lenient` degrades each towards the safe side with a diagnostic (`04-domain.md` §5.1) | `strict` |
 | `retention` | `retain-exclude` keeps a hidden answer out of the response and restores it on re-enable; `discard` erases it and resets a repeating group (ADR-0011) | `retain-exclude` |
 | `hostIdentity` | `subject`, `author`, `encounter`, `identifier`, stored verbatim for emission (M3) | none |
+| `rules` | Cross-field rules (§3.7) | none |
 
 **`Questionnaire`** is FHIR R4 (4.0.1) JSON. The resource's own elements are typed; nested elements are `unknown`, because the codec checks the whole resource at runtime (INV-D-01). A resource type from a FHIR library assigns to it. R5 is rejected, not degraded (ADR-0016).
 
@@ -62,7 +63,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `code` | When | `findings` |
 |---|---|---|
 | `definition-rejected` | The input is not an R4 `Questionnaire`, or it cannot load in the chosen mode | Every finding, as `Diagnostic`s |
-| `invalid-options` | An option the session cannot read | empty |
+| `invalid-options` | An option the session cannot read, including a rule that names an unknown `linkId` or items in repeats that share no instance | empty |
 | `invalid-path` | `itemPath` was given something that is not a path | empty |
 
 Authoring problems a lenient load degrades are `session.diagnostics`, not errors.
@@ -89,7 +90,7 @@ Authoring problems a lenient load degrades are `session.diagnostics`, not errors
 | `AddRepeatInstance` | `path` (the group) | Appends an empty instance with a never-used ordinal |
 | `RemoveRepeatInstance` | `path`, `ordinal` | Destroys that instance and its answers |
 | `NoteItemLeft` | `path` | The respondent left the item: its issues surface |
-| `RequestCompletion` | — | Completes, or is refused with `validation-errors` and surfaces every issue |
+| `RequestCompletion` | — | Completes when no issue is an `error`, or is refused with `validation-errors`, surfaces every node with an issue and shows form-level issues |
 
 **`CommandResult`** is one of:
 - `applied`;
@@ -122,6 +123,7 @@ A refusal changes nothing, except that a refused completion surfaces issues.
 - `status`: `in-progress` or `completed`;
 - `cycle`: increments once per visible change;
 - `nodes`: the effectively enabled nodes, in document order;
+- `issues`: the validation result (§3.7);
 - `completionRefused`;
 - `change`: the `SessionChange` that produced this state, or `null` for the initial state.
 
@@ -164,7 +166,40 @@ An `ItemPath` addresses one node. Its segments are `linkId`s joined by `/`, and 
 - `error`: a finding that rejects a `strict` load. It stays `error` in a lenient load, so a host can tell a degraded item from a remark.
 - `warning`: a finding that never rejects.
 
-There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus `listener-threw`.
+There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`.
+
+### 3.7 Validation
+
+`SessionState.issues` is the validation result (AC-04.4.1): every current issue, surfaced or not, in document order and repeat position, form-level issues first. Each `NodeState.issues` holds that node's share. An `Issue` is:
+- `code`: `required`, `min-occurs`, `max-occurs`, `max-length`, `max-decimal-places`, `min-value`, `max-value`, `unit-missing`, or `rule` for a cross-field rule;
+- `severity`: `error` blocks completion, `warning` does not;
+- `path` and `linkId`, both `null` for a form-level issue;
+- `message`: the message catalogue key, which is the code for a built-in rule;
+- `params`: what the message names, such as `{ limit: 5 }`. **Never the entered value** (NFR-X-04): the view adds it when it renders (`06-roadmap.md` M3 D1).
+
+Only enabled items have issues: a hidden required item never blocks completion (INV-V-01). The engine holds typed answers only, so it reports a date outside its range but never "not a date"; the view model reports that on a draft from M5. A date of another precision than its limit raises nothing.
+
+**Surfacing** is `blur-then-live` (SM-03). An issue surfaces when the respondent leaves its item, or on a refused completion; once live, a node stays live, across hide and show too. Form-level issues show after a refused completion (`completionRefused`).
+
+**Cross-field rules** are `SessionOptions.rules`, fixed for the session's life:
+
+```ts
+createSession(questionnaire, {
+  rules: [{
+    inputs: ['systolic', 'diastolic'],
+    check: ({ systolic, diastolic }) =>
+      (systolic?.[0]?.value ?? 0) <= (diastolic?.[0]?.value ?? 0) ? 'bp-order' : null,
+  }],
+});
+```
+
+- **`inputs`** name items by `linkId`. The rule runs once per instance of the innermost repeating group they share, as `enableWhen` does: in `reading[2]` it reads `reading[2]`'s items and those outside every repeat.
+- **It is skipped** wherever any item it names is disabled, and never sees a retained answer (INV-V-03).
+- **`check`** receives the visible answers, frozen, and returns a message catalogue key or `null` (INV-V-10).
+- **The issue attaches to `targets`**, which default to `inputs`; `targets: []` makes it form-level. `severity` defaults to `error`.
+- **A rule that throws** contributes nothing and becomes one `rule-threw` diagnostic per rule, naming `rules[i]`, never the thrown text (INV-V-05).
+- **A snapshot does not hold rules,** so `restoreSession` needs the same ones.
+
 
 ## 4. `@fhirq/core/view` (`@alpha`)
 
@@ -172,6 +207,6 @@ M1's presentation-model spike: `createView(session, options)` returns a `View` w
 
 ## 5. Not in the API yet
 
-- **M3:** emission (`QuestionnaireResponse`), snapshots and resume, hydration, and the validation rules beyond `required`.
+- **M3:** emission (`QuestionnaireResponse`), snapshots and resume, and hydration.
 - **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports, and the message catalogue's overrides.
 - **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.

@@ -3,7 +3,8 @@ import type { Issue } from '../kernel/issue.js';
 import type { ItemType, LinkId } from '../kernel/item-type.js';
 import type { ItemPath } from '../kernel/path.js';
 import type { ItemDef } from '../definition/compile.js';
-import { childNodes, type ItemNode, type Store } from './store.js';
+import type { VisibleInstance, VisibleNode, VisibleProjection } from './projection.js';
+import { type ItemNode, type Store } from './store.js';
 
 /**
  * ADR-0009 cycle step 6: publish. Hosts and the view model read immutable
@@ -73,16 +74,35 @@ export function publicItem(def: ItemDef): ItemDefinition {
   };
 }
 
-/** Effectively enabled nodes in document order. A disabled node's subtree is skipped whole (INV-S-01). */
-export function visibleNodes(store: Store): ItemNode[] {
-  const out: ItemNode[] = [];
-  const visit = (node: ItemNode): void => {
-    if (!node.effective) return;
-    out.push(node);
-    for (const child of childNodes(node)) visit(child);
+/**
+ * The visible projection of a settled store, and the stored nodes it shows:
+ * effectively enabled nodes in document order, instances in position order.
+ * A disabled node's subtree is skipped whole (INV-S-01).
+ */
+export function project(store: Store, status: VisibleProjection['status']): { projection: VisibleProjection; visible: ItemNode[] } {
+  const visible: ItemNode[] = [];
+  const nodes: VisibleNode[] = [];
+  const visitAll = (list: readonly ItemNode[]): VisibleNode[] => {
+    const out: VisibleNode[] = [];
+    for (const node of list) {
+      if (node.effective) out.push(visit(node));
+    }
+    return out;
   };
-  for (const root of store.roots) visit(root);
-  return out;
+  // Pre-order: a node is listed before its children are visited.
+  const visit = (node: ItemNode): VisibleNode => {
+    visible.push(node);
+    const shown: { -readonly [K in keyof VisibleNode]: VisibleNode[K] } = { path: node.path, item: node.def, answers: node.answers, children: NONE, instances: NONE };
+    nodes.push(shown);
+    if (node.children.length > 0) shown.children = visitAll(node.children);
+    if (node.instances.length > 0) {
+      shown.instances = node.instances.map((instance): VisibleInstance => ({ ordinal: instance.ordinal, path: instance.path, children: visitAll(instance.children) }));
+    }
+    return shown;
+  };
+  const roots = visitAll(store.roots);
+  const { url, version } = store.definition;
+  return { projection: { definition: { url, version }, status, hostIdentity: store.hostIdentity, roots, nodes }, visible };
 }
 
 export function publishNodes(
@@ -121,7 +141,13 @@ export function publishNodes(
 }
 
 function sameIssues(a: readonly Issue[], b: readonly Issue[]): boolean {
-  return a.length === b.length && a.every((issue, index) => issue.code === b[index]?.code);
+  return a.length === b.length && a.every((issue, index) => sameIssue(issue, b[index]));
+}
+
+function sameIssue(a: Issue, b: Issue | undefined): boolean {
+  if (b === undefined || a.code !== b.code || a.message !== b.message || a.severity !== b.severity) return false;
+  const keys = Object.keys(a.params);
+  return keys.length === Object.keys(b.params).length && keys.every((key) => a.params[key] === b.params[key]);
 }
 
 function sameNumbers(a: readonly number[], b: readonly number[]): boolean {

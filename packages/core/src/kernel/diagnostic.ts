@@ -45,8 +45,9 @@ export type DiagnosticCode =
   | 'initial-value-ignored'
   | 'unsupported-option-type'
   | 'inapplicable-constraint'
-  /* Runtime */
-  | 'listener-threw';
+  /* Runtime (INV-V-05) */
+  | 'listener-threw'
+  | 'rule-threw';
 
 /**
  * A finding about the questionnaire, or a runtime one such as a listener that

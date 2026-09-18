@@ -441,9 +441,12 @@ describe('completion (SM-01)', () => {
     expect(session.getSnapshot()).toMatchObject({ status: 'in-progress', completionRefused: true, cycle: 3 });
   });
 
-  it('ignores a disabled required item (INV-V-01) and a required group, then completes', () => {
+  it('ignores a disabled required item (INV-V-01), holds a required group to an answered descendant, then completes', () => {
     const session = createSession(questionnaire([...SLICE.item, { linkId: 'g', type: 'group', required: true, item: [{ linkId: 'x', type: 'string' }] }]));
     session.dispatch({ type: 'SetAnswer', path: SMOKER, answers: bool(false) });
+    expect(session.dispatch({ type: 'RequestCompletion' })).toEqual({ outcome: 'refused', reason: 'validation-errors' });
+    expect(session.getSnapshot().issues).toMatchObject([{ code: 'required', path: 'g', linkId: 'g' }]);
+    session.dispatch({ type: 'SetAnswer', path: itemPath('g', 'x'), answers: [{ kind: 'string', value: 'y' }] });
     expect(session.dispatch({ type: 'RequestCompletion' })).toEqual({ outcome: 'applied' });
     expect(session.getSnapshot()).toMatchObject({ status: 'completed', change: { completion: 'completed' } });
   });

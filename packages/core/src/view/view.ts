@@ -142,9 +142,8 @@ interface Commands {
 
 const NO_ISSUES: readonly ViewIssue[] = [];
 
-const ISSUE_MESSAGE: Readonly<Record<IssueCode, (messages: Messages) => string>> = {
-  required: (messages) => messages.issueRequired,
-};
+/** The spike's two messages; M5 writes one per rule and fills in the limit and the entered value (M3 plan D1). */
+const issueMessage = (code: IssueCode, messages: Messages): string => (code === 'required' ? messages.issueRequired : messages.issueInvalid);
 
 /** @alpha S1 spike surface. */
 export function createView(session: Session, options: ViewOptions): View {
@@ -217,7 +216,7 @@ function rendered(state: NodeState): boolean {
 
 function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages: Messages): ViewNode {
   const issues = state.surfaced && state.issues.length > 0
-    ? state.issues.map((issue): ViewIssue => ({ rule: issue.code, message: ISSUE_MESSAGE[issue.code](messages) }))
+    ? state.issues.map((issue): ViewIssue => ({ rule: issue.code, message: issueMessage(issue.code, messages) }))
     : NO_ISSUES;
   const common = {
     path: state.path,

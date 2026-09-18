@@ -6,8 +6,8 @@ import type { ItemPath } from '../kernel/path.js';
 import type { Definition } from '../definition/compile.js';
 import { settle, settleInitial, type RetentionPolicy } from './enablement.js';
 import { guard, isCommand, type Command, type RefusalReason } from './guard.js';
-import type { Validator, VisibleProjection } from './projection.js';
-import { publicItem, publishNodes, visibleNodes, type NodeState } from './publish.js';
+import { publishProjection, type Validator } from './projection.js';
+import { project, publicItem, publishNodes, type NodeState } from './publish.js';
 import {
   addInstance,
   createStore,
@@ -23,7 +23,8 @@ import { recordTrace } from './trace.js';
 /**
  * The response session (BC2, ADR-0009): one command, one cycle, at most one
  * notification. A cycle guards, applies, settles enablement incrementally,
- * validates the visible projection, publishes per-node objects, and notifies.
+ * validates the visible projection, surfaces (SM-03), publishes per-node
+ * objects and the projection emission reads, and notifies.
  * No observer ever sees a cycle in progress (INV-S-05); a command issued
  * during one waits for it and gets a cycle of its own.
  */
@@ -72,7 +73,13 @@ export interface SessionState {
   readonly cycle: number;
   /** Effectively enabled nodes only, in document order. */
   readonly nodes: readonly NodeState[];
-  /** Whether a completion has been refused, so every issue is surfaced. */
+  /**
+   * The validation result (AC-04.4.1): every current issue, surfaced or not,
+   * form-level first, then in document order and repeat position (INV-V-06).
+   * Serializable, and never an answer value.
+   */
+  readonly issues: readonly Issue[];
+  /** Whether a completion has been refused: every issue on a node is surfaced then, and form-level issues are shown. */
   readonly completionRefused: boolean;
   /** The cycle that produced this state; `null` for the initial state. */
   readonly change: SessionChange | null;
@@ -97,7 +104,7 @@ export interface Session {
 
 export interface SessionSettings {
   readonly retention: RetentionPolicy;
-  /** Stored verbatim for emission (M3); the session never reads or invents it (INV-S-32). */
+  /** Stored verbatim for emission; the session never reads or invents it (INV-S-32). */
   readonly hostIdentity: object | null;
 }
 
@@ -105,27 +112,31 @@ const NO_PATHS: readonly ItemPath[] = [];
 
 export function createResponseSession(definition: Definition, settings: SessionSettings, validate: Validator): Session {
   const store = createStore(definition, settings.hostIdentity);
+  const diagnostics: Diagnostic[] = [...definition.diagnostics];
+  const report = (finding: Diagnostic): void => {
+    diagnostics.push(finding);
+  };
   settleInitial(store, settings.retention);
   const items = definition.items.map(publicItem);
   const listeners = new Set<(change: SessionChange) => void>();
-  const diagnostics: Diagnostic[] = [...definition.diagnostics];
   const queue: Command[] = [];
   let running = false;
   let settleRun = 0;
   let completionRefused = false;
+  let status: SessionState['status'] = 'in-progress';
 
   const evaluate = () => {
-    const visible = visibleNodes(store);
-    const projection: VisibleProjection = { nodes: visible.map((node) => ({ path: node.path, item: node.def, answers: node.answers })) };
-    const issues = validate(projection);
-    return { visible, issues, byPath: groupByPath(issues), answered: answeredSignature(visible) };
+    const { projection, visible } = project(store, status);
+    const issues = validate(projection, report);
+    return { projection, visible, issues, byPath: groupByPath(issues), answered: answeredSignature(visible) };
   };
 
   let settled = evaluate();
   let state: SessionState = {
-    status: 'in-progress',
+    status,
     cycle: 0,
     nodes: publishNodes(settled.visible, items, settled.byPath, []),
+    issues: settled.issues,
     completionRefused,
     change: null,
   };
@@ -152,20 +163,12 @@ export function createResponseSession(definition: Definition, settings: SessionS
     recordTrace(session, settlement.recomputed.map((node) => node.path));
     const next = evaluate();
 
-    let completion: SessionChange['completion'] = null;
-    let surfaced: ItemPath[] = [];
-    if (command.type === 'NoteItemLeft' && target !== null && next.byPath.has(target.path)) surfaced = surface([target.path]);
-    if (command.type === 'RequestCompletion') {
-      const errors = next.issues.filter((issue) => issue.severity === 'error');
-      completion = errors.length > 0 ? 'refused' : 'completed';
-      completionRefused ||= completion === 'refused';
-      surfaced = surface(errors.map((issue) => issue.path));
-    }
-
+    const { completion, surfaced } = verdict(command, target, next);
     const nodes = publishNodes(next.visible, items, next.byPath, state.nodes);
     const previous = settled;
     settled = next;
-    if (nodes === state.nodes && completion === null) return { outcome: 'unchanged' };
+    publishProjection(session, completion === 'completed' ? { ...next.projection, status } : next.projection);
+    if (nodes === state.nodes && completion === null && sameIssueList(state.issues, next.issues)) return { outcome: 'unchanged' };
 
     const flips = flipsInDocumentOrder(store, settlement.flipped, next.visible, firstNew);
     const change: SessionChange = {
@@ -178,15 +181,27 @@ export function createResponseSession(definition: Definition, settings: SessionS
       completion,
       responseChanged: !sameSignature(previous.answered, next.answered),
     };
-    state = {
-      status: completion === 'completed' ? 'completed' : state.status,
-      cycle: state.cycle + 1,
-      nodes,
-      completionRefused,
-      change,
-    };
+    state = { status, cycle: state.cycle + 1, nodes, issues: next.issues, completionRefused, change };
     notify(change);
     return completion === 'refused' ? { outcome: 'refused', reason: 'validation-errors' } : { outcome: 'applied' };
+  };
+
+  /**
+   * SM-03 and SM-01: leaving a node with an issue makes it live; a completion
+   * with no error completes, and a refused one makes every node with an issue
+   * live. Nothing ever makes a node quiet again.
+   */
+  const verdict = (command: Command, target: ItemNode | null, next: ReturnType<typeof evaluate>) => {
+    if (command.type === 'NoteItemLeft') {
+      return { completion: null, surfaced: target !== null && next.byPath.has(target.path) ? surface([target.path]) : [] };
+    }
+    if (command.type !== 'RequestCompletion') return { completion: null, surfaced: [] };
+    if (next.issues.some((issue) => issue.severity === 'error')) {
+      completionRefused = true;
+      return { completion: 'refused' as const, surfaced: surface(next.byPath.keys()) };
+    }
+    status = 'completed';
+    return { completion: 'completed' as const, surfaced: [] };
   };
 
   const apply = (command: Command, target: ItemNode | null, instances: { added: ItemPath[]; removed: ItemPath[] }): ItemNode[] => {
@@ -254,12 +269,15 @@ export function createResponseSession(definition: Definition, settings: SessionS
       }
     },
   };
+  publishProjection(session, settled.projection);
   return session;
 }
 
+/** Issues by node path. Form-level issues have no node, so they are not here. */
 function groupByPath(issues: readonly Issue[]): Map<ItemPath, Issue[]> {
   const byPath = new Map<ItemPath, Issue[]>();
   for (const issue of issues) {
+    if (issue.path === null) continue;
     const list = byPath.get(issue.path);
     if (list === undefined) byPath.set(issue.path, [issue]);
     else list.push(issue);
@@ -274,6 +292,11 @@ function answeredSignature(visible: readonly ItemNode[]): readonly (readonly [It
 
 function sameSignature(a: ReturnType<typeof answeredSignature>, b: ReturnType<typeof answeredSignature>): boolean {
   return a.length === b.length && a.every(([path, answers], index) => b[index]?.[0] === path && b[index]?.[1] === answers);
+}
+
+/** Form-level issues are published nowhere else, so a change to them alone is a visible change. */
+function sameIssueList(a: readonly Issue[], b: readonly Issue[]): boolean {
+  return a.length === b.length && a.every((issue, index) => issue.path === b[index]?.path && issue.message === b[index]?.message);
 }
 
 function sameAnswers(a: ItemNode['answers'], b: ItemNode['answers']): boolean {

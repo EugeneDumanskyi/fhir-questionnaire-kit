@@ -11,6 +11,7 @@ export const en = {
   no: 'No',
   requiredMarker: '*',
   issueRequired: 'Answer this question',
+  issueInvalid: 'Check this answer',
   errorSummaryHeading: 'There is a problem',
   /** A summary link names the question as well as the problem (WCAG 2.4.4). */
   errorSummaryEntry: '{message}: {label}',
