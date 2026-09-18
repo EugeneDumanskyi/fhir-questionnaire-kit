@@ -4,7 +4,8 @@ import { COMPARABLE } from '../../src/definition/checks.js';
 import { compile, type ItemDef } from '../../src/definition/compile.js';
 import type { Answer } from '../../src/kernel/answer.js';
 import { ITEM_TYPES, type ItemType, type Operator } from '../../src/kernel/item-type.js';
-import { compare, ownCondition, test as holds, type QuestionState } from '../../src/session/conditions.js';
+import { compare } from '../../src/kernel/compare.js';
+import { ownCondition, test as holds, type QuestionState } from '../../src/session/conditions.js';
 import { definition, item, when, yes } from '../definition/input.js';
 
 /**
