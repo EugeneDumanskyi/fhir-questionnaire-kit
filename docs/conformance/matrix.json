@@ -956,6 +956,47 @@
       "tests": [
         "packages/core/test/validation/rules.test.ts > surfacing (SM-03, D4)"
       ]
+    },
+    {
+      "id": "response.shape",
+      "feature": "The emitted `QuestionnaireResponse`: canonical, status, authored, and an item tree mirroring the questionnaire for enabled, answered items (AC-05.1.1, INV-E-01, INV-E-03)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > emission: enabled and answered items only",
+        "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)"
+      ]
+    },
+    {
+      "id": "response.disabled-excluded",
+      "feature": "A disabled item is absent from the response, never present with a null answer (AC-05.2.2, INV-E-02)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > emission: enabled and answered items only",
+        "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)"
+      ]
+    },
+    {
+      "id": "response.host-identity",
+      "feature": "`subject`, `author`, `encounter` and `identifier` verbatim when given, absent otherwise (AC-05.1.2)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > emission: enabled and answered items only",
+        "packages/core/test/conformance/fixtures.test.ts > emission: completed, with nothing answered and no identity",
+        "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)"
+      ]
+    },
+    {
+      "id": "response.status",
+      "feature": "`in-progress`, and `completed` only after a completion that passed validation (AC-05.1.3)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > emission: completed, with nothing answered and no identity",
+        "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)"
+      ]
     }
   ]
 }

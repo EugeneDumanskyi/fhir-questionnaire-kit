@@ -1,0 +1,93 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:emission",
+  "version": "1",
+  "status": "draft",
+  "title": "emission",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "type": "boolean"
+    },
+    {
+      "linkId": "amount",
+      "text": "How much?",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "smoker",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "type": "group",
+      "repeats": true,
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "type": "string"
+        },
+        {
+          "linkId": "dose",
+          "text": "Dose",
+          "type": "quantity"
+        }
+      ]
+    },
+    {
+      "linkId": "about",
+      "text": "About you",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "born",
+          "text": "Born",
+          "type": "date"
+        },
+        {
+          "linkId": "seen",
+          "text": "Last seen",
+          "type": "dateTime"
+        },
+        {
+          "linkId": "colour",
+          "text": "Colour",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:conformance:colours",
+                "code": "red",
+                "display": "Red"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:conformance:colours",
+                "code": "blue",
+                "display": "Blue"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "tags",
+      "text": "Tags",
+      "type": "string",
+      "repeats": true
+    },
+    {
+      "linkId": "note",
+      "text": "Thank you",
+      "type": "display"
+    }
+  ]
+}

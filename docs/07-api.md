@@ -26,14 +26,14 @@
 
 | Entry point | Symbols | Report |
 |---|---:|---|
-| `@fhirq/core` | 30 | `packages/core/etc/core.api.md` |
+| `@fhirq/core` | 32 | `packages/core/etc/core.api.md` |
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
 | `@fhirq/react` | 2 | from M6 |
 | `@fhirq/element` | 2 | from M7 |
 | `@fhirq/themes` | 1 | from M8 |
-| **Total** | **50 of 60** | |
+| **Total** | **52 of 60** | |
 
-Ten symbols remain for M3 (emission, snapshot, hydration), M4 (the four ports) and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types.
+M3 may add at most 5 symbols (`06-roadmap.md` M3 D3); emission is 2 of them. Eight remain for M3's resume path, M4 (the four ports) and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types.
 
 ## 3. `@fhirq/core`
 
@@ -53,7 +53,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 |---|---|---|
 | `loadMode` | `strict` rejects any construct the kit does not support, listing every finding; `lenient` degrades each towards the safe side with a diagnostic (`04-domain.md` §5.1) | `strict` |
 | `retention` | `retain-exclude` keeps a hidden answer out of the response and restores it on re-enable; `discard` erases it and resets a repeating group (ADR-0011) | `retain-exclude` |
-| `hostIdentity` | `subject`, `author`, `encounter`, `identifier`, stored verbatim for emission (M3) | none |
+| `hostIdentity` | `subject`, `author`, `encounter`, `identifier`, stored verbatim and emitted as given | none |
 | `rules` | Cross-field rules (§3.7) | none |
 
 **`Questionnaire`** is FHIR R4 (4.0.1) JSON. The resource's own elements are typed; nested elements are `unknown`, because the codec checks the whole resource at runtime (INV-D-01). A resource type from a FHIR library assigns to it. R5 is rejected, not degraded (ADR-0016).
@@ -65,6 +65,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `definition-rejected` | The input is not an R4 `Questionnaire`, or it cannot load in the chosen mode | Every finding, as `Diagnostic`s |
 | `invalid-options` | An option the session cannot read, including a rule that names an unknown `linkId` or items in repeats that share no instance | empty |
 | `invalid-path` | `itemPath` was given something that is not a path | empty |
+| `unknown-session` | `emitResponse` was given an object that is not a session | empty |
 
 Authoring problems a lenient load degrades are `session.diagnostics`, not errors.
 
@@ -201,12 +202,29 @@ createSession(questionnaire, {
 - **A snapshot does not hold rules,** so `restoreSession` needs the same ones.
 
 
+### 3.8 Emission
+
+```ts
+import { emitResponse } from '@fhirq/core';
+
+const response = emitResponse(session, { authored: '2026-09-18T10:00:00+02:00' });
+```
+
+**`emitResponse(session, options?)`** returns a FHIR R4 `QuestionnaireResponse` (AC-05.1.1):
+- **`questionnaire`** is the questionnaire's `url|version`, or `url` alone; it is absent when the questionnaire declares no `url`;
+- **`status`** is the session's: `in-progress`, or `completed` once a completion passed validation;
+- **`subject`, `author`, `encounter` and `identifier`** are the host identity, verbatim, and absent when not given;
+- **`authored`** is the caller's FHIR `dateTime`, or the current instant in UTC;
+- **`item`** mirrors the questionnaire for the enabled, answered items only.
+
+A hidden item is absent, never present with an empty answer, whatever the retention policy holds for it (INV-E-01). A repeating group is one item per instance in position order, and an instance with nothing answered is left out. Display items and lenient placeholders never appear. The items are built once per cycle and shared between calls, frozen. `QuestionnaireResponse` types the resource's own elements and leaves nested ones `unknown`, as `Questionnaire` does.
+
 ## 4. `@fhirq/core/view` (`@alpha`)
 
 M1's presentation-model spike: `createView(session, options)` returns a `View` with `subscribe` and `getSnapshot`, and a `ViewModel` of yes/no and short-text nodes with their ids, issues, announcement, error summary and focus target (ADR-0007). It renders only `boolean` and `string` items until M5 replaces it with the full view model. Its report notes three types it reaches without exporting them: two from `@fhirq/core`, which API Extractor does not follow across a package's two entry points, and one internal base interface. M5 resolves both when it fixes the view's surface.
 
 ## 5. Not in the API yet
 
-- **M3:** emission (`QuestionnaireResponse`), snapshots and resume, and hydration.
+- **M3:** snapshots and resume, and hydration.
 - **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports, and the message catalogue's overrides.
 - **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.

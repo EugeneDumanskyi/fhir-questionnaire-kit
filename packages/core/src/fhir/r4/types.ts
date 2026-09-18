@@ -61,3 +61,37 @@ export interface HostIdentity {
   readonly encounter?: object;
   readonly identifier?: object;
 }
+
+/**
+ * FHIR R4 (4.0.1) `QuestionnaireResponse`: what `emitResponse` returns and
+ * `hydrateSession` reads. Authored like `Questionnaire`: the resource's own
+ * elements are typed, nested ones are `unknown`, and a stored response is
+ * narrowed from `unknown` at runtime. The kit emits `in-progress` and
+ * `completed` only; `amended` is not supported (AC-05.1.4).
+ *
+ * @beta
+ */
+export interface QuestionnaireResponse {
+  readonly resourceType: 'QuestionnaireResponse';
+  readonly id?: string;
+  readonly meta?: unknown;
+  readonly implicitRules?: string;
+  readonly language?: string;
+  readonly text?: unknown;
+  readonly contained?: readonly unknown[];
+  readonly extension?: readonly unknown[];
+  readonly modifierExtension?: readonly unknown[];
+  readonly identifier?: object;
+  readonly basedOn?: readonly unknown[];
+  readonly partOf?: readonly unknown[];
+  /** The questionnaire's canonical, with `|version` when it declares one; absent when it declares no `url` (M3 plan D6). */
+  readonly questionnaire?: string;
+  readonly status: 'in-progress' | 'completed' | 'amended' | 'entered-in-error' | 'stopped';
+  readonly subject?: object;
+  readonly encounter?: object;
+  readonly authored?: string;
+  readonly author?: object;
+  readonly source?: unknown;
+  /** The answered, enabled items, as `QuestionnaireResponse.item` R4 JSON. */
+  readonly item?: readonly unknown[];
+}
