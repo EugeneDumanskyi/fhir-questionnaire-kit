@@ -65,6 +65,28 @@ describe('cross-field rules (US-04.3, M3 plan D5)', () => {
     expect(issues(session)).toEqual([]);
   });
 
+  it.each([
+    ['an input', ['a', 'b'], ['b']],
+    ['a target', ['b'], ['a']],
+  ])('is skipped when %s is disabled while its context stays enabled (INV-V-03)', (_, inputs, targets) => {
+    const check = vi.fn((): string => 'always');
+    const session = createSession(
+      questionnaire([
+        { linkId: 'gate', type: 'boolean' },
+        { linkId: 'a', type: 'integer', enableWhen: [{ question: 'gate', operator: '=', answerBoolean: true }] },
+        { linkId: 'b', type: 'integer' },
+      ]),
+      { rules: [{ inputs, targets, check }] },
+    );
+    set(session, 'gate', bool(true));
+    expect(issues(session)).toEqual(targets.map((target) => [target, 'rule', 'always', 'error']));
+    check.mockClear();
+    set(session, 'gate', bool(false));
+    expect(check).not.toHaveBeenCalled();
+    expect(issues(session)).toEqual([]);
+    expect(session.diagnostics.filter((finding) => finding.code === 'rule-threw')).toEqual([]);
+  });
+
   it('attaches to its targets, or to the form when they are empty; form-level issues come first and have no path (INV-V-06)', () => {
     const session = createSession(BLOOD_PRESSURE, {
       rules: [
