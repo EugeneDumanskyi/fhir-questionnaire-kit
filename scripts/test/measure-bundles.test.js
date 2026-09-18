@@ -75,6 +75,8 @@ describe('measure-bundles', () => {
     const resume = await measure(byName['@fhirq/core/resume'], new Set(core.inputs));
     expect(resume.modules.map((m) => m.path)).not.toContain('packages/core/src/session/session.ts');
     expect(resume.modules.map((m) => m.path)).toContain('packages/core/src/session/snapshot.ts');
+    // The same figure from any checkout: an excluded module is imported by its repository path.
+    expect(resume.externals.every((path) => path.startsWith('./packages/core/src/'))).toBe(true);
   });
 
   it('gates @fhirq/core from M2 and @fhirq/core/resume from M3, and only entries that have a budget', () => {

@@ -104,7 +104,9 @@ export function workspacePlugin(external = [], sources = SOURCES, base = root, e
         pluginBuild.onResolve({ filter: /^\./ }, async (args) => {
           if (args.pluginData?.excluding === true) return undefined;
           const resolved = await pluginBuild.resolve(args.path, { kind: args.kind, resolveDir: args.resolveDir, importer: args.importer, pluginData: { excluding: true } });
-          return excluded.has(resolved.path) ? { path: resolved.path, external: true } : resolved;
+          // Written as a repository-relative path: an absolute one would make the figure depend on
+          // where the repository is checked out.
+          return excluded.has(resolved.path) ? { path: `./${resolved.path.slice(base.length)}`, external: true } : resolved;
         });
       }
       pluginBuild.onResolve({ filter: /^@fhirq\// }, (args) => {
@@ -224,6 +226,7 @@ export async function measure(entry, excluded = new Set()) {
     minified: file.contents.length,
     gzip: gzipSize(file.contents),
     nodeModules: nodeModulesInputs(result.metafile),
+    externals: Object.values(result.metafile.outputs).flatMap((output) => output.imports.filter((entry) => entry.external).map((entry) => entry.path)),
     ...(entry.resumeFree === true ? { resume: resumeInputs(result.metafile) } : {}),
     modules: entry.css === true ? [] : modules(result.metafile),
     inputs: Object.keys(result.metafile.inputs).map((input) => `${root}${input}`),
@@ -242,8 +245,8 @@ async function main() {
   const generated = new Date().toISOString();
 
   mkdirSync(`${root}reports`, { recursive: true });
-  // Every input path is kept for the next entry's exclusions, not for the report.
-  const report = rows.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'inputs')));
+  // Input and external paths serve the next entry's exclusions and the tests, not the report.
+  const report = rows.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'inputs' && key !== 'externals')));
   writeFileSync(`${root}reports/bundle-sizes.json`, `${JSON.stringify({ generated, rows: report }, null, 2)}\n`);
   writeFileSync(`${root}reports/bundle-sizes.md`, renderMarkdown(rows, generated));
 
