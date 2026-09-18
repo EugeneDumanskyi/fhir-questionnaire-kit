@@ -100,7 +100,7 @@ export interface Diagnostic {
 }
 
 // @beta
-export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw';
+export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw';
 
 // @beta
 export class FhirqError extends Error {
@@ -131,13 +131,16 @@ export interface Issue {
     // (undocumented)
     readonly code: IssueCode;
     // (undocumented)
-    readonly path: ItemPath;
+    readonly linkId: LinkId | null;
+    readonly message: string;
+    readonly params: Readonly<Record<string, string | number>>;
+    readonly path: ItemPath | null;
     // (undocumented)
-    readonly severity: 'error';
+    readonly severity: 'error' | 'warning';
 }
 
 // @beta
-export type IssueCode = 'required';
+export type IssueCode = 'required' | 'min-occurs' | 'max-occurs' | 'max-length' | 'max-decimal-places' | 'min-value' | 'max-value' | 'unit-missing' | 'rule';
 
 // @beta
 export interface ItemDefinition {
@@ -310,6 +313,12 @@ export interface SessionOptions {
     readonly hostIdentity?: HostIdentity;
     readonly loadMode?: LoadMode;
     readonly retention?: RetentionPolicy;
+    readonly rules?: readonly {
+        readonly inputs: readonly LinkId[];
+        readonly targets?: readonly LinkId[];
+        readonly severity?: 'error' | 'warning';
+        readonly check: (answers: Readonly<Record<LinkId, readonly Answer[]>>) => string | null;
+    }[];
 }
 
 // @beta
@@ -317,6 +326,7 @@ export interface SessionState {
     readonly change: SessionChange | null;
     readonly completionRefused: boolean;
     readonly cycle: number;
+    readonly issues: readonly Issue[];
     readonly nodes: readonly NodeState[];
     readonly status: 'in-progress' | 'completed';
 }

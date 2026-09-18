@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { COMPARABLE } from '../../src/definition/checks.js';
-import { createSession, FhirqError, type Command, type Diagnostic, type LoadMode, type Questionnaire, type RetentionPolicy } from '../../src/index.js';
+import { createSession, FhirqError, type Command, type Diagnostic, type Issue, type LoadMode, type Questionnaire, type RetentionPolicy } from '../../src/index.js';
 
 /**
  * The conformance runner (M2 plan D6): every `fixtures/<behaviour>/` with a
@@ -13,10 +13,12 @@ import { createSession, FhirqError, type Command, type Diagnostic, type LoadMode
  *
  * Findings are compared on the fields a fixture names (`code` and `path`
  * always; `related`, `detail` and `severity` where given), never on values: fixtures
- * assert codes and paths (`fixtures/README.md`).
+ * assert codes and paths (`fixtures/README.md`). From M3 a case may name the
+ * issues it ends with.
  */
 
 type Expected = Partial<Pick<Diagnostic, 'code' | 'path' | 'related' | 'detail' | 'severity'>>;
+type ExpectedIssue = Partial<Pick<Issue, 'code' | 'path' | 'severity' | 'params'>>;
 
 interface Step {
   readonly name: string;
@@ -34,6 +36,8 @@ interface Case {
   readonly enabled?: readonly string[];
   readonly steps?: readonly Step[];
   readonly answers?: Readonly<Record<string, readonly unknown[]>>;
+  /** The validation result at the end, in order, on the fields each names. */
+  readonly issues?: readonly ExpectedIssue[];
 }
 
 interface Scenario {
@@ -51,9 +55,9 @@ export const behaviours = readdirSync(root, { withFileTypes: true })
 const read = <T>(behaviour: string, file: string): T => JSON.parse(readFileSync(new URL(`${behaviour}/${file}`, root), 'utf8')) as T;
 
 /** Each finding reduced to the fields its expectation names. */
-const shaped = (findings: readonly Diagnostic[], expected: readonly Expected[]) =>
+const shaped = <T extends object>(findings: readonly T[], expected: readonly Partial<T>[]) =>
   findings.map((finding, index) => {
-    const keys = Object.keys(expected[index] ?? { code: 0, path: 0 }) as (keyof Expected)[];
+    const keys = Object.keys(expected[index] ?? { code: 0, path: 0 }) as (keyof T)[];
     return Object.fromEntries(keys.map((key) => [key, finding[key]]));
   });
 
@@ -107,6 +111,7 @@ describe('conformance fixtures (M2 plan D6)', () => {
           for (const [path, answers] of Object.entries(testCase.answers ?? {})) {
             expect(session.getSnapshot().nodes.find((node) => node.path === path)?.answers, path).toEqual(answers);
           }
+          if (testCase.issues !== undefined) expect(shaped(session.getSnapshot().issues, testCase.issues)).toEqual(testCase.issues);
         });
       }
     });

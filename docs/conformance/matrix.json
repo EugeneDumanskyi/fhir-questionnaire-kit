@@ -838,6 +838,124 @@
       "tests": [
         "packages/core/test/definition/constraints.test.ts > constraint extensions at load (INV-D-20)"
       ]
+    },
+    {
+      "id": "validation.required",
+      "feature": "`required`: a question with no answer, a group with no answered descendant (AC-04.1.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.disabled-exempt",
+      "feature": "A disabled item is never invalid, required or not (AC-04.1.2, INV-V-01)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: a valid form completes, its hidden required item exempt",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.max-length",
+      "feature": "`maxLength` on string answers, in characters (AC-04.2.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "extension.min-max-value",
+      "feature": "`minValue` and `maxValue` on `integer`, `decimal`, `date` and `dateTime` items (AC-04.2.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "extension.max-decimal-places",
+      "feature": "`maxDecimalPlaces` on `decimal` and `quantity` items (AC-04.2.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.date-range-precision",
+      "feature": "A `date` or `dateTime` answer against a limit of different precision",
+      "status": "partial",
+      "reason": "Undecidable, so no issue is raised (M3 plan D8), as for enableWhen (M2 plan D3)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: a valid form completes, its hidden required item exempt",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.not-a-date",
+      "feature": "Telling \"not a date\" from \"outside the permitted range\" (AC-04.2.2, INV-V-07)",
+      "status": "partial",
+      "reason": "The engine holds typed answers only and reports the range; \"not a date\" is the view model's issue on a draft, from M5 (M3 plan D2)",
+      "tests": [
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.quantity-unit",
+      "feature": "A quantity answer without a unit is invalid (AC-01.2.4, INV-V-08)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.occurs",
+      "feature": "`questionnaire-minOccurs` and `-maxOccurs` as validation issues on repeating groups and questions (SM-05)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
+      ]
+    },
+    {
+      "id": "validation.order",
+      "feature": "The validation result in document order, then repeat position; form-level issues without a path (AC-04.4.1, INV-V-06)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > validation: every rule broken, in document order",
+        "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)",
+        "packages/core/test/validation/rules.test.ts > cross-field rules (US-04.3, M3 plan D5)"
+      ]
+    },
+    {
+      "id": "validation.cross-field",
+      "feature": "Cross-field rules by `linkId`, per shared repeat instance, skipped on a disabled item, a throwing rule a diagnostic (US-04.3)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/validation/rules.test.ts > cross-field rules (US-04.3, M3 plan D5)"
+      ]
+    },
+    {
+      "id": "validation.surfacing",
+      "feature": "Blur-then-live surfacing, per target for cross-field issues, never reverting (AC-04.2.3, AC-04.2.4, AC-04.3.4)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/validation/rules.test.ts > surfacing (SM-03, D4)"
+      ]
     }
   ]
 }

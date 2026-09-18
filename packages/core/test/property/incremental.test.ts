@@ -6,7 +6,7 @@ import type { Command, ItemPath } from '../../src/index.js';
 import type { DefinitionInput } from '../../src/kernel/input.js';
 import { createResponseSession, type Session } from '../../src/session/session.js';
 import { recomputeTrace } from '../../src/session/trace.js';
-import { validateRequired } from '../../src/validation/required.js';
+import { validator } from '../../src/validation/validate.js';
 import { expectedRecompute } from '../bfs.js';
 import { Oracle, type ModelCommand, type Retention } from '../oracle.js';
 import { commandSequences, concretise, questionnaires, shuffled } from './generate.js';
@@ -32,7 +32,7 @@ const retention = fc.constantFrom<Retention>('retain-exclude', 'discard');
 function start(input: DefinitionInput, policy: Retention): Session {
   const compiled = compile(input, 'strict');
   if (!compiled.ok) throw new Error(`generator produced a rejected questionnaire: ${JSON.stringify(compiled.findings)}`);
-  return createResponseSession(compiled.definition, { retention: policy, hostIdentity: null }, validateRequired);
+  return createResponseSession(compiled.definition, { retention: policy, hostIdentity: null }, validator(compiled.definition, []));
 }
 
 const snapshot = (session: Session) =>

@@ -1,0 +1,89 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:validation",
+  "version": "1",
+  "status": "draft",
+  "title": "validation",
+  "item": [
+    {
+      "linkId": "name",
+      "text": "Name",
+      "type": "string",
+      "required": true,
+      "maxLength": 5
+    },
+    {
+      "linkId": "weight",
+      "text": "Weight (kg)",
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 0.5
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 300
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+          "valueInteger": 1
+        }
+      ]
+    },
+    {
+      "linkId": "seen",
+      "text": "Last seen",
+      "type": "date",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDate": "2020-01-01"
+        }
+      ]
+    },
+    {
+      "linkId": "dose",
+      "text": "Dose",
+      "type": "quantity"
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "type": "group",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 2
+        }
+      ],
+      "item": [
+        {
+          "linkId": "drug",
+          "text": "Drug",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "linkId": "gate",
+      "text": "Anything else?",
+      "type": "boolean"
+    },
+    {
+      "linkId": "more",
+      "text": "Tell us",
+      "type": "string",
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "gate",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

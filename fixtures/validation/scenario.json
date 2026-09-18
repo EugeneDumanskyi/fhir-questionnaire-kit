@@ -1,0 +1,389 @@
+{
+  "behaviour": "Built-in rules on the visible answers: required, maxLength, minValue and maxValue, maxDecimalPlaces, a quantity unit, minOccurs; the limit named, never the value; document order; a hidden required item exempt (AC-04.1.1, AC-04.1.2, AC-04.2.1, AC-01.2.4, INV-V-01, INV-V-06, INV-V-08, SM-05)",
+  "cases": [
+    {
+      "name": "every rule broken, in document order",
+      "loadMode": "strict",
+      "enabled": [
+        "name",
+        "weight",
+        "seen",
+        "dose",
+        "meds",
+        "meds[0]/drug",
+        "gate"
+      ],
+      "steps": [
+        {
+          "name": "name too long",
+          "command": {
+            "type": "SetAnswer",
+            "path": "name",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "abcdefg"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "weight too light, too precise",
+          "command": {
+            "type": "SetAnswer",
+            "path": "weight",
+            "answers": [
+              {
+                "kind": "decimal",
+                "value": 0.25
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "seen before the minimum",
+          "command": {
+            "type": "SetAnswer",
+            "path": "seen",
+            "answers": [
+              {
+                "kind": "date",
+                "value": "2019-12-31"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "a dose with no unit",
+          "command": {
+            "type": "SetAnswer",
+            "path": "dose",
+            "answers": [
+              {
+                "kind": "quantity",
+                "value": {
+                  "value": 5
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "completion is refused",
+          "command": {
+            "type": "RequestCompletion"
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "validation-errors"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "code": "max-length",
+          "path": "name",
+          "params": {
+            "limit": 5
+          }
+        },
+        {
+          "code": "max-decimal-places",
+          "path": "weight",
+          "params": {
+            "limit": 1
+          }
+        },
+        {
+          "code": "min-value",
+          "path": "weight",
+          "params": {
+            "limit": 0.5
+          }
+        },
+        {
+          "code": "min-value",
+          "path": "seen",
+          "params": {
+            "limit": "2020-01-01"
+          }
+        },
+        {
+          "code": "unit-missing",
+          "path": "dose",
+          "params": {}
+        },
+        {
+          "code": "min-occurs",
+          "path": "meds",
+          "params": {
+            "limit": 2
+          }
+        },
+        {
+          "code": "required",
+          "path": "meds[0]/drug",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "name": "a valid form completes, its hidden required item exempt",
+      "loadMode": "strict",
+      "steps": [
+        {
+          "name": "name",
+          "command": {
+            "type": "SetAnswer",
+            "path": "name",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "Ann"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "weight",
+          "command": {
+            "type": "SetAnswer",
+            "path": "weight",
+            "answers": [
+              {
+                "kind": "decimal",
+                "value": 70.5
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "seen, to the month: a range cannot decide it, so no issue",
+          "command": {
+            "type": "SetAnswer",
+            "path": "seen",
+            "answers": [
+              {
+                "kind": "date",
+                "value": "2019-06"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "dose with a unit",
+          "command": {
+            "type": "SetAnswer",
+            "path": "dose",
+            "answers": [
+              {
+                "kind": "quantity",
+                "value": {
+                  "value": 5,
+                  "unit": "mg"
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "a second medicine",
+          "command": {
+            "type": "AddRepeatInstance",
+            "path": "meds"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "meds[1]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "first drug",
+          "command": {
+            "type": "SetAnswer",
+            "path": "meds[0]/drug",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "a"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "meds[1]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "second drug",
+          "command": {
+            "type": "SetAnswer",
+            "path": "meds[1]/drug",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "b"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "meds[1]/drug",
+            "gate"
+          ]
+        },
+        {
+          "name": "complete",
+          "command": {
+            "type": "RequestCompletion"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "name",
+            "weight",
+            "seen",
+            "dose",
+            "meds",
+            "meds[0]/drug",
+            "meds[1]/drug",
+            "gate"
+          ]
+        }
+      ],
+      "issues": []
+    }
+  ]
+}

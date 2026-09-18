@@ -5,13 +5,13 @@
  * API report in `etc/core.api.md` (M2 plan D12).
  */
 
-import { compile, type LoadMode } from './definition/compile.js';
+import type { Answer } from './kernel/answer.js';
+import type { LinkId } from './kernel/item-type.js';
+import type { LoadMode } from './definition/compile.js';
 import type { RetentionPolicy } from './session/enablement.js';
 import type { HostIdentity, Questionnaire } from './fhir/r4/types.js';
-import { parseQuestionnaire } from './fhir/r4/parse.js';
-import { FhirqError } from './kernel/error.js';
+import { open } from './open.js';
 import { createResponseSession, type Session } from './session/session.js';
-import { validateRequired } from './validation/required.js';
 
 export type { Answer, AnswerKind, Coding, Quantity } from './kernel/answer.js';
 export type { Diagnostic, DiagnosticCode, Severity } from './kernel/diagnostic.js';
@@ -27,7 +27,9 @@ export type { ItemDefinition, NodeState } from './session/publish.js';
 export type { CommandResult, Session, SessionChange, SessionState } from './session/session.js';
 
 /**
- * How a session loads its questionnaire and treats hidden answers.
+ * How a session loads its questionnaire, treats hidden answers and validates.
+ * `restoreSession` and `hydrateSession` in `@fhirq/core/resume` take the same
+ * options.
  *
  * @beta
  */
@@ -38,10 +40,23 @@ export interface SessionOptions {
   readonly retention?: RetentionPolicy;
   /** The response fields the host owns, stored verbatim for emission (INV-S-32). */
   readonly hostIdentity?: HostIdentity;
+  /**
+   * Cross-field rules (US-04.3), fixed for the session's life. A rule names the
+   * items it reads by `linkId` and runs once per instance of the innermost
+   * repeating group they share, and not at all where any item it names is
+   * disabled (INV-V-03). `check` receives the visible answers, frozen, and
+   * returns a message catalogue key or `null`. The issue attaches to
+   * `targets`, which default to `inputs`; an empty list makes it form-level.
+   * A rule that throws becomes a `rule-threw` diagnostic (INV-V-05). An unknown
+   * `linkId`, or items in repeats that share no instance, is `invalid-options`.
+   */
+  readonly rules?: readonly {
+    readonly inputs: readonly LinkId[];
+    readonly targets?: readonly LinkId[];
+    readonly severity?: 'error' | 'warning';
+    readonly check: (answers: Readonly<Record<LinkId, readonly Answer[]>>) => string | null;
+  }[];
 }
-
-const LOAD_MODES: readonly unknown[] = ['strict', 'lenient'];
-const RETENTION: readonly unknown[] = ['retain-exclude', 'discard'];
 
 /**
  * Creates a session from a FHIR R4 `Questionnaire`. Synchronous and I/O-free:
@@ -54,17 +69,7 @@ const RETENTION: readonly unknown[] = ['retain-exclude', 'discard'];
  * @beta
  */
 export function createSession(questionnaire: Questionnaire, options: SessionOptions = {}): Session {
-  const { loadMode = 'strict', retention = 'retain-exclude', hostIdentity } = typeof options === 'object' && options !== null ? options : invalidOptions();
-  if (!LOAD_MODES.includes(loadMode) || !RETENTION.includes(retention)) invalidOptions();
-  if (hostIdentity !== undefined && (typeof hostIdentity !== 'object' || hostIdentity === null)) invalidOptions();
-
-  const parsed = parseQuestionnaire(questionnaire);
-  if (!parsed.ok) throw new FhirqError('definition-rejected', parsed.findings);
-  const compiled = compile(parsed.input, loadMode);
-  if (!compiled.ok) throw new FhirqError('definition-rejected', compiled.findings);
-  return createResponseSession(compiled.definition, { retention, hostIdentity: hostIdentity ?? null }, validateRequired);
+  const { definition, settings, validate } = open(questionnaire, options);
+  return createResponseSession(definition, settings, validate);
 }
 
-function invalidOptions(): never {
-  throw new FhirqError('invalid-options');
-}

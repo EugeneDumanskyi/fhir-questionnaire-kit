@@ -7,7 +7,7 @@ import { parseQuestionnaire } from '../../src/fhir/r4/parse.js';
 import type { Command, ItemPath } from '../../src/index.js';
 import { createResponseSession } from '../../src/session/session.js';
 import { recomputeTrace } from '../../src/session/trace.js';
-import { validateRequired } from '../../src/validation/required.js';
+import { validator } from '../../src/validation/validate.js';
 import { expectedRecompute } from '../bfs.js';
 import { Oracle, type ModelCommand } from '../oracle.js';
 
@@ -33,7 +33,7 @@ describe('the recompute set at the scale ceiling (M2 AC-5)', () => {
     if (!parsed.ok) throw new Error('ceiling fixture does not parse');
     const compiled = compile(parsed.input, 'strict');
     if (!compiled.ok) throw new Error('ceiling fixture does not compile');
-    const session = createResponseSession(compiled.definition, { retention: 'retain-exclude', hostIdentity: null }, validateRequired);
+    const session = createResponseSession(compiled.definition, { retention: 'retain-exclude', hostIdentity: null }, validator(compiled.definition, []));
     const oracle = new Oracle(parsed.input, 'retain-exclude');
 
     for (let i = 0; i < 49; i += 1) session.dispatch({ type: 'AddRepeatInstance', path: 'visit' as ItemPath });
