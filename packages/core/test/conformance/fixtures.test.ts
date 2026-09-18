@@ -16,6 +16,7 @@ import {
   type QuestionnaireResponse,
   type RetentionPolicy,
 } from '../../src/index.js';
+import { hydrateSession } from '../../src/resume.js';
 
 /**
  * The conformance runner (M2 plan D6): every `fixtures/<behaviour>/` with a
@@ -24,13 +25,15 @@ import {
  * `docs/conformance/matrix.json` rows link to.
  *
  * Findings are compared on the fields a fixture names (`code` and `path`
- * always; `related`, `detail` and `severity` where given), never on values: fixtures
- * assert codes and paths (`fixtures/README.md`). From M3 a case may name the
- * issues it ends with, and a file holding the response it must emit at the
- * end, compared with `authored` fixed.
+ * always; `related`, `detail`, `severity`, `expected` and `found` where
+ * given), never on values: fixtures assert codes and paths (`fixtures/README.md`).
+ *
+ * From M3 a case may start from a stored response (`hydrate`), name the
+ * issues it ends with, and name a file holding the response it must emit at
+ * the end, compared with `authored` fixed.
  */
 
-type Expected = Partial<Pick<Diagnostic, 'code' | 'path' | 'related' | 'detail' | 'severity'>>;
+type Expected = Partial<Pick<Diagnostic, 'code' | 'path' | 'related' | 'detail' | 'severity' | 'expected' | 'found'>>;
 type ExpectedIssue = Partial<Pick<Issue, 'code' | 'path' | 'severity' | 'params'>>;
 
 /** The `authored` every fixture's expected response carries. */
@@ -48,6 +51,8 @@ interface Case {
   readonly loadMode: LoadMode;
   readonly retention?: RetentionPolicy;
   readonly hostIdentity?: HostIdentity;
+  /** A stored response in the fixture directory to hydrate from, instead of starting empty. */
+  readonly hydrate?: string;
   readonly rejected?: readonly Expected[];
   readonly diagnostics?: readonly Expected[];
   readonly enabled?: readonly string[];
@@ -83,7 +88,7 @@ const shaped = <T extends object>(findings: readonly T[], expected: readonly Par
 describe('conformance fixtures (M2 plan D6)', () => {
   it('names only response files that exist, and uses every response file it has', () => {
     for (const behaviour of behaviours) {
-      const named = read<Scenario>(behaviour, 'scenario.json').cases.flatMap((testCase) => [testCase.response].filter((file) => file !== undefined));
+      const named = read<Scenario>(behaviour, 'scenario.json').cases.flatMap((testCase) => [testCase.hydrate, testCase.response].filter((file) => file !== undefined));
       const present = readdirSync(new URL(`${behaviour}/`, root)).filter((file) => file.endsWith('.json') && file !== 'questionnaire.json' && file !== 'scenario.json');
       expect(new Set(named), behaviour).toEqual(new Set(present));
     }
@@ -118,10 +123,14 @@ describe('conformance fixtures (M2 plan D6)', () => {
             ...(testCase.retention === undefined ? {} : { retention: testCase.retention }),
             ...(testCase.hostIdentity === undefined ? {} : { hostIdentity: testCase.hostIdentity }),
           };
+          const start = () =>
+            testCase.hydrate === undefined
+              ? createSession(questionnaire, options)
+              : hydrateSession(questionnaire, read<QuestionnaireResponse>(behaviour, testCase.hydrate), options);
           if (testCase.rejected !== undefined) {
             let thrown: unknown;
             try {
-              createSession(questionnaire, options);
+              start();
             } catch (error) {
               thrown = error;
             }
@@ -131,7 +140,7 @@ describe('conformance fixtures (M2 plan D6)', () => {
             return;
           }
 
-          const session = createSession(questionnaire, options);
+          const session = start();
           const enabled = () => session.getSnapshot().nodes.map((node) => node.path);
           expect(shaped(session.diagnostics, testCase.diagnostics ?? [])).toEqual(testCase.diagnostics ?? []);
           if (testCase.enabled !== undefined) expect(enabled()).toEqual(testCase.enabled);

@@ -1,0 +1,26 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:hydration|2",
+  "status": "in-progress",
+  "authored": "2026-01-01T00:00:00Z",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "amount",
+      "text": "How many a day?",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    }
+  ]
+}

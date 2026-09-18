@@ -974,7 +974,8 @@
       "reason": null,
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > emission: enabled and answered items only",
-        "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)"
+        "packages/core/test/interchange/emit.test.ts > the emitted QuestionnaireResponse (US-05.1, BC4)",
+        "packages/core/test/property/leak.test.ts > no answer value outside the response and the snapshot (NFR-X-04)"
       ]
     },
     {
@@ -1015,6 +1016,99 @@
       "reason": null,
       "tests": [
         "packages/core/test/resume/snapshot.test.ts > snapshot and restore (US-05.3, INV-E-07)"
+      ]
+    },
+    {
+      "id": "response.status.amended",
+      "feature": "`amended`, `entered-in-error` and `stopped` statuses",
+      "status": "not supported",
+      "reason": "A completed session is final; editing means resuming into a new session, which is in-progress (AC-05.1.4, T1)",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: amended is not supported: a resumed session is in-progress"
+      ]
+    },
+    {
+      "id": "hydration.load",
+      "feature": "Hydration loads every answer, settles enablement and rebuilds repeat instances (AC-06.1.1, INV-E-11)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/conformance/fixtures.test.ts > hydration: the resumed response, re-emitted",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ]
+    },
+    {
+      "id": "hydration.round-trip",
+      "feature": "A hydrated session re-emits the response it was given, ignoring `authored` and `status` (AC-06.1.2, INV-E-06)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: round trip: what was emitted hydrates to itself",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)",
+        "packages/core/test/property/roundtrip.test.ts > the round trip through an emitted response (M3 AC-1, INV-E-06)"
+      ]
+    },
+    {
+      "id": "hydration.orphan",
+      "feature": "A stored `linkId` the questionnaire does not have is reported and never re-emitted (AC-06.1.3)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ]
+    },
+    {
+      "id": "hydration.in-progress",
+      "feature": "A resumed session is in-progress whatever the stored status (AC-06.1.4)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/conformance/fixtures.test.ts > hydration: amended is not supported: a resumed session is in-progress",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ]
+    },
+    {
+      "id": "hydration.disabled-dropped",
+      "feature": "A stored answer on an item that is disabled once all are loaded is dropped with a diagnostic (AC-06.1.5)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ]
+    },
+    {
+      "id": "hydration.version-drift",
+      "feature": "A stored canonical of another version or url is reported naming both; hydration continues (AC-06.3.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ]
+    },
+    {
+      "id": "hydration.quarantine",
+      "feature": "A stored answer of an incompatible type is not loaded and is reported by path and types, never value (AC-06.3.2)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)",
+        "packages/core/test/property/leak.test.ts > no answer value outside the response and the snapshot (NFR-X-04)"
+      ]
+    },
+    {
+      "id": "hydration.too-many-answers",
+      "feature": "Several stored answers for a single-answer item: none loaded (AC-06.3.3)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
+        "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
       ]
     }
   ]

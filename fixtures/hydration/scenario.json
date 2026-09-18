@@ -1,0 +1,163 @@
+{
+  "behaviour": "Resuming from a stored response: answers loaded and enablement settled, repeat instances rebuilt with answers in instance 2, drift, orphans and quarantine reported by path and type, answers on disabled items dropped, always in-progress, and a lossless round trip (AC-06.1.1 to AC-06.1.5, AC-06.3.1 to AC-06.3.3, INV-E-06, INV-E-08 to INV-E-11)",
+  "cases": [
+    {
+      "name": "resume a completed response from an older version",
+      "loadMode": "strict",
+      "hydrate": "response.json",
+      "diagnostics": [
+        {
+          "code": "version-drift",
+          "path": null,
+          "expected": "urn:fhirq:conformance:hydration|2",
+          "found": "urn:fhirq:conformance:hydration|1"
+        },
+        {
+          "code": "quarantined-answer",
+          "path": "tags",
+          "expected": "string",
+          "found": "integer"
+        },
+        {
+          "code": "quarantined-answer",
+          "path": "born",
+          "expected": "1",
+          "found": "2",
+          "detail": "too-many-answers"
+        },
+        {
+          "code": "orphan-answer",
+          "path": "gone"
+        },
+        {
+          "code": "hydrated-answer-disabled",
+          "path": "amount"
+        }
+      ],
+      "enabled": [
+        "smoker",
+        "meds",
+        "meds[0]/name",
+        "meds[0]/taking",
+        "meds[1]/name",
+        "meds[1]/taking",
+        "meds[1]/dose",
+        "tags",
+        "born"
+      ],
+      "steps": [
+        {
+          "name": "smoker yes: amount stays empty, never retained",
+          "command": {
+            "type": "SetAnswer",
+            "path": "smoker",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "smoker",
+            "amount",
+            "meds",
+            "meds[0]/name",
+            "meds[0]/taking",
+            "meds[1]/name",
+            "meds[1]/taking",
+            "meds[1]/dose",
+            "tags",
+            "born"
+          ]
+        }
+      ],
+      "answers": {
+        "amount": []
+      }
+    },
+    {
+      "name": "the resumed response, re-emitted",
+      "loadMode": "strict",
+      "hydrate": "response.json",
+      "diagnostics": [
+        {
+          "code": "version-drift",
+          "path": null,
+          "expected": "urn:fhirq:conformance:hydration|2",
+          "found": "urn:fhirq:conformance:hydration|1"
+        },
+        {
+          "code": "quarantined-answer",
+          "path": "tags",
+          "expected": "string",
+          "found": "integer"
+        },
+        {
+          "code": "quarantined-answer",
+          "path": "born",
+          "expected": "1",
+          "found": "2",
+          "detail": "too-many-answers"
+        },
+        {
+          "code": "orphan-answer",
+          "path": "gone"
+        },
+        {
+          "code": "hydrated-answer-disabled",
+          "path": "amount"
+        }
+      ],
+      "enabled": [
+        "smoker",
+        "meds",
+        "meds[0]/name",
+        "meds[0]/taking",
+        "meds[1]/name",
+        "meds[1]/taking",
+        "meds[1]/dose",
+        "tags",
+        "born"
+      ],
+      "response": "expected-response.json"
+    },
+    {
+      "name": "round trip: what was emitted hydrates to itself",
+      "loadMode": "strict",
+      "hydrate": "expected-response.json",
+      "diagnostics": [],
+      "enabled": [
+        "smoker",
+        "meds",
+        "meds[0]/name",
+        "meds[0]/taking",
+        "meds[1]/name",
+        "meds[1]/taking",
+        "meds[1]/dose",
+        "tags",
+        "born"
+      ],
+      "response": "expected-response.json"
+    },
+    {
+      "name": "amended is not supported: a resumed session is in-progress",
+      "loadMode": "strict",
+      "hydrate": "amended.json",
+      "diagnostics": [],
+      "enabled": [
+        "smoker",
+        "amount",
+        "meds",
+        "meds[0]/name",
+        "meds[0]/taking",
+        "tags",
+        "born"
+      ],
+      "response": "expected-amended.json"
+    }
+  ]
+}

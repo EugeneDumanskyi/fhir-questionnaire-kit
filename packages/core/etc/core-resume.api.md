@@ -5,9 +5,13 @@
 ```ts
 
 // Warning: (ae-forgotten-export) The symbol "Questionnaire" needs to be exported by the entry point resume.d.ts
+// Warning: (ae-forgotten-export) The symbol "QuestionnaireResponse" needs to be exported by the entry point resume.d.ts
 // Warning: (ae-forgotten-export) The symbol "SessionOptions" needs to be exported by the entry point resume.d.ts
 // Warning: (ae-forgotten-export) The symbol "Session" needs to be exported by the entry point resume.d.ts
 //
+// @beta
+export function hydrateSession(questionnaire: Questionnaire, response: QuestionnaireResponse, options?: SessionOptions): Session;
+
 // @beta
 export function restoreSession(questionnaire: Questionnaire, snapshot: unknown, options?: SessionOptions): Session;
 

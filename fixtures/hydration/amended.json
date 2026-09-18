@@ -1,0 +1,23 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:hydration|2",
+  "status": "amended",
+  "item": [
+    {
+      "linkId": "smoker",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "amount",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    }
+  ]
+}

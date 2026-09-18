@@ -119,7 +119,7 @@ export class FhirqError extends Error {
 }
 
 // @beta
-export type FhirqErrorCode = 'definition-rejected' | 'snapshot-mismatch' | 'snapshot-format' | 'unknown-session' | 'invalid-path' | 'invalid-options';
+export type FhirqErrorCode = 'definition-rejected' | 'response-rejected' | 'snapshot-mismatch' | 'snapshot-format' | 'unknown-session' | 'invalid-path' | 'invalid-options';
 
 // @beta
 export interface HostIdentity {

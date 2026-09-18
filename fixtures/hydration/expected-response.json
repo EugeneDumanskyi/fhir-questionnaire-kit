@@ -1,0 +1,65 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:hydration|2",
+  "status": "in-progress",
+  "authored": "2026-01-01T00:00:00Z",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "answer": [
+        {
+          "valueBoolean": false
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "answer": [
+            {
+              "valueString": "first"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "answer": [
+            {
+              "valueString": "second"
+            }
+          ]
+        },
+        {
+          "linkId": "taking",
+          "text": "Taking it?",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "dose",
+          "text": "Dose",
+          "answer": [
+            {
+              "valueString": "5 mg"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

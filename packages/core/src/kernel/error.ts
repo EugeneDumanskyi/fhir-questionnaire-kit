@@ -2,14 +2,16 @@ import type { Diagnostic } from './diagnostic.js';
 
 /**
  * Integration error codes. Authoring problems are diagnostics, or, in `strict`
- * mode, one `definition-rejected` listing every finding (AC-01.3.1). A
- * snapshot taken against another questionnaire is `snapshot-mismatch`, and
+ * mode, one `definition-rejected` listing every finding (AC-01.3.1). A stored
+ * response that is not an R4 `QuestionnaireResponse` is `response-rejected`;
+ * a snapshot taken against another questionnaire is `snapshot-mismatch`, and
  * one this version cannot read is `snapshot-format` (AC-05.3.3, A5).
  *
  * @beta
  */
 export type FhirqErrorCode =
   | 'definition-rejected'
+  | 'response-rejected'
   | 'snapshot-mismatch'
   | 'snapshot-format'
   | 'unknown-session'
