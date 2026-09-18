@@ -105,5 +105,5 @@ Raising a number (rung 3) ranks above breaking the embed (option B). The number 
 - **The rung-2 trigger** is recorded as a number in `03-nfr.md` §2 at the end of M5, from the three measured gates and S1's renderer range. The M5 close-out cannot be marked done without it (`06-roadmap.md` M5).
 
 **Follow-ups**
-- **The 4 kB resume budget** is closed by its first gate reading in M3.
+- **The 4 kB resume budget** is closed by its first gate reading in M3. *Closed 2026-09-18: 3.34 kB gzipped, 8.88 kB minified, measured without the modules `@fhirq/core` bundles; the figure stands and the gate blocks (`03-nfr.md` §2). The lint rows are in `05-architecture.md` §4.1, with two additions that tighten rather than loosen them: `fhir/r4/decode` is resume-only too, and `resume` shares `open`, the session opener, with `index`.*
 - **Rung 2's trigger** is closed by the M5 reading; rung 3 by M7's element gate.
