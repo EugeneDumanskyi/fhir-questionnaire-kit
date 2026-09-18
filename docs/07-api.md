@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12). The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M3 adds emission, snapshots and hydration; M4 adds the ports.*
 
-**Status, 2026-09-17.** `@fhirq/core` is `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
+**Status, 2026-09-18.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
 
 ---
 
@@ -27,13 +27,14 @@
 | Entry point | Symbols | Report |
 |---|---:|---|
 | `@fhirq/core` | 32 | `packages/core/etc/core.api.md` |
+| `@fhirq/core/resume` | 2 | `packages/core/etc/core-resume.api.md` |
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
 | `@fhirq/react` | 2 | from M6 |
 | `@fhirq/element` | 2 | from M7 |
 | `@fhirq/themes` | 1 | from M8 |
-| **Total** | **52 of 60** | |
+| **Total** | **54 of 60** | |
 
-M3 may add at most 5 symbols (`06-roadmap.md` M3 D3); emission is 2 of them. Eight remain for M3's resume path, M4 (the four ports) and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types.
+M3 may add at most 5 symbols (`06-roadmap.md` M3 D3); emission is 2 of them and snapshot and restore 2 more. Six remain for hydration, M4 (the four ports) and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types.
 
 ## 3. `@fhirq/core`
 
@@ -65,7 +66,9 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `definition-rejected` | The input is not an R4 `Questionnaire`, or it cannot load in the chosen mode | Every finding, as `Diagnostic`s |
 | `invalid-options` | An option the session cannot read, including a rule that names an unknown `linkId` or items in repeats that share no instance | empty |
 | `invalid-path` | `itemPath` was given something that is not a path | empty |
-| `unknown-session` | `emitResponse` was given an object that is not a session | empty |
+| `unknown-session` | `emitResponse` or `snapshot` was given an object that is not a session | empty |
+| `snapshot-mismatch` | `restoreSession` was given a snapshot taken against another canonical or version, or one holding paths this questionnaire does not have | A `version-drift` finding naming both canonicals, or the path |
+| `snapshot-format` | `restoreSession` was given something that is not a snapshot of this format | empty |
 
 Authoring problems a lenient load degrades are `session.diagnostics`, not errors.
 
@@ -219,12 +222,37 @@ const response = emitResponse(session, { authored: '2026-09-18T10:00:00+02:00' }
 
 A hidden item is absent, never present with an empty answer, whatever the retention policy holds for it (INV-E-01). A repeating group is one item per instance in position order, and an instance with nothing answered is left out. Display items and lenient placeholders never appear. The items are built once per cycle and shared between calls, frozen. `QuestionnaireResponse` types the resource's own elements and leaves nested ones `unknown`, as `Questionnaire` does.
 
-## 4. `@fhirq/core/view` (`@alpha`)
+## 4. `@fhirq/core/resume`
+
+```ts
+import { restoreSession, snapshot } from '@fhirq/core/resume';
+```
+
+A third entry point (ADR-0021), so that hosts that never resume, and the element, do not carry this code. Its functions take the `Questionnaire`, `Session` and `SessionOptions` of `@fhirq/core`, and return a `Session`. `hydrateSession` joins them with hydration.
+
+### 4.1 Two ways back, deliberately different
+
+| | Source | Keeps retained answers | Keeps surfacing and status | Across questionnaire versions |
+|---|---|---|---|---|
+| **Restore** | A snapshot | Yes | Yes | No: refused |
+| **Hydrate** (next) | An emitted response | No: never emitted | No: always `in-progress`, nothing surfaced | Yes, with diagnostics |
+
+A host that wants hidden answers to survive a reload persists the snapshot. The snapshot is engine state, not a clinical record: it holds answers the response leaves out, so it needs the same care as the response.
+
+### 4.2 Snapshot and restore
+
+- **`snapshot(session)`** returns JSON with `format: 'fhirq-snapshot/1'`: every node's answers including retained ones, repeat ordinals and positions, what is surfaced, the status, the load mode, the retention policy, the host identity, and the questionnaire's canonical (AC-05.3.1).
+- **`restoreSession(questionnaire, snapshot, options?)`** returns a session indistinguishable from the one the snapshot was taken from (INV-E-07), a completed one included.
+  - The load mode, retention policy and host identity are the snapshot's. `options` may repeat the load mode and retention but not change them, and may not give a host identity: `invalid-options`.
+  - `options.rules` supplies the cross-field rules, which a snapshot does not hold.
+  - Another canonical or version is refused with `snapshot-mismatch`, naming both: a snapshot is not a migration format (AC-05.3.3). A different format is `snapshot-format` (A5).
+
+## 5. `@fhirq/core/view` (`@alpha`)
 
 M1's presentation-model spike: `createView(session, options)` returns a `View` with `subscribe` and `getSnapshot`, and a `ViewModel` of yes/no and short-text nodes with their ids, issues, announcement, error summary and focus target (ADR-0007). It renders only `boolean` and `string` items until M5 replaces it with the full view model. Its report notes three types it reaches without exporting them: two from `@fhirq/core`, which API Extractor does not follow across a package's two entry points, and one internal base interface. M5 resolves both when it fixes the view's surface.
 
-## 5. Not in the API yet
+## 6. Not in the API yet
 
-- **M3:** snapshots and resume, and hydration.
+- **M3:** hydration.
 - **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports, and the message catalogue's overrides.
 - **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.

@@ -8,6 +8,7 @@ import { settle, settleInitial, type RetentionPolicy } from './enablement.js';
 import { guard, isCommand, type Command, type RefusalReason } from './guard.js';
 import { publishProjection, type Validator } from './projection.js';
 import { project, publicItem, publishNodes, type NodeState } from './publish.js';
+import { register } from './registry.js';
 import {
   addInstance,
   createStore,
@@ -108,22 +109,37 @@ export interface SessionSettings {
   readonly hostIdentity: object | null;
 }
 
+/**
+ * Stored state to start from instead of a fresh one: a restored snapshot or a
+ * hydrated response (`session/snapshot`). `write` fills the new store before
+ * enablement settles; `settled` runs once it has, before anything validates.
+ */
+export interface Seed {
+  readonly write: (store: Store) => void;
+  readonly settled?: (store: Store, report: (diagnostic: Diagnostic) => void) => void;
+  readonly status: SessionState['status'];
+  readonly completionRefused: boolean;
+  readonly cycle: number;
+}
+
 const NO_PATHS: readonly ItemPath[] = [];
 
-export function createResponseSession(definition: Definition, settings: SessionSettings, validate: Validator): Session {
+export function createResponseSession(definition: Definition, settings: SessionSettings, validate: Validator, seed?: Seed): Session {
   const store = createStore(definition, settings.hostIdentity);
   const diagnostics: Diagnostic[] = [...definition.diagnostics];
   const report = (finding: Diagnostic): void => {
     diagnostics.push(finding);
   };
+  seed?.write(store);
   settleInitial(store, settings.retention);
+  seed?.settled?.(store, report);
   const items = definition.items.map(publicItem);
   const listeners = new Set<(change: SessionChange) => void>();
   const queue: Command[] = [];
   let running = false;
   let settleRun = 0;
-  let completionRefused = false;
-  let status: SessionState['status'] = 'in-progress';
+  let completionRefused = seed?.completionRefused ?? false;
+  let status: SessionState['status'] = seed?.status ?? 'in-progress';
 
   const evaluate = () => {
     const { projection, visible } = project(store, status);
@@ -134,7 +150,7 @@ export function createResponseSession(definition: Definition, settings: SessionS
   let settled = evaluate();
   let state: SessionState = {
     status,
-    cycle: 0,
+    cycle: seed?.cycle ?? 0,
     nodes: publishNodes(settled.visible, items, settled.byPath, []),
     issues: settled.issues,
     completionRefused,
@@ -270,6 +286,13 @@ export function createResponseSession(definition: Definition, settings: SessionS
     },
   };
   publishProjection(session, settled.projection);
+  register(session, {
+    store,
+    retention: settings.retention,
+    status: () => state.status,
+    completionRefused: () => state.completionRefused,
+    cycle: () => state.cycle,
+  });
   return session;
 }
 

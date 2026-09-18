@@ -16,6 +16,11 @@
       "import": "./dist/view/index.js",
       "require": "./dist/view/index.cjs"
     },
+    "./resume": {
+      "types": "./dist/resume.d.ts",
+      "import": "./dist/resume.js",
+      "require": "./dist/resume.cjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",

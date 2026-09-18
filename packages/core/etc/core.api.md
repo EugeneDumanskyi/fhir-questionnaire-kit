@@ -93,6 +93,8 @@ export function createSession(questionnaire: Questionnaire, options?: SessionOpt
 export interface Diagnostic {
     readonly code: DiagnosticCode;
     readonly detail: string | null;
+    readonly expected?: string;
+    readonly found?: string;
     readonly path: string | null;
     readonly related: readonly string[];
     // (undocumented)
@@ -100,7 +102,7 @@ export interface Diagnostic {
 }
 
 // @beta
-export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw';
+export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw' | 'version-drift' | 'orphan-answer' | 'quarantined-answer' | 'hydrated-answer-disabled';
 
 // @beta
 export function emitResponse(session: Session, options?: {
@@ -117,7 +119,7 @@ export class FhirqError extends Error {
 }
 
 // @beta
-export type FhirqErrorCode = 'definition-rejected' | 'unknown-session' | 'invalid-path' | 'invalid-options';
+export type FhirqErrorCode = 'definition-rejected' | 'snapshot-mismatch' | 'snapshot-format' | 'unknown-session' | 'invalid-path' | 'invalid-options';
 
 // @beta
 export interface HostIdentity {

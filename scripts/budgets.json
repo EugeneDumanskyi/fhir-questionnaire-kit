@@ -1,10 +1,11 @@
 {
-  "$comment": "NFR-S-02 and NFR-S-03, minified + gzipped, in bytes (1 kB = 1,000 bytes). Report-only in M1; the gate blocks per entry point from the milestone that builds it (06-roadmap.md §5). `gated` lists the entries `measure --check` fails on: core from M2.",
+  "$comment": "NFR-S-02 and NFR-S-03, minified + gzipped, in bytes (1 kB = 1,000 bytes). Report-only in M1; the gate blocks per entry point from the milestone that builds it (06-roadmap.md §5). `gated` lists the entries `measure --check` fails on: core from M2, core/resume from M3 (ADR-0021, measured without the modules core's main entry bundles). The resume-path inputs check blocks on every entry marked resumeFree, gated or not.",
   "unit": "bytes",
-  "gated": ["@fhirq/core"],
+  "gated": ["@fhirq/core", "@fhirq/core/resume"],
   "entries": {
     "@fhirq/core": 14000,
     "@fhirq/core/view": 5000,
+    "@fhirq/core/resume": 4000,
     "@fhirq/react": 6000,
     "@fhirq/element": 24000,
     "@fhirq/element (IIFE)": 30000,

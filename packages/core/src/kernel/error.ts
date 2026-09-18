@@ -2,11 +2,19 @@ import type { Diagnostic } from './diagnostic.js';
 
 /**
  * Integration error codes. Authoring problems are diagnostics, or, in `strict`
- * mode, one `definition-rejected` listing every finding (AC-01.3.1).
+ * mode, one `definition-rejected` listing every finding (AC-01.3.1). A
+ * snapshot taken against another questionnaire is `snapshot-mismatch`, and
+ * one this version cannot read is `snapshot-format` (AC-05.3.3, A5).
  *
  * @beta
  */
-export type FhirqErrorCode = 'definition-rejected' | 'unknown-session' | 'invalid-path' | 'invalid-options';
+export type FhirqErrorCode =
+  | 'definition-rejected'
+  | 'snapshot-mismatch'
+  | 'snapshot-format'
+  | 'unknown-session'
+  | 'invalid-path'
+  | 'invalid-options';
 
 /**
  * Thrown only for integration errors. The message is the code; `findings` says
