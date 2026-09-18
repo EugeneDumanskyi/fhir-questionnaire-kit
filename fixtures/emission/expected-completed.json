@@ -1,0 +1,6 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:emission|1",
+  "status": "completed",
+  "authored": "2026-01-01T00:00:00Z"
+}

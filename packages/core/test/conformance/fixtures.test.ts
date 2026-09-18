@@ -3,7 +3,19 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { COMPARABLE } from '../../src/definition/checks.js';
-import { createSession, FhirqError, type Command, type Diagnostic, type Issue, type LoadMode, type Questionnaire, type RetentionPolicy } from '../../src/index.js';
+import {
+  createSession,
+  emitResponse,
+  FhirqError,
+  type Command,
+  type Diagnostic,
+  type HostIdentity,
+  type Issue,
+  type LoadMode,
+  type Questionnaire,
+  type QuestionnaireResponse,
+  type RetentionPolicy,
+} from '../../src/index.js';
 
 /**
  * The conformance runner (M2 plan D6): every `fixtures/<behaviour>/` with a
@@ -14,11 +26,15 @@ import { createSession, FhirqError, type Command, type Diagnostic, type Issue, t
  * Findings are compared on the fields a fixture names (`code` and `path`
  * always; `related`, `detail` and `severity` where given), never on values: fixtures
  * assert codes and paths (`fixtures/README.md`). From M3 a case may name the
- * issues it ends with.
+ * issues it ends with, and a file holding the response it must emit at the
+ * end, compared with `authored` fixed.
  */
 
 type Expected = Partial<Pick<Diagnostic, 'code' | 'path' | 'related' | 'detail' | 'severity'>>;
 type ExpectedIssue = Partial<Pick<Issue, 'code' | 'path' | 'severity' | 'params'>>;
+
+/** The `authored` every fixture's expected response carries. */
+const AUTHORED = '2026-01-01T00:00:00Z';
 
 interface Step {
   readonly name: string;
@@ -31,6 +47,7 @@ interface Case {
   readonly name: string;
   readonly loadMode: LoadMode;
   readonly retention?: RetentionPolicy;
+  readonly hostIdentity?: HostIdentity;
   readonly rejected?: readonly Expected[];
   readonly diagnostics?: readonly Expected[];
   readonly enabled?: readonly string[];
@@ -38,6 +55,8 @@ interface Case {
   readonly answers?: Readonly<Record<string, readonly unknown[]>>;
   /** The validation result at the end, in order, on the fields each names. */
   readonly issues?: readonly ExpectedIssue[];
+  /** A file in the fixture directory holding the response the session emits at the end. */
+  readonly response?: string;
 }
 
 interface Scenario {
@@ -62,6 +81,14 @@ const shaped = <T extends object>(findings: readonly T[], expected: readonly Par
   });
 
 describe('conformance fixtures (M2 plan D6)', () => {
+  it('names only response files that exist, and uses every response file it has', () => {
+    for (const behaviour of behaviours) {
+      const named = read<Scenario>(behaviour, 'scenario.json').cases.flatMap((testCase) => [testCase.response].filter((file) => file !== undefined));
+      const present = readdirSync(new URL(`${behaviour}/`, root)).filter((file) => file.endsWith('.json') && file !== 'questionnaire.json' && file !== 'scenario.json');
+      expect(new Set(named), behaviour).toEqual(new Set(present));
+    }
+  });
+
   it('finds the fixtures, each with a questionnaire, a scenario and a README', () => {
     expect(behaviours.length).toBeGreaterThanOrEqual(25);
     for (const behaviour of behaviours) {
@@ -86,7 +113,11 @@ describe('conformance fixtures (M2 plan D6)', () => {
     describe(behaviour, () => {
       for (const testCase of scenario.cases) {
         it(`${behaviour}: ${testCase.name}`, () => {
-          const options = { loadMode: testCase.loadMode, ...(testCase.retention === undefined ? {} : { retention: testCase.retention }) };
+          const options = {
+            loadMode: testCase.loadMode,
+            ...(testCase.retention === undefined ? {} : { retention: testCase.retention }),
+            ...(testCase.hostIdentity === undefined ? {} : { hostIdentity: testCase.hostIdentity }),
+          };
           if (testCase.rejected !== undefined) {
             let thrown: unknown;
             try {
@@ -112,6 +143,9 @@ describe('conformance fixtures (M2 plan D6)', () => {
             expect(session.getSnapshot().nodes.find((node) => node.path === path)?.answers, path).toEqual(answers);
           }
           if (testCase.issues !== undefined) expect(shaped(session.getSnapshot().issues, testCase.issues)).toEqual(testCase.issues);
+          if (testCase.response !== undefined) {
+            expect(emitResponse(session, { authored: AUTHORED })).toEqual(read<QuestionnaireResponse>(behaviour, testCase.response));
+          }
         });
       }
     });

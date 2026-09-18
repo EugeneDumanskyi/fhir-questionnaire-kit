@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "_comment": "NFR-Q-03 on the enablement modules (06-roadmap.md M2, spike S2), and from M3 on validation (M3 plan D7); kernel/compare.ts holds the comparison that moved out of session/conditions.ts. Incremental on PRs, full nightly (ADR-0018, A6). Mutants run against the core suite only, in Node, through stryker.vitest.config.ts. The plugin is named because pnpm's isolated node_modules hides it from Stryker's auto-discovery.",
+  "_comment": "NFR-Q-03 on the enablement modules (06-roadmap.md M2, spike S2), and from M3 on validation and emission (M3 plan D7); kernel/compare.ts holds the comparison that moved out of session/conditions.ts. Incremental on PRs, full nightly (ADR-0018, A6). Mutants run against the core suite only, in Node, through stryker.vitest.config.ts. The plugin is named because pnpm's isolated node_modules hides it from Stryker's auto-discovery.",
   "packageManager": "pnpm",
   "plugins": [
     "@stryker-mutator/vitest-runner"
@@ -22,7 +22,8 @@
     "packages/core/src/kernel/compare.ts",
     "packages/core/src/validation/built-in.ts",
     "packages/core/src/validation/rules.ts",
-    "packages/core/src/validation/validate.ts"
+    "packages/core/src/validation/validate.ts",
+    "packages/core/src/interchange/emit.ts"
   ],
   "coverageAnalysis": "perTest",
   "incremental": true,

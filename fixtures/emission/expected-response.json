@@ -1,0 +1,104 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:emission|1",
+  "status": "in-progress",
+  "subject": {
+    "reference": "Patient/example"
+  },
+  "authored": "2026-01-01T00:00:00Z",
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Do you smoke?",
+      "answer": [
+        {
+          "valueBoolean": false
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "item": [
+        {
+          "linkId": "dose",
+          "text": "Dose",
+          "answer": [
+            {
+              "valueQuantity": {
+                "value": 75,
+                "unit": "mg",
+                "system": "http://unitsofmeasure.org",
+                "code": "mg"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "meds",
+      "text": "Medicines",
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "answer": [
+            {
+              "valueString": "third"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "about",
+      "text": "About you",
+      "item": [
+        {
+          "linkId": "born",
+          "text": "Born",
+          "answer": [
+            {
+              "valueDate": "1980-02"
+            }
+          ]
+        },
+        {
+          "linkId": "seen",
+          "text": "Last seen",
+          "answer": [
+            {
+              "valueDateTime": "2026-09-18T08:00:00-05:00"
+            }
+          ]
+        },
+        {
+          "linkId": "colour",
+          "text": "Colour",
+          "answer": [
+            {
+              "valueCoding": {
+                "system": "urn:fhirq:conformance:colours",
+                "code": "red",
+                "display": "Red"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "tags",
+      "text": "Tags",
+      "answer": [
+        {
+          "valueString": "a"
+        },
+        {
+          "valueString": "b"
+        }
+      ]
+    }
+  ]
+}

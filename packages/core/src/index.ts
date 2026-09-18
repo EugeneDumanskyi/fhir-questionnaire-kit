@@ -9,7 +9,8 @@ import type { Answer } from './kernel/answer.js';
 import type { LinkId } from './kernel/item-type.js';
 import type { LoadMode } from './definition/compile.js';
 import type { RetentionPolicy } from './session/enablement.js';
-import type { HostIdentity, Questionnaire } from './fhir/r4/types.js';
+import type { HostIdentity, Questionnaire, QuestionnaireResponse } from './fhir/r4/types.js';
+import { emit } from './interchange/emit.js';
 import { open } from './open.js';
 import { createResponseSession, type Session } from './session/session.js';
 
@@ -20,7 +21,7 @@ export type { Issue, IssueCode } from './kernel/issue.js';
 export type { ItemType, LinkId, Operator } from './kernel/item-type.js';
 export { itemPath, type ItemPath } from './kernel/path.js';
 export type { LoadMode } from './definition/compile.js';
-export type { HostIdentity, Questionnaire } from './fhir/r4/types.js';
+export type { HostIdentity, Questionnaire, QuestionnaireResponse } from './fhir/r4/types.js';
 export type { RetentionPolicy } from './session/enablement.js';
 export type { Command, RefusalReason } from './session/guard.js';
 export type { ItemDefinition, NodeState } from './session/publish.js';
@@ -73,3 +74,20 @@ export function createSession(questionnaire: Questionnaire, options: SessionOpti
   return createResponseSession(definition, settings, validate);
 }
 
+/**
+ * The session's current `QuestionnaireResponse` (AC-05.1.1): FHIR R4 JSON with
+ * the questionnaire's canonical (none when it declares no `url`), the session's
+ * status (INV-E-05), the host's identity verbatim and nothing invented
+ * (AC-05.1.2), `authored`, and a nested item tree of the enabled, answered
+ * items only (INV-E-01), repeat instances in position order (INV-E-03).
+ *
+ * `authored` is the caller's FHIR `dateTime`, or else the current instant in
+ * UTC. Pure otherwise: the items are built once per cycle and shared, frozen.
+ * Throws `FhirqError` with `unknown-session` for an object that is not a
+ * session, and `invalid-options` for an `authored` that is not a `dateTime`.
+ *
+ * @beta
+ */
+export function emitResponse(session: Session, options: { readonly authored?: string } = {}): QuestionnaireResponse {
+  return emit(session, options);
+}

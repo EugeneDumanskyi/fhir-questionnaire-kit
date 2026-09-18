@@ -6,7 +6,7 @@ import type { Diagnostic } from './diagnostic.js';
  *
  * @beta
  */
-export type FhirqErrorCode = 'definition-rejected' | 'invalid-path' | 'invalid-options';
+export type FhirqErrorCode = 'definition-rejected' | 'unknown-session' | 'invalid-path' | 'invalid-options';
 
 /**
  * Thrown only for integration errors. The message is the code; `findings` says

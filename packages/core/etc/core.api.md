@@ -103,6 +103,11 @@ export interface Diagnostic {
 export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw';
 
 // @beta
+export function emitResponse(session: Session, options?: {
+    readonly authored?: string;
+}): QuestionnaireResponse;
+
+// @beta
 export class FhirqError extends Error {
     constructor(code: FhirqErrorCode, findings?: readonly Diagnostic[]);
     // (undocumented)
@@ -112,7 +117,7 @@ export class FhirqError extends Error {
 }
 
 // @beta
-export type FhirqErrorCode = 'definition-rejected' | 'invalid-path' | 'invalid-options';
+export type FhirqErrorCode = 'definition-rejected' | 'unknown-session' | 'invalid-path' | 'invalid-options';
 
 // @beta
 export interface HostIdentity {
@@ -276,6 +281,48 @@ export interface Questionnaire {
     readonly useContext?: readonly unknown[];
     // (undocumented)
     readonly version?: string;
+}
+
+// @beta
+export interface QuestionnaireResponse {
+    // (undocumented)
+    readonly author?: object;
+    // (undocumented)
+    readonly authored?: string;
+    // (undocumented)
+    readonly basedOn?: readonly unknown[];
+    // (undocumented)
+    readonly contained?: readonly unknown[];
+    // (undocumented)
+    readonly encounter?: object;
+    // (undocumented)
+    readonly extension?: readonly unknown[];
+    // (undocumented)
+    readonly id?: string;
+    // (undocumented)
+    readonly identifier?: object;
+    // (undocumented)
+    readonly implicitRules?: string;
+    readonly item?: readonly unknown[];
+    // (undocumented)
+    readonly language?: string;
+    // (undocumented)
+    readonly meta?: unknown;
+    // (undocumented)
+    readonly modifierExtension?: readonly unknown[];
+    // (undocumented)
+    readonly partOf?: readonly unknown[];
+    readonly questionnaire?: string;
+    // (undocumented)
+    readonly resourceType: 'QuestionnaireResponse';
+    // (undocumented)
+    readonly source?: unknown;
+    // (undocumented)
+    readonly status: 'in-progress' | 'completed' | 'amended' | 'entered-in-error' | 'stopped';
+    // (undocumented)
+    readonly subject?: object;
+    // (undocumented)
+    readonly text?: unknown;
 }
 
 // @beta
