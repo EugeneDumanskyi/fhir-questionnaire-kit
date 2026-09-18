@@ -1,4 +1,4 @@
-import { isAnswer, type Answer, type AnswerKind } from '../kernel/answer.js';
+import { isAnswer, type Answer } from '../kernel/answer.js';
 import type { ItemPath } from '../kernel/path.js';
 import type { ItemDef } from '../definition/compile.js';
 import { isRepeatingGroup, type ItemNode, type Store } from './store.js';
@@ -51,28 +51,6 @@ export type RefusalReason =
   | 'unknown-instance'
   | 'validation-errors';
 
-/** What each item type accepts (INV-S-10). A choice accepts the kinds its options have. */
-function acceptedKinds(def: ItemDef): readonly AnswerKind[] {
-  switch (def.type) {
-    case 'choice':
-      return optionKinds(def);
-    case 'open-choice':
-      return [...optionKinds(def), 'string'];
-    case 'text':
-      return ['string'];
-    case 'group':
-    case 'display':
-    case null:
-      return [];
-    default:
-      return [def.type];
-  }
-}
-
-function optionKinds(def: ItemDef): AnswerKind[] {
-  return def.options.length === 0 ? ['coding'] : [...new Set(def.options.map((option) => option.kind))];
-}
-
 export function isCommand(value: unknown): value is Command {
   if (typeof value !== 'object' || value === null) return false;
   const { type, path } = value as { type?: unknown; path?: unknown };
@@ -92,7 +70,7 @@ export function guard(store: Store, completed: boolean, command: Command): Refus
   if (!node.effective) return 'node-disabled';
   if (command.type === 'NoteItemLeft') return node;
   if (command.type === 'AddRepeatInstance' || command.type === 'RemoveRepeatInstance') return repeatRefusal(node, command) ?? node;
-  if (acceptedKinds(node.def).length === 0) return 'not-answerable';
+  if (node.def.accepts.length === 0) return 'not-answerable';
   if (node.def.calculated) return 'node-calculated';
   return command.type === 'SetAnswer' ? answersRefusal(node.def, command.answers) ?? node : node;
 }
@@ -101,8 +79,7 @@ function answersRefusal(def: ItemDef, answers: readonly unknown[]): RefusalReaso
   if (answers.length === 0) return 'empty-answers';
   if (answers.length > 1 && !def.repeats) return 'too-many-answers';
   if (!answers.every(isAnswer)) return 'invalid-answer';
-  const accepted = acceptedKinds(def);
-  return answers.every((answer) => accepted.includes(answer.kind)) ? null : 'type-mismatch';
+  return answers.every((answer) => def.accepts.includes(answer.kind)) ? null : 'type-mismatch';
 }
 
 /**

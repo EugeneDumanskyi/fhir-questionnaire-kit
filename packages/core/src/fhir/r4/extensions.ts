@@ -13,6 +13,9 @@ export const MIN_OCCURS = `${CORE}questionnaire-minOccurs`;
 export const MAX_OCCURS = `${CORE}questionnaire-maxOccurs`;
 export const ITEM_CONTROL = `${CORE}questionnaire-itemControl`;
 export const RENDERING_XHTML = `${CORE}rendering-xhtml`;
+export const MIN_VALUE = `${CORE}minValue`;
+export const MAX_VALUE = `${CORE}maxValue`;
+export const MAX_DECIMAL_PLACES = `${CORE}maxDecimalPlaces`;
 
 /** The code system of `questionnaire-itemControl` values. */
 export const ITEM_CONTROL_SYSTEM = 'http://hl7.org/fhir/questionnaire-item-control';

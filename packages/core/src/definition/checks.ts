@@ -1,7 +1,8 @@
 import type { AnswerKind } from '../kernel/answer.js';
 import { slot } from '../kernel/dense.js';
 import { diagnostic, type Diagnostic, type DiagnosticCode, type Severity } from '../kernel/diagnostic.js';
-import type { ConditionInput, DefinitionInput, ExpressionUse, ItemInput } from '../kernel/input.js';
+import type { Answer } from '../kernel/answer.js';
+import type { ConditionInput, DefinitionInput, ExpressionUse, ItemInput, OptionInput } from '../kernel/input.js';
 import type { ItemType, Operator } from '../kernel/item-type.js';
 import { childPath, type ItemPath } from '../kernel/path.js';
 import type { CompiledCondition, ItemDef, LoadMode } from './compile.js';
@@ -103,12 +104,15 @@ function draft(item: Walked, walked: readonly Walked[], children: readonly numbe
   const { input, path } = item;
   const placeholder = checkShape(input, path, add) || item.underQuestion;
   const { forcedDisabled, calculated } = checkExpressions(input, path, mode, add);
+  const type = placeholder ? null : input.type;
+  const options = input.options.flatMap((option) => (option.value === null ? [] : [option.value]));
+  const limits = checkLimits(input, type, path, add);
 
   return {
     id: item.id,
     linkId: input.linkId,
     path,
-    type: placeholder ? null : input.type,
+    type,
     authoredType: input.authoredType,
     text: input.text,
     required: input.required,
@@ -120,11 +124,11 @@ function draft(item: Walked, walked: readonly Walked[], children: readonly numbe
     behavior: input.enableBehavior ?? 'all',
     forcedDisabled,
     calculated,
-    options: input.options.flatMap((option) => (option.value === null ? [] : [option.value])),
+    options,
     valueSet: input.valueSet,
+    accepts: acceptedKinds(type, options),
     maxLength: input.maxLength,
-    minOccurs: input.minOccurs ?? 0,
-    maxOccurs: input.maxOccurs,
+    ...limits,
     itemControl: input.itemControl,
     renderingXhtml: input.renderingXhtml,
   };
@@ -147,6 +151,64 @@ function checkShape(input: ItemInput, path: string, add: Add): boolean {
   if (input.hasInitial) add('initial-value-ignored', 'never', path);
   if (input.enableWhen.length > 1 && input.enableBehavior === null) add('missing-enable-behavior', 'strict', path);
   return placeholder;
+}
+
+/** What each item type accepts (INV-S-10). A choice accepts the kinds its options have, `coding` when it has none. */
+function acceptedKinds(type: ItemType | null, options: readonly Answer[]): readonly AnswerKind[] {
+  const coded: AnswerKind[] = options.length === 0 ? ['coding'] : [...new Set(options.map((option) => option.kind))];
+  switch (type) {
+    case 'choice':
+      return coded;
+    case 'open-choice':
+      return coded.includes('string') ? coded : [...coded, 'string'];
+    case 'text':
+      return ['string'];
+    case 'group':
+    case 'display':
+    case null:
+      return [];
+    default:
+      return [type];
+  }
+}
+
+/** INV-D-20: the kinds a `minValue` or `maxValue` may have on each item type. */
+const LIMIT_KINDS: Partial<Readonly<Record<ItemType, readonly AnswerKind[]>>> = {
+  integer: ['integer', 'decimal'],
+  decimal: ['decimal', 'integer'],
+  date: ['date'],
+  dateTime: ['dateTime'],
+};
+
+type Limits = Pick<DraftItem, 'minValue' | 'maxValue' | 'maxDecimalPlaces' | 'minOccurs' | 'maxOccurs'>;
+
+/**
+ * INV-D-20: a value or cardinality constraint applies to the item's type, and
+ * `minOccurs` is at most `maxOccurs`. One that does not rejects a strict load
+ * and is ignored in a lenient one.
+ */
+function checkLimits(input: ItemInput, type: ItemType | null, path: string, add: Add): Limits {
+  const inapplicable = (detail: string): null => {
+    add('inapplicable-constraint', 'strict', path, { detail });
+    return null;
+  };
+  const limit = (authored: OptionInput | null, name: string): Answer | null => {
+    if (authored === null) return null;
+    const kinds = type === null ? undefined : LIMIT_KINDS[type];
+    return authored.value !== null && kinds?.includes(authored.value.kind) === true ? authored.value : inapplicable(name);
+  };
+  const decimalPlaces = input.maxDecimalPlaces === null || type === 'decimal' || type === 'quantity' ? input.maxDecimalPlaces : inapplicable('maxDecimalPlaces');
+  const authored = input.minOccurs !== null || input.maxOccurs !== null;
+  const contradictory = input.minOccurs !== null && input.maxOccurs !== null && input.minOccurs > input.maxOccurs;
+  const keepOccurs = !authored || (input.repeats && type !== null && !contradictory);
+  if (!keepOccurs) inapplicable('occurs');
+  return {
+    minValue: limit(input.minValue, 'minValue'),
+    maxValue: limit(input.maxValue, 'maxValue'),
+    maxDecimalPlaces: decimalPlaces,
+    minOccurs: keepOccurs ? (input.minOccurs ?? 0) : 0,
+    maxOccurs: keepOccurs ? input.maxOccurs : null,
+  };
 }
 
 function checkExpressions(input: ItemInput, path: string, mode: LoadMode, add: Add): { forcedDisabled: boolean; calculated: boolean } {

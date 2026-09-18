@@ -441,6 +441,7 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | INV-D-17 | A question item has no child items. R4 allows them; a node here has answers or children, never both (§4 note 2). | Reject, naming the `linkId` path | Children become unsupported placeholders; diagnostic | AC-01.3.1, AC-01.3.2; `06-roadmap.md` M2 D4 |
 | INV-D-18 | `initial[x]` and `answerOption.initialSelected` are not supported; items start empty. | Ignored; diagnostic | Ignored; diagnostic | `06-roadmap.md` M2 D4 |
 | INV-D-19 | Every answer option's value is a `Coding`, `string`, `integer` or `date`. | Reject, listing each offending `linkId` and value type | Item becomes an unsupported placeholder; diagnostic | AC-01.3.1, AC-01.3.2; `06-roadmap.md` M2 D4 |
+| INV-D-20 | A value or cardinality constraint applies to its item: `minValue` and `maxValue` of a kind the item's type compares (`integer` and `decimal` with each other, `date`, `dateTime`), `maxDecimalPlaces` on `decimal` and `quantity`, `questionnaire-minOccurs` and `-maxOccurs` on a repeating item with `minOccurs` ≤ `maxOccurs`. | Reject, naming the `linkId` path and the constraint | Constraint ignored; diagnostic | AC-04.2.1; `06-roadmap.md` M3 |
 
 ### 5.2 BC2 — Response Session
 

@@ -34,6 +34,10 @@ export interface ItemInput {
   /** A value set canonical. Recorded only; resolution is M4 (INV-D-08). */
   readonly valueSet: string | null;
   readonly maxLength: number | null;
+  /** The `minValue` and `maxValue` extensions; a value of a kind no item can hold is recorded with `value: null`. */
+  readonly minValue: OptionInput | null;
+  readonly maxValue: OptionInput | null;
+  readonly maxDecimalPlaces: number | null;
   readonly minOccurs: number | null;
   readonly maxOccurs: number | null;
   /** The `itemControl` code, recorded and not interpreted (`04-domain.md` BC1). */
@@ -54,8 +58,9 @@ export interface ConditionInput {
   readonly answerType: string;
 }
 
+/** An authored `value[x]`: an answer option, or a `minValue`/`maxValue` limit. */
 export interface OptionInput {
-  /** `null` for an option value kind the kit does not support (INV-D-19). */
+  /** `null` for a value kind the kit does not support (INV-D-19, INV-D-20). */
   readonly value: Answer | null;
   readonly valueType: string;
 }

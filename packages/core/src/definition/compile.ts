@@ -1,4 +1,4 @@
-import type { Answer } from '../kernel/answer.js';
+import type { Answer, AnswerKind } from '../kernel/answer.js';
 import { slot } from '../kernel/dense.js';
 import type { Diagnostic } from '../kernel/diagnostic.js';
 import type { DefinitionInput } from '../kernel/input.js';
@@ -68,7 +68,13 @@ export interface ItemDef {
   /** Supported inline option values, in authored order. */
   readonly options: readonly Answer[];
   readonly valueSet: string | null;
+  /** The answer kinds the item accepts (INV-S-10): a choice takes the kinds its options have. Empty for a group, display or placeholder. */
+  readonly accepts: readonly AnswerKind[];
   readonly maxLength: number | null;
+  /** From the `minValue` and `maxValue` extensions, when they apply to the item's type (INV-D-20). */
+  readonly minValue: Answer | null;
+  readonly maxValue: Answer | null;
+  readonly maxDecimalPlaces: number | null;
   /** From `questionnaire-minOccurs`; 0 when not authored. */
   readonly minOccurs: number;
   /** From `questionnaire-maxOccurs`; `null` is unbounded. */

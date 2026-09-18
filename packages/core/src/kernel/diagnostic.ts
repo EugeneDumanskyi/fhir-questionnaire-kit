@@ -34,7 +34,7 @@ export type DiagnosticCode =
   | 'meaningless-condition'
   | 'nesting-too-deep'
   | 'chain-too-deep'
-  /* INV-D-09, INV-D-13 … INV-D-19 */
+  /* INV-D-09, INV-D-13 … INV-D-20 */
   | 'no-evaluator'
   | 'condition-crosses-repeat'
   | 'condition-on-calculated'
@@ -44,6 +44,7 @@ export type DiagnosticCode =
   | 'items-under-question'
   | 'initial-value-ignored'
   | 'unsupported-option-type'
+  | 'inapplicable-constraint'
   /* Runtime */
   | 'listener-threw';
 
