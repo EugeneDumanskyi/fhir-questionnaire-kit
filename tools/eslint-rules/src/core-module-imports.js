@@ -15,6 +15,16 @@ import { repoPath } from './paths.js';
  * that belongs to no listed module is reported, so a new module has to be
  * added to the table, visibly, before it can import anything.
  *
+ * Two finer grains, both from ADR-0021 (M3):
+ * - `files` gives one file its own row, in place of its module's, and gives
+ *   the files at the root of `root` (`index`, `resume`) the rows they need.
+ *   A root file with no row is reported like a file in no module. A file row
+ *   does not allow the file's own module unless it lists it.
+ * - `importers` names the only files that may import a file, whatever their
+ *   rows say and even from inside its own module: the session state registry,
+ *   and the resume path that nothing reachable from `index` or `view` may
+ *   import.
+ *
  * Imports that leave `root` are not this rule's business: `no-deep-imports`
  * owns crossing a package boundary.
  */
@@ -35,6 +45,14 @@ export const coreModuleImports = {
             type: 'object',
             additionalProperties: { type: 'array', items: { type: 'string' } },
           },
+          files: {
+            type: 'object',
+            additionalProperties: { type: 'array', items: { type: 'string' } },
+          },
+          importers: {
+            type: 'object',
+            additionalProperties: { type: 'array', items: { type: 'string' } },
+          },
         },
         required: ['root', 'modules'],
         additionalProperties: false,
@@ -45,17 +63,19 @@ export const coreModuleImports = {
         "'{{source}}' reaches {{target}} from {{module}}/. 05-architecture.md §4.1 lets {{module}}/ import only {{allowed}}.",
       unlisted:
         "{{path}} is in no module of the §4.1 import table. Add its module to the core-module-imports options first.",
+      restricted:
+        "'{{source}}' reaches {{target}}, which only {{importers}} may import (05-architecture.md §4.1, ADR-0021).",
     },
   },
 
   create(context) {
-    const { root, modules } = context.options[0];
+    const { root, modules, files = {}, importers = {} } = context.options[0];
     const path = repoPath(context);
     if (!path.startsWith(`${root}/`)) return {};
 
     const local = stripExtension(path.slice(root.length + 1));
-    if (!local.includes('/')) return {};
-    const module = moduleOf(local, modules);
+    const fileRow = Object.hasOwn(files, local) ? files[local] : undefined;
+    const module = fileRow === undefined ? moduleOf(local, modules) : local;
     if (module === null) {
       return {
         Program(node) {
@@ -63,7 +83,7 @@ export const coreModuleImports = {
         },
       };
     }
-    const allowed = modules[module] ?? [];
+    const allowed = fileRow ?? modules[module] ?? [];
     const dir = path.slice(0, path.lastIndexOf('/'));
 
     /**
@@ -75,7 +95,14 @@ export const coreModuleImports = {
       const resolved = normalise(`${dir}/${source}`);
       if (!resolved.startsWith(`${root}/`)) return;
       const target = stripExtension(resolved.slice(root.length + 1));
-      if (within(target, module) || allowed.some((entry) => within(target, entry))) return;
+      const only = Object.hasOwn(importers, target) ? importers[target] : undefined;
+      if (only !== undefined) {
+        if (only.includes(local)) return;
+        const names = only.length === 0 ? 'no file' : only.join(', ');
+        context.report({ node, messageId: 'restricted', data: { source, target, importers: names } });
+        return;
+      }
+      if ((fileRow === undefined && within(target, module)) || allowed.some((entry) => within(target, entry))) return;
       context.report({
         node,
         messageId: 'forbidden',

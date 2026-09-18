@@ -5,7 +5,7 @@ import { fhirqPlugin } from './tools/eslint-rules/src/index.js';
 
 /** The published entry points. `no-deep-imports` allows these and nothing else. */
 const ENTRY_POINTS = {
-  '@fhirq/core': ['@fhirq/core', '@fhirq/core/view'],
+  '@fhirq/core': ['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume'],
   '@fhirq/react': ['@fhirq/react'],
   '@fhirq/element': ['@fhirq/element'],
   '@fhirq/themes': ['@fhirq/themes', '@fhirq/themes/base.css', '@fhirq/themes/default.css'],
@@ -46,9 +46,8 @@ const NO_INLINE_STYLE = [
 /**
  * `05-architecture.md` §4.1, row by row (NFR-M-06). A module may import its own
  * files and the entries listed; `fhir/r4/parse` and `session/projection` are
- * single files, `index` is the public engine API. `interchange/` and `ports/`
- * do not exist yet and are listed so their rows hold from their first file.
- * `session/snapshot` is interchange's second door into session state (M3).
+ * single files, `index` is the public engine API. `ports/` does not exist yet
+ * and is listed so its row holds from its first file.
  */
 export const CORE_MODULES = {
   kernel: [],
@@ -59,6 +58,34 @@ export const CORE_MODULES = {
   interchange: ['kernel', 'definition', 'session/projection', 'session/snapshot', 'fhir/r4'],
   ports: ['kernel'],
   view: ['kernel', 'index'],
+};
+
+/**
+ * Rows for single files, in place of their module's (ADR-0021, M3). The root
+ * files: `index` is `@fhirq/core`, `resume` is `@fhirq/core/resume`, and
+ * `open` is what the two share to start a session. `interchange/emit` reaches
+ * answers only through the projection, so it cannot read a disabled node
+ * (AC-05.3.2).
+ */
+export const CORE_FILES = {
+  index: ['kernel', 'definition', 'session', 'fhir/r4', 'interchange/emit', 'open'],
+  open: ['kernel', 'definition', 'session', 'validation', 'fhir/r4/parse'],
+  resume: ['kernel', 'definition', 'session', 'interchange', 'fhir/r4', 'open', 'index'],
+  'interchange/emit': ['kernel', 'definition', 'session/projection', 'fhir/r4'],
+};
+
+/**
+ * The only importers of each file (ADR-0021). The state registry is the second
+ * door into stored state; the resume path is reachable from `resume` alone,
+ * so nothing reachable from `index` or `view` can import it.
+ */
+export const CORE_IMPORTERS = {
+  'session/registry': ['session/session', 'session/snapshot'],
+  'session/snapshot': ['resume', 'interchange/hydrate'],
+  'interchange/hydrate': ['resume'],
+  'interchange/decode': ['interchange/hydrate'],
+  'fhir/r4/decode': ['resume'],
+  resume: [],
 };
 
 /** Where prose is allowed to live (NFR-I-01). The catalogue itself is M4. */
@@ -134,7 +161,10 @@ export default tseslint.config(
     files: ['packages/core/src/**/*.ts'],
     rules: {
       'fhirq/no-dom-in-core': 'error',
-      'fhirq/core-module-imports': ['error', { root: 'packages/core/src', modules: CORE_MODULES }],
+      'fhirq/core-module-imports': [
+        'error',
+        { root: 'packages/core/src', modules: CORE_MODULES, files: CORE_FILES, importers: CORE_IMPORTERS },
+      ],
       /* ADR-0016: R4 shapes stay in the codec. */
       'fhirq/no-fhir-shapes-outside-codec': ['error', { allow: ['packages/core/src/fhir/**'] }],
     },

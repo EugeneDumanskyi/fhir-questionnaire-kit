@@ -5,7 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 import { Linter } from 'eslint';
 import { describe, expect, it } from 'vitest';
 
-import { CORE_MODULES } from '../../../eslint.config.js';
+import { CORE_FILES, CORE_IMPORTERS, CORE_MODULES } from '../../../eslint.config.js';
 import { fhirqPlugin } from '../src/index.js';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '');
@@ -124,8 +124,8 @@ describe('no-deep-imports', () => {
 describe('core-module-imports', () => {
   const rule = 'core-module-imports';
   const dir = `${fixtures}/${rule}/src`;
-  const options = { root: dir, modules: CORE_MODULES };
-  const lint = (file) => lintFixture(`${dir}/${file}`, rule, options);
+  const options = { root: dir, modules: CORE_MODULES, files: CORE_FILES, importers: CORE_IMPORTERS };
+  const lint = (file, with_ = options) => lintFixture(`${dir}/${file}`, rule, with_);
 
   it.each([
     ['kernel/must-fail.ts', ['session/store']],
@@ -140,7 +140,16 @@ describe('core-module-imports', () => {
     targets.forEach((target, index) => expect(messages[index].message).toContain(`reaches ${target} from`));
   });
 
-  it.each(['index.ts', 'definition/must-pass.ts', 'validation/must-pass.ts', 'view/must-pass.ts'])(
+  it.each([
+    'index.ts',
+    'resume.ts',
+    'definition/must-pass.ts',
+    'validation/must-pass.ts',
+    'view/must-pass.ts',
+    'interchange/must-pass.ts',
+    'interchange/hydrate.ts',
+    'session/snapshot.ts',
+  ])(
     'passes %s',
     (file) => {
       expect(lint(file)).toEqual([]);
@@ -153,6 +162,39 @@ describe('core-module-imports', () => {
     expect(messages[0].message).toContain('in no module of the §4.1 import table');
   });
 
+  it('holds emission to the projection by its file row (AC-05.3.2), and the snapshot to its importers', () => {
+    const messages = lint('interchange/emit.ts');
+    expect(ruleIds(messages)).toEqual([`fhirq/${rule}`, `fhirq/${rule}`]);
+    expect(messages[0].message).toContain('reaches session/store from');
+    expect(messages[1].message).toContain('reaches session/snapshot, which only resume, interchange/hydrate may import');
+  });
+
+  it('opens the state registry to session/session and session/snapshot only (ADR-0021)', () => {
+    const messages = lint('session/must-fail-registry.ts');
+    expect(messages).toHaveLength(1);
+    expect(messages[0].message).toContain('reaches session/registry, which only session/session, session/snapshot may import');
+  });
+
+  it('keeps the resume path out of anything view or index reach (ADR-0021)', () => {
+    expect(lint('view/must-fail-resume.ts').map((message) => message.message)).toEqual([
+      expect.stringContaining('reaches resume, which only no file may import'),
+      expect.stringContaining('reaches session/snapshot, which only'),
+    ]);
+    // `leaky.ts` stands in for `index.ts`, under index's own row.
+    const leaky = lint('leaky.ts', { ...options, files: { ...CORE_FILES, leaky: CORE_FILES.index } });
+    expect(leaky.map((message) => message.message)).toEqual([
+      expect.stringContaining('reaches resume, which only'),
+      expect.stringContaining('reaches interchange/decode, which only interchange/hydrate may import'),
+      expect.stringContaining('reaches fhir/r4/decode, which only resume may import'),
+    ]);
+  });
+
+  it('fails a root file with no row', () => {
+    const messages = lint('unlisted.ts');
+    expect(messages).toHaveLength(1);
+    expect(messages[0].message).toContain('in no module of the §4.1 import table');
+  });
+
   it('holds the rows 05-architecture.md §4.1 states', () => {
     expect(CORE_MODULES.kernel).toEqual([]);
     expect(CORE_MODULES.ports).toEqual(['kernel']);
@@ -160,6 +202,9 @@ describe('core-module-imports', () => {
     expect(Object.entries(CORE_MODULES).filter(([, allowed]) => allowed.includes('fhir/r4'))).toEqual([
       ['interchange', CORE_MODULES.interchange],
     ]);
+    expect(CORE_FILES['interchange/emit'].filter((entry) => entry.startsWith('session'))).toEqual(['session/projection']);
+    expect(CORE_IMPORTERS['session/registry']).toEqual(['session/session', 'session/snapshot']);
+    expect(Object.values(CORE_FILES).flat()).not.toContain('resume');
   });
 });
 
