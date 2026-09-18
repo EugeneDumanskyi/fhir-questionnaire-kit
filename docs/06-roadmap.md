@@ -263,6 +263,30 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 | D7 | Mutation scope | `validation/` and `interchange/emit` join the mutated set, with `kernel/compare` (the comparison moved out of `session/conditions`). Decode, hydrate and snapshot do not |
 | D8 | Small choices, settled with their tests | A date of another precision than its limit raises no issue. Hydration diagnostics gain optional `expected` and `found`. Restore errors are `snapshot-mismatch` and `snapshot-format` |
 
+**Run on 2026-09-18, in PRs #33–#41.** Evidence per acceptance criterion:
+- **AC-1.** `test/property/roundtrip.test.ts`: 1,000 generated sessions per run through the public API and R4 JSON text, over every answer kind, repeating questions, nested repeats, retained answers, both retention policies, host identity and completed sessions. It asserts no hydration diagnostic and an identical re-emission. Vacuity guard: each feature appears in at least 2 % of cases; retained answers, the thinnest, run at about 5 %. Fixture `hydration: round trip`.
+- **AC-2.** `test/property/restore.test.ts` (300 cases: state, snapshot and response equal, then equal again after the same further commands) and `test/resume/snapshot.test.ts`.
+- **AC-3.** `test/interchange/emit.test.ts`, the `emission` fixture, the sentinel test `test/property/leak.test.ts`; and the lint row `interchange/emit` → `session/projection` only, with its must-fail fixture.
+- **AC-4.** `test/resume/snapshot.test.ts`: `snapshot-mismatch` with a `version-drift` finding naming both canonicals.
+- **AC-5.** `test/resume/hydrate.test.ts` and the `hydration` fixture: paths, `expected` and `found`, never a value.
+- **AC-6.** `test/validation/built-in.test.ts` and `rules.test.ts`; the `validation` fixture.
+- **AC-7.** The same tests: document order, then position; form-level issues first, with `path: null`.
+- **AC-8.** `rules.test.ts` › surfacing, and M2's `session.test.ts` SM-03 cases.
+- **AC-9.** `session.test.ts` and `rules.test.ts`: a refused completion changes no status; `completed` refuses every answer and repeat command, restored too.
+- **AC-10.** Core coverage 99.91 % line, 98.53 % branch. Mutation on the new modules 91.3 % locally (validate 100, built-in 95.9, emit 95.2, rules 92.7, compare 84.1), and on the changed session modules 99.2 %; the incremental lane passed the 80 % break on every PR, and `stryker.config.json` mutates them from now on.
+- **AC-11.** `@fhirq/core/resume` 3.34 kB of 4 kB, gated; `@fhirq/core` 12.81 kB of 14 kB; the bundle-inputs check blocks on core, view, element and IIFE, with a must-fail fixture (`scripts/test/fixtures/bundle-inputs/leaky-core.ts`). Lint rows with must-fail fixtures; `no-deep-imports` allows `@fhirq/core/resume`; `core-resume.api.md` in `api:check`, 3 symbols counted.
+
+**Still open.**
+- **K1 has tripped, and the relief valve is your call.** The incremental mutation lane took 423, 291, 280, 498 and 396 s on the five PRs that added or changed mutated modules (PRs #36–#40), against spike S2's K1 of 4 min. M2 plan D11 names the response: WebKit moves to nightly (ADR-0018's relief valve), then re-measure. The blocking pipeline is still inside NFR-M-07's 10 min (8.3 min at worst), so K2 has not tripped. Static mutants in `session/session.ts` rerun the whole suite, M3's property tests included, which is where the time goes (`03-nfr.md` N22).
+- **Core's headroom is 1.19 kB for M4** (`03-nfr.md` §2).
+
+**Found on the way.**
+- INV-D-20, for a constraint on an item type it cannot apply to.
+- A required group is held to an answered descendant.
+- `open.ts`, an internal root file that `index` and `resume` share.
+- A throwing rule is reported once per rule per session, not once per cycle, so diagnostics cannot grow without bound. M4 settles the full collaborator contract.
+- `measure-bundles` wrote the imports of excluded core modules as absolute paths, so the resume figure depended on where the repository was checked out: 3.38 kB in one checkout and 3.46 kB in another. They are repository-relative now, and a test holds that; the 3.34 kB reading is path-independent.
+
 ---
 
 ### M4 — Ports and the safety boundary
