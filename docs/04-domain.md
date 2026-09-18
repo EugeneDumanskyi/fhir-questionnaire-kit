@@ -168,11 +168,11 @@ Legend: **AR** aggregate root · **E** entity (identity, lifecycle) · **VO** va
 | Concept | Kind | Notes |
 |---|---|---|
 | **Validation result** | D (AR of a read model) | Ordered list of issues in document order (AC-04.4.1). Serializable. Recomputed; never persisted. |
-| Validation issue | VO | `{ path, linkId, code, message, severity }`, `severity ∈ { error, warning }`. `path` absent ⇒ form-level (AC-04.3.1). |
-| Built-in rule | VO | Derived from Definition constraints: required, maxLength, min/maxValue, maxDecimalPlaces, date syntax vs range (AC-04.2.2), unit present for quantity (AC-01.2.4), min/maxOccurs. |
-| Cross-field rule | VO (collaborator reference) | Host function over named item paths → message or none (AC-04.3.1). |
+| Validation issue | VO | `{ path, linkId, code, message, severity }`, `severity ∈ { error, warning }`. `path` absent ⇒ form-level (AC-04.3.1). `message` is a catalogue key, with `params` naming the authored limit; never the entered value, which BC6 adds when it renders (`06-roadmap.md` M3 D1, NFR-X-04). |
+| Built-in rule | VO | Derived from Definition constraints: required, maxLength, min/maxValue, maxDecimalPlaces, date range (AC-04.2.2; date syntax is BC6's, INV-V-07 as amended), unit present for quantity (AC-01.2.4), min/maxOccurs. |
+| Cross-field rule | VO (collaborator reference) | Host function over named items → message key or none (AC-04.3.1). Items are named by `linkId` and the rule runs once per instance of the innermost repeating group they share, the scoping of INV-D-13; fixed at session creation and not in the snapshot (`06-roadmap.md` M3 D5). |
 | Surfacing state | E | One per item node. Identity = item path. See SM-03. |
-| Surfacing mode | VO | `blur-then-live` (default, R5) or an alternative configured per NFR-U-03. |
+| Surfacing mode | VO | `blur-then-live` (default, R5). The only mode until product defines another (NFR-U-03); the snapshot records it (`06-roadmap.md` M3 D4). |
 | Completion verdict | D | `accepted` \| `refused(issues)`. Input to SM-01. |
 
 **Does not own:** the message text (BC5 message catalogue supplies it), where the error summary is placed or how focus moves (BC6).
@@ -189,7 +189,7 @@ Legend: **AR** aggregate root · **E** entity (identity, lifecycle) · **VO** va
 | **Snapshot** | D (serialized) | Full engine state: every node's answers including retained, repeat ordinals and positions, surfacing state, lifecycle status, retention policy, host identity. JSON-serializable (AC-05.3.1). |
 | Hydration source | VO | A stored `QuestionnaireResponse` paired with a Definition. |
 | Hydration report | VO | Orphan answers, quarantined answers, version drift — all as diagnostics (AC-06.1.3, AC-06.3.1, AC-06.3.2). |
-| Canonical reference | VO | `url` + optional `version` of the Questionnaire. Basis of drift detection. |
+| Canonical reference | VO | `url` + optional `version` of the Questionnaire. Basis of drift detection. A questionnaire with no `url` has none: its response carries no `questionnaire`, and two snapshots without one match (`06-roadmap.md` M3 D6). |
 
 **Two distinct entry paths into BC2, deliberately not merged:**
 
@@ -501,7 +501,7 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | INV-V-04 | Collaborator rules receive the visible projection read-only; a rule cannot change session state. | AC-04.3.2 |
 | INV-V-05 | A rule that throws produces a diagnostic, contributes no issue, and does not abort the cycle. | AC-04.3.2 |
 | INV-V-06 | Issues are ordered by document order (definition tree order, then repeat position); form-level issues have no path. | AC-04.4.1 |
-| INV-V-07 | Date issues distinguish *not a date* from *outside the permitted range*. | AC-04.2.2 |
+| INV-V-07 | Date issues distinguish *not a date* from *outside the permitted range*. **Amended 2026-09-18 (`06-roadmap.md` M3 D2):** the engine holds typed answers only, so BC3 reports *outside the permitted range* and never *not a date*; *not a date* is BC6's issue on the text a respondent is still typing (INV-P-06). A range that cannot be decided, a date of another precision than its limit, raises nothing (M3 D8). | AC-04.2.2 |
 | INV-V-08 | A `quantity` answer with a value but no unit is invalid. | AC-01.2.4 |
 | INV-V-09 | The validation result is a pure function of the visible projection and the registered rules; the only stored state in BC3 is surfacing (SM-03). | AC-04.4.1, DECISION |
 | INV-V-10 | An issue's message comes from the message catalogue; no respondent-facing string originates elsewhere. | AC-07.4.1, NFR-I-01 |
@@ -545,6 +545,7 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | INV-P-03 | At most one announcement per evaluation cycle, stating what changed and how many items. | AC-11.3.2, NFR-A-08 |
 | INV-P-04 | The add control of a repeating group at `maxOccurs` is inert and explains why. | AC-03.2.4 |
 | INV-P-05 | Choice control is the hinted one when the hint is honoured; otherwise ≤ 5 options → radio group, > 5 → listbox. | AC-01.2.2, R1 |
+| INV-P-06 | A date or date-time draft that is not a valid FHIR value is reported as *not a date*, distinct from BC3's range issue, and never reaches the engine. Moved here from INV-V-07 (`06-roadmap.md` M3 D2); built in M5. | AC-04.2.2 |
 
 ---
 
@@ -842,7 +843,7 @@ Events carry paths, codes and flags — never answer values. The host reads valu
 Hydration is a short, synchronous process rather than a long-running machine, but it is where most data-integrity decisions concentrate. It runs inside SM-01 `Building`.
 
 1. **Build the Definition.** Load-time invariants apply exactly as for a fresh session; a rejected Questionnaire rejects hydration.
-2. **Compare canonicals.** If the stored `questionnaire` reference carries a version different from the Definition's, raise `version-drift` naming both. Continue (INV-E-10).
+2. **Compare canonicals.** If the stored `questionnaire` reference names a different `url`, or carries a version different from the Definition's, raise `version-drift` naming both. Continue (INV-E-10). A stored response that names no questionnaire, or no version, cannot drift. *(Amended 2026-09-18, `06-roadmap.md` M3 D6: a different `url` is drift too.)*
 3. **Walk stored items against the Definition, in document order.**
    - Unknown `linkId` → `orphan-answer` diagnostic; skip the item and its subtree (AC-06.1.3).
    - Answer type incompatible with the item definition → `quarantined-answer` diagnostic with path, expected and found type, **no value**; not loaded (AC-06.3.2, §9 T6).

@@ -250,6 +250,19 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 
 **Effort.** ASSUMPTION: 24 h.
 
+**Plan decisions, 2026-09-18.** Taken with the M3 plan, every one as recommended. D1 and D2 settle where AC-04.2.1 and AC-04.2.2 meet NFR-X-04 and INV-S-10; both criteria finish in M5.
+
+| # | Decision | Resolution |
+|---|---|---|
+| D1 | Can an issue carry the entered value (AC-04.2.1)? | No. An issue carries its code, a message key and the authored limit (`params`); the view adds the entered value when it renders (M5). Issues stay safe to log (NFR-X-04), and `04-domain.md` §7.2 stands |
+| D2 | Where "not a date" comes from (AC-04.2.2, INV-V-07) | The engine holds typed answers only (INV-S-10), so an emitted response is always valid R4. It reports a date outside its range; "not a date" is the view model's issue on a draft, from M5. INV-V-07 amended, new INV-P-06 |
+| D3 | The symbol budget (NFR-U-05) | M3 adds at most 5 symbols. Rules are an inline `SessionOptions` field, the resume functions reuse `SessionOptions`, and a snapshot is typed as JSON. The allocation is in `07-api.md` §2 |
+| D4 | Surfacing modes | `blur-then-live` only; the snapshot records the mode, so a second one needs no format change |
+| D5 | Cross-field rules | `SessionOptions.rules`, fixed per session (ADR-0001). Items named by `linkId`, run per shared repeat instance with `enableWhen`'s scoping (INV-D-13); a rule returns a message key. Rules are not in the snapshot, so restore needs the same ones |
+| D6 | Questionnaires without a `url`; a different `url` on hydrate | Emit without `questionnaire`; restore treats both absent as a match. A different `url` on hydrate is `version-drift` naming both, and hydration continues. `04-domain.md` §8 step 2 amended |
+| D7 | Mutation scope | `validation/` and `interchange/emit` join the mutated set, with `kernel/compare` (the comparison moved out of `session/conditions`). Decode, hydrate and snapshot do not |
+| D8 | Small choices, settled with their tests | A date of another precision than its limit raises no issue. Hydration diagnostics gain optional `expected` and `found`. Restore errors are `snapshot-mismatch` and `snapshot-format` |
+
 ---
 
 ### M4 — Ports and the safety boundary
