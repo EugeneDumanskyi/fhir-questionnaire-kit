@@ -127,6 +127,14 @@ export default tseslint.config(
   },
 
   {
+    /* NFR-X-04: no answer value into a diagnostic, an error or the console. It
+       reads types, so it runs where type information is on (M4 plan D9). */
+    files: ['packages/*/src/**/*.{ts,tsx}'],
+    plugins: { fhirq: fhirqPlugin },
+    rules: { 'fhirq/no-answer-in-diagnostics': 'error' },
+  },
+
+  {
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
