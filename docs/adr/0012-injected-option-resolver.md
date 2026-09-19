@@ -37,6 +37,8 @@ interface CodedOption { system?: string; code: string; display?: string }
 ```
 
 - Called once per distinct canonical per session, at session start (ADR-0005), and again only on an explicit `retryOptions(valueSet)` after failure.
+
+  *Amended 2026-09-19 (`06-roadmap.md` M4 plan decision D6).* The retry is a command, `dispatch({ type: 'RetryOptions', valueSet })`, not a session method. It goes through the single writer like every other change, and outside `Failed` it is refused as `options-not-failed`, a no-op cycle with a reason, as `04-domain.md` §7.1 already has it. As built, the resolver returns a `PromiseLike` of inline option shapes, so `CodedOption` is not a separate export (M4 plan D1), and the host's rejection reaches it through `SessionOptions.onCollaboratorError`. Core types `AbortSignal` structurally in `ports/`. Core creates the `AbortController` in `session/options.ts`, the one file the `no-dom-in-core` lint allowlist permits to do so; nothing in core performs I/O with it.
 - Rejection is surfaced verbatim to the host in memory. Diagnostics carry the canonical and a `resolver-failed` code, never the error's message (NFR-X-04).
 - `session.dispose()` aborts the signal. Late settlements after disposal are ignored (SM-04).
 - A settlement enters the session as its own evaluation cycle (ADR-0009, T12).
