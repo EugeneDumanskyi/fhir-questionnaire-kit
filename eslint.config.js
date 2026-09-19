@@ -88,7 +88,37 @@ export const CORE_IMPORTERS = {
   resume: [],
 };
 
-/** Where prose is allowed to live (NFR-I-01). The catalogue itself is M4. */
+/**
+ * ADR-0020's lint pair (NFR-M-06, gate row "Intl-only: M4 catalogue").
+ * Formatting is a pure function of the locale the host passes: `Intl` only in
+ * `view/format`, and nowhere in core a call that reads the environment's
+ * locale or zone — `toLocale*String`, `resolvedOptions`, `process.env`
+ * (`navigator` is `no-dom-in-core`'s already).
+ */
+export const LOCALE_RULES = {
+  everywhere: {
+    'no-restricted-properties': [
+      'error',
+      ...['toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'].map((property) => ({
+        property,
+        message: 'Reads the environment\'s locale (ADR-0020). Format through view/format with the locale the host passed.',
+      })),
+      { property: 'resolvedOptions', message: 'Reads the environment\'s locale or zone (ADR-0020); the host passes both.' },
+      { object: 'process', property: 'env', message: 'Core reads nothing from its environment (ADR-0020, NFR-C-04).' },
+    ],
+  },
+  outsideFormat: {
+    'no-restricted-globals': ['error', { name: 'Intl', message: 'Intl is used in view/format only (ADR-0020, NFR-I-04).' }],
+  },
+};
+export const FORMAT_FILE = 'packages/core/src/view/format.ts';
+
+/**
+ * Where prose is allowed to live (NFR-I-01): the message catalogue,
+ * `view/messages/`, since M4. Retuned against the real tree in M4: with the
+ * catalogue in place the rule reports nothing in any package's `src`, and its
+ * two-word, six-letter heuristic is kept (`06-roadmap.md` M4).
+ */
 const CATALOGUE = ['packages/core/src/**/messages/**'];
 
 export default tseslint.config(
@@ -175,7 +205,14 @@ export default tseslint.config(
       ],
       /* ADR-0016: R4 shapes stay in the codec. */
       'fhirq/no-fhir-shapes-outside-codec': ['error', { allow: ['packages/core/src/fhir/**'] }],
+      ...LOCALE_RULES.everywhere,
     },
+  },
+
+  {
+    files: ['packages/core/src/**/*.ts'],
+    ignores: [FORMAT_FILE],
+    rules: LOCALE_RULES.outsideFormat,
   },
 
   {

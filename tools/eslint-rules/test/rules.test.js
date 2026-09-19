@@ -5,7 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 import { Linter } from 'eslint';
 import { describe, expect, it } from 'vitest';
 
-import { CORE_FILES, CORE_IMPORTERS, CORE_MODULES } from '../../../eslint.config.js';
+import { CORE_FILES, CORE_IMPORTERS, CORE_MODULES, LOCALE_RULES } from '../../../eslint.config.js';
 import { fhirqPlugin } from '../src/index.js';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '');
@@ -271,5 +271,32 @@ describe('no-answer-in-diagnostics (NFR-X-04, M4 plan D9)', () => {
   it('says so when it has no type information, rather than passing silently', () => {
     const messages = lintFixture(`${dir}/must-pass.ts`, 'no-answer-in-diagnostics');
     expect(messages.map((message) => message.message)).toEqual([expect.stringContaining('needs type information')]);
+  });
+});
+
+describe("ADR-0020's locale lint pair (NFR-M-06, NFR-I-04)", () => {
+  const dir = `${fixtures}/locale`;
+  const lintWith = (file, rules) =>
+    linter.verify(
+      readFileSync(`${root}/${dir}/${file}`, 'utf8'),
+      { files: ['**/*.ts'], languageOptions: { parser: tsParser, ecmaVersion: 2022, sourceType: 'module' }, rules },
+      `${root}/${dir}/${file}`,
+    );
+
+  it('fails every ambient-locale read in core, and Intl outside view/format', () => {
+    const messages = lintWith('must-fail.ts', { ...LOCALE_RULES.everywhere, ...LOCALE_RULES.outsideFormat });
+    expect(messages.map((message) => [message.line, message.ruleId])).toEqual([
+      [3, 'no-restricted-globals'],
+      [5, 'no-restricted-properties'],
+      [7, 'no-restricted-properties'],
+      [9, 'no-restricted-properties'],
+      [11, 'no-restricted-globals'],
+      [11, 'no-restricted-properties'],
+    ]);
+  });
+
+  it('lets view/format use Intl with the locale it is given, and still bans resolvedOptions there', () => {
+    expect(lintWith('format.ts', LOCALE_RULES.everywhere)).toEqual([]);
+    expect(lintWith('must-fail.ts', LOCALE_RULES.everywhere).map((message) => message.line)).toEqual([5, 7, 9, 11]);
   });
 });

@@ -1,7 +1,7 @@
-import type { IssueCode, ItemPath, NodeState, Session, SessionChange, SessionState } from '../index.js';
+import type { Issue, IssueCode, ItemPath, NodeState, Session, SessionChange, SessionState } from '../index.js';
 import { fill, plural } from './format.js';
 import { nodeIds, type NodeIds } from './ids.js';
-import { en, type Messages } from './messages/en.js';
+import { en, type Messages, type PluralMessage } from './messages/en.js';
 
 /**
  * The presentation model's S1 field list (ADR-0007, `06-roadmap.md` M1 AC-3).
@@ -15,6 +15,14 @@ import { en, type Messages } from './messages/en.js';
 export interface ViewOptions {
   /** Prefixes every id, so two forms on one page or one React tree cannot collide. */
   readonly idPrefix: string;
+  /**
+   * Message overrides (US-07.4, ADR-0020): any key of the built-in catalogue,
+   * and the message keys an issue carries, such as a cross-field rule's. Each
+   * key falls back on its own (INV-X-08): one that is missing, empty or
+   * shaped wrong gets the built-in `en` text, and an issue whose key has no
+   * text anywhere gets the generic issue message, never the key itself.
+   */
+  readonly messages?: Readonly<Record<string, string | { readonly one: string; readonly other: string }>>;
 }
 
 /**
@@ -142,12 +150,34 @@ interface Commands {
 
 const NO_ISSUES: readonly ViewIssue[] = [];
 
-/** The spike's two messages; M5 writes one per rule and fills in the limit and the entered value (M3 plan D1). */
-const issueMessage = (code: IssueCode, messages: Messages): string => (code === 'required' ? messages.issueRequired : messages.issueInvalid);
+/** Text a person can read: a non-empty string, not blanks. */
+const readable = (value: unknown): value is string => typeof value === 'string' && value.trim() !== '';
+
+/**
+ * The catalogue with the host's overrides, key by key (INV-X-08). A key is
+ * looked up as an own property only, so no inherited name can answer for it.
+ */
+function catalogue(overrides: ViewOptions['messages'] = {}): Messages & { readonly issue: (issue: Issue) => string } {
+  const own = (key: string): unknown => (Object.hasOwn(overrides, key) ? overrides[key] : undefined);
+  const merged: Record<string, unknown> = {};
+  for (const [key, fallback] of Object.entries(en)) {
+    const given = own(key) as Partial<PluralMessage> | undefined;
+    const fits = typeof fallback === 'string' ? readable(given) : readable(given?.one) && readable(given?.other);
+    merged[key] = fits ? given : fallback;
+  }
+  const messages = merged as Messages;
+  // The spike's issue text: the issue's own key when the host gave it text, else required or generic.
+  // M5 writes one default per rule and fills in the limit and the entered value (M3 plan D1).
+  const issue = ({ code, message }: Issue): string => {
+    const given = own(message);
+    return readable(given) ? given : code === 'required' ? messages.issueRequired : messages.issueInvalid;
+  };
+  return { ...messages, issue };
+}
 
 /** @alpha S1 spike surface. */
 export function createView(session: Session, options: ViewOptions): View {
-  const messages = en;
+  const messages = catalogue(options.messages);
   const summaryId = `${options.idPrefix}-summary`;
   const cache = new Map<string, { readonly state: NodeState; readonly view: ViewNode }>();
   const commands = new Map<string, Commands>();
@@ -214,9 +244,9 @@ function rendered(state: NodeState): boolean {
   return state.item.type === 'boolean' || state.item.type === 'string';
 }
 
-function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages: Messages): ViewNode {
+function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages: ReturnType<typeof catalogue>): ViewNode {
   const issues = state.surfaced && state.issues.length > 0
-    ? state.issues.map((issue): ViewIssue => ({ rule: issue.code, message: issueMessage(issue.code, messages) }))
+    ? state.issues.map((issue): ViewIssue => ({ rule: issue.code, message: messages.issue(issue) }))
     : NO_ISSUES;
   const common = {
     path: state.path,

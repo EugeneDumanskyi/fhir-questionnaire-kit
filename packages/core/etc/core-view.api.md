@@ -106,6 +106,10 @@ export type ViewNode = YesNoViewNode | ShortTextViewNode;
 // @alpha (undocumented)
 export interface ViewOptions {
     readonly idPrefix: string;
+    readonly messages?: Readonly<Record<string, string | {
+        readonly one: string;
+        readonly other: string;
+    }>>;
 }
 
 // @alpha (undocumented)

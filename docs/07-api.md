@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M4 adds the ports.*
 
-**Status, 2026-09-18.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
+**Status, 2026-09-19.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
 
 ---
 
@@ -266,7 +266,9 @@ Hydration never fails because of content (INV-E-08). It throws only `definition-
 
 M1's presentation-model spike: `createView(session, options)` returns a `View` with `subscribe` and `getSnapshot`, and a `ViewModel` of yes/no and short-text nodes with their ids, issues, announcement, error summary and focus target (ADR-0007). It renders only `boolean` and `string` items until M5 replaces it with the full view model. Its report notes three types it reaches without exporting them: two from `@fhirq/core`, which API Extractor does not follow across a package's two entry points, and one internal base interface. M5 resolves both when it fixes the view's surface.
 
+**Messages (M4, US-07.4, ADR-0020).** `options.messages` overrides the built-in `en` catalogue key by key. A key the host leaves out, or gives as blank text or as the wrong shape (a plural needs both `one` and `other`), falls back to the default, so no string is ever empty or a raw key (INV-X-08). An issue's own message key is looked up as well. That is how a cross-field rule's key gets its text, and a key with no text falls back to the generic message. The catalogue has 18 keys, including those M5 renders for pending, failed and retried options and for an unavailable score.
+
 ## 6. Not in the API yet
 
-- **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports, and the message catalogue's overrides.
+- **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports.
 - **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.
