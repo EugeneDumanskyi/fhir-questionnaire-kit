@@ -1,0 +1,16 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:resumed-coded-answers",
+  "version": "1",
+  "status": "draft",
+  "title": "resumed-coded-answers",
+  "item": [
+    {
+      "linkId": "drug",
+      "text": "Which medicine?",
+      "type": "choice",
+      "required": true,
+      "answerValueSet": "urn:fhirq:conformance:ValueSet/drug"
+    }
+  ]
+}

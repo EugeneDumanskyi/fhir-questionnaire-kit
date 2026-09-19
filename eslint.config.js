@@ -46,8 +46,8 @@ const NO_INLINE_STYLE = [
 /**
  * `05-architecture.md` §4.1, row by row (NFR-M-06). A module may import its own
  * files and the entries listed; `fhir/r4/parse` and `session/projection` are
- * single files, `index` is the public engine API. `ports/` does not exist yet
- * and is listed so its row holds from its first file.
+ * single files, `index` is the public engine API. `ports/` is types only
+ * (`CORE_TYPES_ONLY`), and from M4 `index` exports its three types.
  */
 export const CORE_MODULES = {
   kernel: [],
@@ -68,7 +68,7 @@ export const CORE_MODULES = {
  * (AC-05.3.2).
  */
 export const CORE_FILES = {
-  index: ['kernel', 'definition', 'session', 'fhir/r4', 'interchange/emit', 'open'],
+  index: ['kernel', 'definition', 'session', 'fhir/r4', 'interchange/emit', 'open', 'ports'],
   open: ['kernel', 'definition', 'session', 'validation', 'fhir/r4/parse'],
   resume: ['kernel', 'definition', 'session', 'interchange', 'fhir/r4', 'open', 'index'],
   'interchange/emit': ['kernel', 'definition', 'session/projection', 'fhir/r4'],
@@ -86,6 +86,20 @@ export const CORE_IMPORTERS = {
   'interchange/decode': ['interchange/hydrate'],
   'fhir/r4/decode': ['resume'],
   resume: [],
+};
+
+/** Modules that hold types and nothing that emits JavaScript (§4.1: `ports/` is "types only"). */
+export const CORE_TYPES_ONLY = ['ports'];
+
+/**
+ * ADR-0012's `AbortSignal`, admitted in core by the M4 ruling on
+ * `AbortController`: the controller in `session/options`, which aborts the
+ * resolver's signal on dispose, and the signal's type in `ports/`. Nowhere
+ * else in core, and nothing else from the DOM Standard.
+ */
+export const ABORT_ALLOWED = {
+  'packages/core/src/session/options.ts': ['AbortController', 'AbortSignal'],
+  'packages/core/src/ports/index.ts': ['AbortSignal'],
 };
 
 /**
@@ -201,13 +215,18 @@ export default tseslint.config(
       'fhirq/no-dom-in-core': 'error',
       'fhirq/core-module-imports': [
         'error',
-        { root: 'packages/core/src', modules: CORE_MODULES, files: CORE_FILES, importers: CORE_IMPORTERS },
+        { root: 'packages/core/src', modules: CORE_MODULES, files: CORE_FILES, importers: CORE_IMPORTERS, typesOnly: CORE_TYPES_ONLY },
       ],
       /* ADR-0016: R4 shapes stay in the codec. */
       'fhirq/no-fhir-shapes-outside-codec': ['error', { allow: ['packages/core/src/fhir/**'] }],
       ...LOCALE_RULES.everywhere,
     },
   },
+
+  ...Object.entries(ABORT_ALLOWED).map(([file, allowGlobals]) => ({
+    files: [file],
+    rules: { 'fhirq/no-dom-in-core': ['error', { allowGlobals }] },
+  })),
 
   {
     files: ['packages/core/src/**/*.ts'],

@@ -1,0 +1,53 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:calculated-values|1",
+  "status": "in-progress",
+  "authored": "2026-01-01T00:00:00Z",
+  "item": [
+    {
+      "linkId": "earlier",
+      "text": "Reads the total, one cycle behind",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "a",
+      "text": "A",
+      "answer": [
+        {
+          "valueInteger": 1
+        }
+      ]
+    },
+    {
+      "linkId": "b",
+      "text": "B",
+      "answer": [
+        {
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "linkId": "total",
+      "text": "A plus B",
+      "answer": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "note",
+      "text": "Note",
+      "answer": [
+        {
+          "valueString": "done"
+        }
+      ]
+    }
+  ]
+}

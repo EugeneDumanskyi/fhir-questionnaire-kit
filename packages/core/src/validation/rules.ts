@@ -1,11 +1,11 @@
 import type { Answer } from '../kernel/answer.js';
 import { slot } from '../kernel/dense.js';
-import { diagnostic, type Diagnostic } from '../kernel/diagnostic.js';
+import { diagnostic } from '../kernel/diagnostic.js';
 import type { Issue } from '../kernel/issue.js';
 import type { LinkId } from '../kernel/item-type.js';
 import type { ItemPath } from '../kernel/path.js';
 import type { Definition, ItemDef } from '../definition/compile.js';
-import type { VisibleNode, VisibleProjection } from '../session/projection.js';
+import type { Collaborate, VisibleNode, VisibleProjection } from '../session/projection.js';
 
 /**
  * Cross-field rules (US-04.3, M3 plan D5). A host registers them with the
@@ -17,8 +17,8 @@ import type { VisibleNode, VisibleProjection } from '../session/projection.js';
  * `meds[2]`'s items and items outside every repeat. It is skipped wherever
  * any item it names is disabled (INV-V-03). It receives frozen answers of the
  * visible projection only (INV-V-04), and a rule that throws contributes no
- * issue and becomes a diagnostic, never a failed cycle (INV-V-05). The full
- * collaborator contract is M4's.
+ * issue and becomes a diagnostic, never a failed cycle (INV-V-05). It keeps
+ * this shape rather than the whole projection scorers get (M4 plan D4).
  */
 export interface Rule {
   readonly inputs: readonly LinkId[];
@@ -88,7 +88,7 @@ export function ruleIssues(
   definition: Definition,
   rules: readonly CompiledRule[],
   projection: VisibleProjection,
-  report: (diagnostic: Diagnostic) => void,
+  call: Collaborate,
 ): Issue[] {
   if (rules.length === 0) return [];
   const byPath = new Map<string, VisibleNode>(projection.nodes.map((node) => [node.path, node]));
@@ -100,7 +100,7 @@ export function ruleIssues(
       const targets = compiled.targets.map(find);
       const present = (nodes: readonly (VisibleNode | undefined)[]): nodes is readonly VisibleNode[] => nodes.every((node) => node !== undefined);
       if (!present(inputs) || !present(targets)) return [];
-      const message = run(compiled, inputs, report);
+      const message = run(compiled, inputs, call);
       if (message === null) return [];
       const severity = compiled.rule.severity ?? 'error';
       const issue = (node: VisibleNode | null): Issue => ({
@@ -116,18 +116,16 @@ export function ruleIssues(
   );
 }
 
-/** The rule's message key, or `null` for none and for a rule that threw, which is reported instead. */
-function run(compiled: CompiledRule, inputs: readonly VisibleNode[], report: (diagnostic: Diagnostic) => void): string | null {
+/**
+ * The rule's message key, or `null` for none and for a rule that threw, which
+ * the guard reports once per rule, naming the rule only: the thrown value may
+ * carry an answer (NFR-X-04).
+ */
+function run(compiled: CompiledRule, inputs: readonly VisibleNode[], call: Collaborate): string | null {
   const answers: Record<LinkId, readonly Answer[]> = {};
   for (const node of inputs) answers[node.item.linkId] = node.answers;
-  try {
-    const message: unknown = compiled.rule.check(Object.freeze(answers));
-    return typeof message === 'string' && message !== '' ? message : null;
-  } catch {
-    // The thrown value may carry an answer; the diagnostic names the rule only (NFR-X-04).
-    report(diagnostic('rule-threw', 'warning', null, { detail: `rules[${compiled.index}]` }));
-    return null;
-  }
+  const message = call(diagnostic('rule-threw', 'warning', null, { detail: `rules[${compiled.index}]` }), () => compiled.rule.check(Object.freeze(answers)));
+  return typeof message?.value === 'string' && message.value !== '' ? message.value : null;
 }
 
 /**

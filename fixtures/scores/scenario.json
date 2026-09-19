@@ -1,0 +1,189 @@
+{
+  "behaviour": "A host scorer reads the visible answers only and its result is exposed, not interpreted; a scorer that throws is cleared and reported, and the others go on (US-07.2, AC-07.2.1, AC-07.2.2, AC-07.2.4, ADR-0006, INV-X-04, INV-X-05)",
+  "cases": [
+    {
+      "name": "a hidden item leaves the total, retained answer and all",
+      "loadMode": "strict",
+      "scorers": {
+        "total": {
+          "inputs": [
+            "first",
+            "second"
+          ],
+          "sum": [
+            "first",
+            "second"
+          ]
+        }
+      },
+      "enabled": [
+        "first",
+        "asked"
+      ],
+      "steps": [
+        {
+          "name": "first",
+          "command": {
+            "type": "SetAnswer",
+            "path": "first",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 1
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "first",
+            "asked"
+          ]
+        },
+        {
+          "name": "ask the second",
+          "command": {
+            "type": "SetAnswer",
+            "path": "asked",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "first",
+            "asked",
+            "second"
+          ]
+        },
+        {
+          "name": "second",
+          "command": {
+            "type": "SetAnswer",
+            "path": "second",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 2
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "first",
+            "asked",
+            "second"
+          ]
+        },
+        {
+          "name": "hide the second",
+          "command": {
+            "type": "SetAnswer",
+            "path": "asked",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "first",
+            "asked"
+          ]
+        }
+      ],
+      "scores": {
+        "total": null
+      }
+    },
+    {
+      "name": "a throwing scorer is cleared and reported once; the others still score",
+      "loadMode": "strict",
+      "scorers": {
+        "broken": {
+          "inputs": [
+            "first"
+          ],
+          "throws": true
+        },
+        "total": {
+          "inputs": [
+            "first"
+          ],
+          "sum": [
+            "first"
+          ]
+        }
+      },
+      "diagnostics": [
+        {
+          "code": "scorer-threw",
+          "path": null,
+          "detail": "broken"
+        }
+      ],
+      "enabled": [
+        "first",
+        "asked"
+      ],
+      "steps": [
+        {
+          "name": "first",
+          "command": {
+            "type": "SetAnswer",
+            "path": "first",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 3
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "first",
+            "asked"
+          ]
+        },
+        {
+          "name": "again",
+          "command": {
+            "type": "SetAnswer",
+            "path": "first",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 4
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "first",
+            "asked"
+          ]
+        }
+      ],
+      "scores": {
+        "broken": null,
+        "total": 4
+      }
+    }
+  ]
+}

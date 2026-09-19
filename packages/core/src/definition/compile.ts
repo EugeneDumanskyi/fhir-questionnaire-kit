@@ -65,6 +65,8 @@ export interface ItemDef {
   readonly forcedDisabled: boolean;
   /** Bound to `calculatedExpression`; commands on it are refused (ADR-0003). */
   readonly calculated: boolean;
+  /** The `calculatedExpression` the evaluator is given (ADR-0017); `null` when the item has none. */
+  readonly calculation: { readonly language: string; readonly expression: string; readonly name?: string } | null;
   /** Supported inline option values, in authored order. */
   readonly options: readonly Answer[];
   readonly valueSet: string | null;
@@ -80,6 +82,11 @@ export interface ItemDef {
   /** From `questionnaire-maxOccurs`; `null` is unbounded. */
   readonly maxOccurs: number | null;
   readonly itemControl: string | null;
+  /**
+   * The authored `rendering-xhtml` as compiled. Once a session opens it, the
+   * host sanitizer's output instead, or `null` when there is none (INV-X-06):
+   * raw XHTML never reaches a session.
+   */
   readonly renderingXhtml: string | null;
   /** Items whose conditions read this one, with the scope each resolves in. */
   readonly dependents: readonly DependencyEdge[];
@@ -103,8 +110,9 @@ export type CompileResult =
   | { readonly ok: true; readonly definition: Definition }
   | { readonly ok: false; readonly findings: readonly Diagnostic[] };
 
-export function compile(input: DefinitionInput, loadMode: LoadMode): CompileResult {
-  const checked = checkItems(input, loadMode);
+/** `evaluator`: whether the host supplied one, which decides `no-evaluator` (INV-D-09, M4 plan D8). */
+export function compile(input: DefinitionInput, loadMode: LoadMode, evaluator = false): CompileResult {
+  const checked = checkItems(input, loadMode, evaluator);
   if (checked.items === null) return rejected(checked.findings, loadMode);
 
   const graph = buildGraph(checked.items);

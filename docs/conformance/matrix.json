@@ -1110,6 +1110,107 @@
         "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
         "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
       ]
+    },
+    {
+      "id": "options.value-set",
+      "feature": "`answerValueSet` options through the host's resolver: once per canonical, at session start, whatever is enabled (AC-07.1.1, SM-04)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > option-resolution: a resolver that fulfils: coded answers go in, on a branch opened later too",
+        "packages/core/test/session/options.test.ts > option resolution (SM-04, ADR-0005, ADR-0012)"
+      ]
+    },
+    {
+      "id": "options.value-set.pending",
+      "feature": "A coded answer is refused while its options are pending, failed or unresolved; open-choice text is accepted, and other items are not blocked (AC-07.1.2, AC-01.1.2)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > option-resolution: no resolver: loads, reports each item, and refuses coded answers",
+        "packages/core/test/conformance/fixtures.test.ts > option-resolution: a resolver that rejects: failed until a retry, and pending blocks nothing else",
+        "packages/core/test/session/options.test.ts > option resolution (SM-04, ADR-0005, ADR-0012)"
+      ]
+    },
+    {
+      "id": "options.value-set.retry",
+      "feature": "A failed resolution is reported and retried only on the host's `RetryOptions` (ADR-0012, INV-D-08)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > option-resolution: a resolver that rejects: failed until a retry, and pending blocks nothing else",
+        "packages/core/test/session/options.test.ts > option resolution (SM-04, ADR-0005, ADR-0012)"
+      ]
+    },
+    {
+      "id": "options.value-set.membership",
+      "feature": "A coded answer checked against the resolved value set's codes",
+      "status": "not supported",
+      "reason": "The resolver's list is what the form offers, not a membership test; a resumed code must load whatever the set holds (T8, AC-07.1.4)",
+      "tests": []
+    },
+    {
+      "id": "hydration.coded-options",
+      "feature": "A resumed coded answer loads and raises no issue while its options are pending, failed or unresolved (AC-07.1.4, T8)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > resumed-coded-answers: options pending: the coded answer is loaded and raises no issue",
+        "packages/core/test/conformance/fixtures.test.ts > resumed-coded-answers: options failed: the coded answer is loaded and raises no issue",
+        "packages/core/test/conformance/fixtures.test.ts > resumed-coded-answers: no resolver: the coded answer is loaded and raises no issue",
+        "packages/core/test/resume/options.test.ts > resumed coded answers and option sets (T8, AC-07.1.4, ADR-0005)"
+      ]
+    },
+    {
+      "id": "scoring.host-scorer",
+      "feature": "Host scoring functions read the visible answers only; results are exposed, not interpreted (AC-07.2.1, AC-07.2.2, INV-X-04)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > scores: a hidden item leaves the total, retained answer and all",
+        "packages/core/test/validation/scores.test.ts > scoring functions (US-07.2, ADR-0006, M4 plan D5)",
+        "packages/core/test/conformance/demo.test.ts > the demo fixture (AC-15.1.1)"
+      ]
+    },
+    {
+      "id": "scoring.scorer-failure",
+      "feature": "A scorer that throws is cleared and reported by name, never by what it threw; the others still score (AC-07.2.4, INV-X-09)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > scores: a throwing scorer is cleared and reported once; the others still score",
+        "packages/core/test/validation/scores.test.ts > scoring functions (US-07.2, ADR-0006, M4 plan D5)"
+      ]
+    },
+    {
+      "id": "extension.calculated-expression",
+      "feature": "SDC `calculatedExpression`",
+      "status": "partial",
+      "reason": "Through a host ExpressionEvaluator only (ADR-0017): the kit has no FHIRPath; without one the item has no value, with a diagnostic",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > calculated-values: no evaluator: loads, reports each item, and has no value",
+        "packages/core/test/conformance/fixtures.test.ts > calculated-values: an evaluator: values in document order, one cycle behind for a later item",
+        "packages/core/test/session/calculated.test.ts > the expression evaluator seam (US-07.3, ADR-0017, M4 plan D8)"
+      ]
+    },
+    {
+      "id": "extension.calculated-expression.order",
+      "feature": "Calculated items evaluate once per cycle in document order; one that reads a later calculated item sees the previous cycle's value",
+      "status": "partial",
+      "reason": "Documented lag, not a fixpoint (ADR-0009, \"Calculated items reading other calculated items\")",
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > calculated-values: an evaluator: values in document order, one cycle behind for a later item",
+        "packages/core/test/session/calculated.test.ts > the expression evaluator seam (US-07.3, ADR-0017, M4 plan D8)"
+      ]
+    },
+    {
+      "id": "extension.rendering-xhtml",
+      "feature": "`rendering-xhtml` rich text",
+      "status": "partial",
+      "reason": "Kept only through the host's sanitizer, else plain text with a diagnostic (INV-X-06, AC-01.4.2); rendering it lands with the renderers (M5–M7)",
+      "tests": [
+        "packages/core/test/definition/sanitize.test.ts > authored rich text (INV-X-06, AC-01.4.2)"
+      ]
     }
   ]
 }

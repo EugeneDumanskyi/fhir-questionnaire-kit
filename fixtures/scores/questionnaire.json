@@ -1,0 +1,31 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:scores",
+  "version": "1",
+  "status": "draft",
+  "title": "scores",
+  "item": [
+    {
+      "linkId": "first",
+      "text": "First score",
+      "type": "integer"
+    },
+    {
+      "linkId": "asked",
+      "text": "Ask the second?",
+      "type": "boolean"
+    },
+    {
+      "linkId": "second",
+      "text": "Second score",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "asked",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}

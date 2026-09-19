@@ -25,9 +25,32 @@ import { repoPath } from './paths.js';
  *   and the resume path that nothing reachable from `index` or `view` may
  *   import.
  *
+ * And one from M4: `typesOnly` names modules that may hold types and nothing
+ * else — `ports/`, whose row in §4.1 says "types only" (BC5). A statement
+ * there that would emit JavaScript is reported: a value import, a function, a
+ * variable, a class, an enum, an expression.
+ *
  * Imports that leave `root` are not this rule's business: `no-deep-imports`
  * owns crossing a package boundary.
  */
+
+/** Statements that emit nothing, so a types-only module may hold them. */
+const TYPE_STATEMENTS = new Set(['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'TSModuleDeclaration', 'TSDeclareFunction']);
+
+/**
+ * @param {import('estree').Node} node a top-level statement
+ * @returns {boolean}
+ */
+function emitsNothing(node) {
+  if (TYPE_STATEMENTS.has(node.type)) return true;
+  if (node.type === 'ImportDeclaration') return node.importKind === 'type' || (node.specifiers.length > 0 && node.specifiers.every((specifier) => specifier.importKind === 'type'));
+  if (node.type === 'ExportNamedDeclaration') {
+    if (node.declaration) return TYPE_STATEMENTS.has(node.declaration.type);
+    return node.exportKind === 'type' || node.specifiers.every((specifier) => specifier.exportKind === 'type');
+  }
+  if (node.type === 'ExportAllDeclaration') return node.exportKind === 'type';
+  return false;
+}
 
 /** @type {import('eslint').Rule.RuleModule} */
 export const coreModuleImports = {
@@ -53,6 +76,7 @@ export const coreModuleImports = {
             type: 'object',
             additionalProperties: { type: 'array', items: { type: 'string' } },
           },
+          typesOnly: { type: 'array', items: { type: 'string' } },
         },
         required: ['root', 'modules'],
         additionalProperties: false,
@@ -65,11 +89,13 @@ export const coreModuleImports = {
         "{{path}} is in no module of the §4.1 import table. Add its module to the core-module-imports options first.",
       restricted:
         "'{{source}}' reaches {{target}}, which only {{importers}} may import (05-architecture.md §4.1, ADR-0021).",
+      runtime:
+        '{{module}}/ is types only (05-architecture.md §4.1): this statement would emit JavaScript. Move the code to the module that uses the port.',
     },
   },
 
   create(context) {
-    const { root, modules, files = {}, importers = {} } = context.options[0];
+    const { root, modules, files = {}, importers = {}, typesOnly = [] } = context.options[0];
     const path = repoPath(context);
     if (!path.startsWith(`${root}/`)) return {};
 
@@ -116,6 +142,12 @@ export const coreModuleImports = {
     };
 
     return {
+      Program(node) {
+        if (!typesOnly.includes(module)) return;
+        for (const statement of node.body) {
+          if (!emitsNothing(statement)) context.report({ node: statement, messageId: 'runtime', data: { module } });
+        }
+      },
       ImportDeclaration(node) {
         check(node.source, String(node.source.value));
       },

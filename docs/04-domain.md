@@ -215,6 +215,22 @@ This asymmetry is a consequence of the retention decision, not an accident: if a
 | Sanitizer | rich text → safe rich text | Absent ⇒ plain text + diagnostic | AC-01.4.2 |
 | Message catalogue | key → string, partial override | Missing key ⇒ built-in default | US-07.4 |
 
+**As built in M4** (`06-roadmap.md` M4 D1–D8). Every port is a `SessionOptions` field, fixed for the session (ADR-0001), and every call into one goes through a single guard (`session/collaborator`):
+- a command dispatched from inside a call is refused as `collaborator-running`;
+- a throw becomes a diagnostic with no message text;
+- the host's error is handed over verbatim to `onCollaboratorError(error, diagnostic)`, and never enters state.
+
+| Port | Public shape | Diagnostic |
+|---|---|---|
+| Option resolver | `resolver: OptionResolver`, `(valueSet, { signal }) → PromiseLike<{ system?, code, display? }[]>` | `unresolved-options` per item without one (detail: canonical); `resolver-failed` per failure (detail: canonical) |
+| Cross-field rule | `rules`, M3's shape: frozen answers by `inputs`, per repeat instance (ADR-0009 amendment note) | `rule-threw` (detail: `rules[i]`) |
+| Scoring function | `scorers: Record<name, { inputs, score(projection) }>`; results on `SessionState.scores`, `null` once cleared | `scorer-threw` (detail: name) |
+| Expression evaluator | `evaluator: ExpressionEvaluator`, `evaluate({ language, expression, name? }, { path, projection }) → Answer \| undefined`; `calculatedExpression` only | `no-evaluator` only without one; `evaluator-threw` (path; detail `type` for a value of the wrong kind) |
+| Sanitizer | `sanitize(xhtml) → string`, once as the session opens; the result is `ItemDefinition.xhtml` | `no-sanitizer`, `sanitizer-threw` (path) |
+| Message catalogue | `createView(session, { messages })`, a partial override merged key by key over `en` | — |
+
+Collaborators read the deeply frozen `VisibleProjection`. Each diagnostic is raised once per collaborator per session, and once per path for the evaluator. The one exception is `resolver-failed`, which is raised once per failure. `Session.dispose()` aborts the resolver's signal, drops late settlements, and refuses later commands as `disposed`.
+
 A **default option resolver** (plain GET against a base URL) exists for the embed case (AC-07.1.3). In domain terms it is simply *one host-side implementation of the port*, shipped for convenience — it is outside the network-incapable core by definition, and nothing in BC1–BC4 can tell it apart from any other resolver.
 
 ---

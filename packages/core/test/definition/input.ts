@@ -46,7 +46,7 @@ export function when(question: string, operator: Operator, answer: Answer | null
 export const yes: Answer = { kind: 'boolean', value: true };
 
 export function expression(kind: ExpressionUse['kind']): ExpressionUse {
-  return { kind, url: `urn:extension:${kind}`, language: 'text/fhirpath', expression: '1' };
+  return { kind, url: `urn:extension:${kind}`, language: 'text/fhirpath', expression: '1', name: null };
 }
 
 export function definition(items: readonly ItemInput[], extra: Partial<DefinitionInput> = {}): DefinitionInput {

@@ -216,8 +216,8 @@ describe('extensions of interest, by registered HL7 and SDC URL only', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.input.expressions).toEqual([
-      { kind: 'variable', url: `${CORE}variable`, language: 'text/fhirpath', expression: 'x' },
-      { kind: 'launchContext', url: `${SDC}sdc-questionnaire-launchContext`, language: null, expression: null },
+      { kind: 'variable', url: `${CORE}variable`, language: 'text/fhirpath', expression: 'x', name: 'weight' },
+      { kind: 'launchContext', url: `${SDC}sdc-questionnaire-launchContext`, language: null, expression: null, name: null },
     ]);
     expect(result.input.items[0]?.expressions.map((use) => [use.kind, use.expression])).toEqual([
       ['calculated', '%weight / %height.power(2)'],

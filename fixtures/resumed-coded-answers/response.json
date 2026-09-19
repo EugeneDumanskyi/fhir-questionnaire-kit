@@ -1,0 +1,18 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "status": "completed",
+  "questionnaire": "urn:fhirq:conformance:resumed-coded-answers|1",
+  "item": [
+    {
+      "linkId": "drug",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:codes",
+            "code": "x1"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -299,7 +299,7 @@ function readExpressions(json: Json, path: string | null, findings: Findings): E
       findings.add('malformed', path, url);
       return [];
     }
-    return [{ kind, url, language: stringOrNull(value?.['language']), expression: stringOrNull(value?.['expression']) }];
+    return [{ kind, url, language: stringOrNull(value?.['language']), expression: stringOrNull(value?.['expression']), name: stringOrNull(value?.['name']) }];
   });
 }
 

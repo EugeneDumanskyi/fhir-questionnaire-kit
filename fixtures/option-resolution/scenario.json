@@ -1,0 +1,361 @@
+{
+  "behaviour": "Value sets resolve once each, at session start, whatever is enabled; a coded answer waits for its options while open-choice text does not; a failure is retried only on request (SM-04, ADR-0005, ADR-0012, AC-07.1.1, AC-07.1.2, AC-01.1.2, INV-D-08)",
+  "cases": [
+    {
+      "name": "no resolver: loads, reports each item, and refuses coded answers",
+      "loadMode": "strict",
+      "diagnostics": [
+        {
+          "code": "unresolved-options",
+          "path": "substance",
+          "detail": "urn:fhirq:conformance:ValueSet/substance"
+        },
+        {
+          "code": "unresolved-options",
+          "path": "route",
+          "detail": "urn:fhirq:conformance:ValueSet/route"
+        }
+      ],
+      "enabled": [
+        "uses",
+        "route",
+        "note"
+      ],
+      "steps": [
+        {
+          "name": "a coded route is refused",
+          "command": {
+            "type": "SetAnswer",
+            "path": "route",
+            "answers": [
+              {
+                "kind": "coding",
+                "value": {
+                  "system": "urn:fhirq:conformance:codes",
+                  "code": "a"
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "options-unresolved"
+          },
+          "enabled": [
+            "uses",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "free text on open-choice goes in",
+          "command": {
+            "type": "SetAnswer",
+            "path": "route",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "by mouth"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "nothing failed, so nothing to retry",
+          "command": {
+            "type": "RetryOptions",
+            "valueSet": "urn:fhirq:conformance:ValueSet/substance"
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "options-not-failed"
+          },
+          "enabled": [
+            "uses",
+            "route",
+            "note"
+          ]
+        }
+      ],
+      "optionSets": {
+        "urn:fhirq:conformance:ValueSet/substance": "unresolved",
+        "urn:fhirq:conformance:ValueSet/route": "unresolved"
+      }
+    },
+    {
+      "name": "a resolver that fulfils: coded answers go in, on a branch opened later too",
+      "loadMode": "strict",
+      "resolver": {
+        "urn:fhirq:conformance:ValueSet/substance": {
+          "resolve": [
+            {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "a",
+              "display": "A"
+            },
+            {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "b",
+              "display": "B"
+            }
+          ]
+        },
+        "urn:fhirq:conformance:ValueSet/route": {
+          "resolve": [
+            {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "a",
+              "display": "A"
+            },
+            {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "b",
+              "display": "B"
+            }
+          ]
+        }
+      },
+      "enabled": [
+        "uses",
+        "route",
+        "note"
+      ],
+      "steps": [
+        {
+          "name": "open the branch",
+          "command": {
+            "type": "SetAnswer",
+            "path": "uses",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "a coded substance",
+          "command": {
+            "type": "SetAnswer",
+            "path": "substance",
+            "answers": [
+              {
+                "kind": "coding",
+                "value": {
+                  "system": "urn:fhirq:conformance:codes",
+                  "code": "a"
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "a coded route",
+          "command": {
+            "type": "SetAnswer",
+            "path": "route",
+            "answers": [
+              {
+                "kind": "coding",
+                "value": {
+                  "system": "urn:fhirq:conformance:codes",
+                  "code": "b"
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        }
+      ],
+      "optionSets": {
+        "urn:fhirq:conformance:ValueSet/substance": "resolved",
+        "urn:fhirq:conformance:ValueSet/route": "resolved"
+      },
+      "answers": {
+        "substance": [
+          {
+            "kind": "coding",
+            "value": {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "a"
+            }
+          }
+        ],
+        "route": [
+          {
+            "kind": "coding",
+            "value": {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "a resolver that rejects: failed until a retry, and pending blocks nothing else",
+      "loadMode": "strict",
+      "resolver": {
+        "urn:fhirq:conformance:ValueSet/substance": "reject",
+        "urn:fhirq:conformance:ValueSet/route": "pending"
+      },
+      "diagnostics": [
+        {
+          "code": "resolver-failed",
+          "path": null,
+          "detail": "urn:fhirq:conformance:ValueSet/substance"
+        }
+      ],
+      "enabled": [
+        "uses",
+        "route",
+        "note"
+      ],
+      "steps": [
+        {
+          "name": "open the branch",
+          "command": {
+            "type": "SetAnswer",
+            "path": "uses",
+            "answers": [
+              {
+                "kind": "boolean",
+                "value": true
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "a coded substance waits for its options",
+          "command": {
+            "type": "SetAnswer",
+            "path": "substance",
+            "answers": [
+              {
+                "kind": "coding",
+                "value": {
+                  "system": "urn:fhirq:conformance:codes",
+                  "code": "a"
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "options-unresolved"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "a pending route blocks no other item",
+          "command": {
+            "type": "SetAnswer",
+            "path": "note",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "fine"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        },
+        {
+          "name": "retry the failed set",
+          "command": {
+            "type": "RetryOptions",
+            "valueSet": "urn:fhirq:conformance:ValueSet/substance"
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ],
+          "settle": true
+        },
+        {
+          "name": "a pending set is not retried",
+          "command": {
+            "type": "RetryOptions",
+            "valueSet": "urn:fhirq:conformance:ValueSet/route"
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "options-not-failed"
+          },
+          "enabled": [
+            "uses",
+            "substance",
+            "route",
+            "note"
+          ]
+        }
+      ],
+      "optionSets": {
+        "urn:fhirq:conformance:ValueSet/substance": "failed",
+        "urn:fhirq:conformance:ValueSet/route": "pending"
+      }
+    }
+  ]
+}

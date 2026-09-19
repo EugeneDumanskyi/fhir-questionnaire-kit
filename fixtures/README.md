@@ -47,11 +47,33 @@ the public `createSession`, as a host would, and replays each case as the test
       // Optional: the validation result at the end, in order, on the fields each names.
       "issues": [{ "code": "max-length", "path": "q", "params": { "limit": 5 } }],
       // Optional: the response the session emits at the end, with `authored` fixed at 2026-01-01T00:00:00Z.
-      "response": "expected-response.json"
+      "response": "expected-response.json",
+      // From M4, optional: the host's collaborators, as in-memory doubles (below).
+      "resolver": { "urn:example:ValueSet/route": { "resolve": [{ "system": "urn:example:codes", "code": "a" }] } },
+      "scorers": { "total": { "inputs": ["first", "second"], "sum": ["first", "second"] } },
+      "evaluator": { "total": { "kind": "integer", "sum": ["a", "b"] } },
+      // Optional: each option set's status and each score at the end.
+      "optionSets": { "urn:example:ValueSet/route": "resolved" },
+      "scores": { "total": 3 }
     }
   ]
 }
 ```
+
+**Collaborator doubles (from M4).** A fixture cannot hold code, so the runner
+builds each collaborator a case names, in memory:
+
+- `resolver`, by value set canonical: `{ "resolve": [codings] }` fulfils with
+  them, `"reject"` rejects, and `"pending"` (or a canonical not named) never
+  settles. Resolutions started at creation settle before the first step; a step
+  with `"settle": true` lets the ones its command started (`RetryOptions`)
+  settle before its `enabled` is checked.
+- `scorers`, by name: `inputs` as the scorer declares them, and either `sum`,
+  which adds the first answer of each named item that is visible and is `null`
+  until every one is there, or `"throws": true`.
+- `evaluator`, by calculated item `linkId`: the same `sum`, returned as an
+  answer of `kind`, or nothing until every input is there. The expression text
+  in the questionnaire is never read: the kit has no FHIRPath (ADR-0017).
 
 A finding or diagnostic is compared on the fields it names: `code` and `path`
 always, `related`, `detail`, `severity`, `expected` and `found` where given.

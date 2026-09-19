@@ -16,7 +16,9 @@ import type { Definition, ItemDef } from '../definition/compile.js';
  * - An answer the item cannot hold is a `quarantined-answer` with the kinds
  *   expected and found (AC-06.3.2); so are more answers than a non-repeating
  *   item allows, and none of them is loaded (AC-06.3.3), and a non-repeating
- *   item stored more than once.
+ *   item stored more than once. An answer on a calculated item is quarantined
+ *   too when the session has no evaluator; with one, it is silently replaced
+ *   by the value the evaluator computes (M4 plan D8).
  * - A repeating group gets one instance per stored occurrence, ordinals
  *   `0 … n-1` in stored order (INV-E-11), whatever its `minOccurs` and
  *   `maxOccurs` say: SM-05 reports those.
@@ -65,6 +67,8 @@ export function decodeItems(definition: Definition, stored: readonly StoredItem[
     for (const child of [...occurrence.items, ...occurrence.answerItems]) report('orphan-answer', childPath(path, child.linkId));
     const { answers } = occurrence;
     if (answers.length === 0) return;
+    // With an evaluator, a calculated item's stored value is recomputed, not loaded (M4 plan D8).
+    if (def.calculation !== null) return;
     if (answers.length > 1 && !def.repeats) {
       report('quarantined-answer', path, { detail: 'too-many-answers', expected: '1', found: String(answers.length) });
       return;

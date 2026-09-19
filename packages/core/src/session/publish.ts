@@ -24,7 +24,15 @@ export interface ItemDefinition {
   readonly linkId: LinkId;
   /** `null` for an unsupported item kept as a placeholder in lenient mode. */
   readonly type: ItemType | null;
+  /** Plain text, always text and never markup (INV-X-07). */
   readonly text: string;
+  /**
+   * The item's `rendering-xhtml` as the host's `sanitize` returned it, to
+   * render in place of `text`. `null` when none is authored, and when there
+   * is no sanitizer or it failed: raw authored markup never reaches here
+   * (INV-X-06, AC-01.4.2).
+   */
+  readonly xhtml: string | null;
   readonly required: boolean;
   readonly repeats: boolean;
   /** Bound to an expression; answer commands are refused (ADR-0003). */
@@ -62,6 +70,7 @@ export function publicItem(def: ItemDef): ItemDefinition {
     linkId: def.linkId,
     type: def.type,
     text: def.text,
+    xhtml: def.renderingXhtml,
     required: def.required,
     repeats: def.repeats,
     calculated: def.calculated,

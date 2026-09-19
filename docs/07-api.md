@@ -1,6 +1,6 @@
 # FHIR Questionnaire Kit — Public API
 
-*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M4 adds the ports.*
+*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M5 replaces the view.*
 
 **Status, 2026-09-19.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
 
@@ -26,15 +26,17 @@
 
 | Entry point | Symbols | Report |
 |---|---:|---|
-| `@fhirq/core` | 32 | `packages/core/etc/core.api.md` |
+| `@fhirq/core` | 35 | `packages/core/etc/core.api.md` |
 | `@fhirq/core/resume` | 3 | `packages/core/etc/core-resume.api.md` |
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
 | `@fhirq/react` | 2 | from M6 |
 | `@fhirq/element` | 2 | from M7 |
 | `@fhirq/themes` | 1 | from M8 |
-| **Total** | **55 of 60** | |
+| **Total** | **58 of 60** | |
 
 **Allocation (`06-roadmap.md` M3 D3).** M3 had at most 5 symbols and used 5: `emitResponse` and `QuestionnaireResponse` in `@fhirq/core`, and `snapshot`, `restoreSession` and `hydrateSession` in `@fhirq/core/resume`. It paid for the rest in shapes rather than names: cross-field rules are an inline field of `SessionOptions`, the resume functions reuse `SessionOptions`, and a snapshot is typed as JSON. Five symbols remain, for M4's ports and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types; if M4 needs more than five, that is an NFR-U-05 decision, not a quiet overrun.
+
+**M4 (`06-roadmap.md` M4 D1)** used 3: `OptionResolver`, `ExpressionEvaluator` and `VisibleProjection`, the port types ADR-0012 and ADR-0017 name. Scorers, the sanitizer and the error handler are inline `SessionOptions` fields, as rules are; `RetryOptions` is a command and `dispose` a session member, neither a symbol. **Two remain** for M5–M8; the view's 15 are still the likeliest to shrink.
 
 ## 3. `@fhirq/core`
 
@@ -56,6 +58,11 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `retention` | `retain-exclude` keeps a hidden answer out of the response and restores it on re-enable; `discard` erases it and resets a repeating group (ADR-0011) | `retain-exclude` |
 | `hostIdentity` | `subject`, `author`, `encounter`, `identifier`, stored verbatim and emitted as given | none |
 | `rules` | Cross-field rules (§3.7) | none |
+| `scorers` | Scoring functions by name (§3.9) | none |
+| `resolver` | An `OptionResolver` for `answerValueSet` (§3.9) | none: coded answers on those items are refused |
+| `evaluator` | An `ExpressionEvaluator` for `calculatedExpression` (§3.9) | none: calculated items have no value |
+| `sanitize` | `(xhtml) => string`, for `rendering-xhtml` rich text (§3.9) | none: rich text is dropped and the plain text renders |
+| `onCollaboratorError` | `(error, diagnostic) => void`: what any collaborator threw or rejected with, verbatim (§3.9) | none |
 
 **`Questionnaire`** is FHIR R4 (4.0.1) JSON. The resource's own elements are typed; nested elements are `unknown`, because the codec checks the whole resource at runtime (INV-D-01). A resource type from a FHIR library assigns to it. R5 is rejected, not degraded (ADR-0016).
 
@@ -64,7 +71,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `code` | When | `findings` |
 |---|---|---|
 | `definition-rejected` | The input is not an R4 `Questionnaire`, or it cannot load in the chosen mode | Every finding, as `Diagnostic`s |
-| `invalid-options` | An option the session cannot read, including a rule that names an unknown `linkId` or items in repeats that share no instance | empty |
+| `invalid-options` | An option the session cannot read, including a rule or scorer that names an unknown `linkId`, a rule over items in repeats that share no instance, or a collaborator that is not a function (or an evaluator without `evaluate`) | empty |
 | `invalid-path` | `itemPath` was given something that is not a path | empty |
 | `unknown-session` | `emitResponse` or `snapshot` was given an object that is not a session | empty |
 | `response-rejected` | `hydrateSession` was given something that is not an R4 `QuestionnaireResponse` | Every finding |
@@ -81,10 +88,11 @@ Authoring problems a lenient load degrades are `session.diagnostics`, not errors
 | `subscribe(listener)` | Called **once per cycle** that changed something visible, with that cycle's `SessionChange`. Returns the unsubscribe function. A listener that throws becomes a `listener-threw` diagnostic and the other listeners still run |
 | `dispatch(command)` | Runs the command as **one cycle** and returns a `CommandResult`. **Never throws**, even for a malformed command from plain JavaScript |
 | `diagnostics` | Load findings, then runtime ones as they happen |
+| `dispose()` | Ends the session: aborts the resolver's signal, drops any resolution that settles later, and refuses every later command as `disposed`. Idempotent |
 
 `subscribe`, `getSnapshot` and `dispatch` are closures and may be passed detached.
 
-**One command, one cycle, at most one notification** (ADR-0009). A cycle guards the command, applies it, settles every condition it affects, validates, publishes and then notifies. No listener sees a cycle in progress. A command dispatched from inside a listener returns `deferred`, then runs in its own cycle straight after.
+**One command, one cycle, at most one notification** (ADR-0009). A cycle guards the command, applies it, settles every condition it affects, validates, publishes and then notifies. No listener sees a cycle in progress. A command dispatched from inside a listener returns `deferred`, then runs in its own cycle straight after. A command dispatched from inside a collaborator (a rule, scorer, evaluator, resolver or sanitizer call) is refused as `collaborator-running` (M4 AC-6). A resolution that settles runs as a cycle of its own, whose change has `command: 'OptionsSettled'` (T12).
 
 ### 3.3 Commands
 
@@ -96,6 +104,7 @@ Authoring problems a lenient load degrades are `session.diagnostics`, not errors
 | `RemoveRepeatInstance` | `path`, `ordinal` | Destroys that instance and its answers |
 | `NoteItemLeft` | `path` | The respondent left the item: its issues surface |
 | `RequestCompletion` | — | Completes when no issue is an `error`, or is refused with `validation-errors`, surfaces every node with an issue and shows form-level issues |
+| `RetryOptions` | `valueSet` (the canonical, as the questionnaire gives it) | Calls the resolver again for a set that failed. The set is `pending` until it settles |
 
 **`CommandResult`** is one of:
 - `applied`;
@@ -121,6 +130,10 @@ A refusal changes nothing, except that a refused completion surfaces issues.
 | `at-max-occurs` | `AddRepeatInstance` at or over `maxOccurs`. Removing is never refused on cardinality |
 | `unknown-instance` | `RemoveRepeatInstance` with an ordinal that is not live |
 | `validation-errors` | `RequestCompletion` while an issue remains |
+| `options-unresolved` | A coded answer on an item whose value set is not `resolved`. Free text on `open-choice` is still accepted |
+| `options-not-failed` | `RetryOptions` for a set that is not `failed`, or that the questionnaire does not name |
+| `collaborator-running` | Dispatched from inside a collaborator call |
+| `disposed` | The session was disposed |
 
 ### 3.4 State
 
@@ -130,10 +143,12 @@ A refusal changes nothing, except that a refused completion surfaces issues.
 - `nodes`: the effectively enabled nodes, in document order;
 - `issues`: the validation result (§3.7);
 - `completionRefused`;
-- `change`: the `SessionChange` that produced this state, or `null` for the initial state.
+- `change`: the `SessionChange` that produced this state, or `null` for the initial state;
+- `optionSets`: each value set canonical the questionnaire names, with its `status` (`pending`, `resolved`, `failed` or `unresolved`) and its `options` once resolved (SM-04);
+- `scores`: each scorer's result by name, or `null` while it has none (§3.9).
 
 **`NodeState`:**
-- `path` and `item` (an `ItemDefinition`);
+- `path` and `item` (an `ItemDefinition`; its `xhtml` is the sanitizer's output for authored rich text, or `null`);
 - `answers`;
 - `instances`: a repeating group's live ordinals, in order;
 - `issues`: every current issue, surfaced or not;
@@ -142,6 +157,7 @@ A refusal changes nothing, except that a refused completion surfaces issues.
 **A node object keeps its identity across cycles while nothing about it changed,** so a renderer can skip it by reference.
 
 **`SessionChange`** lists paths only, never values (NFR-X-04):
+- `command`: the command's `type`, or `OptionsSettled`;
 - `enabled`, `disabled`, `surfaced`, `added` and `removed` paths;
 - `completion`;
 - `responseChanged`: whether the emitted response would differ.
@@ -171,7 +187,7 @@ An `ItemPath` addresses one node. Its segments are `linkId`s joined by `/`, and 
 - `error`: a finding that rejects a `strict` load. It stays `error` in a lenient load, so a host can tell a degraded item from a remark.
 - `warning`: a finding that never rejects.
 
-There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`, and hydration's four (§4.3). A hydration diagnostic may also carry `expected` and `found`: two answer kinds, two canonicals or two answer counts, never a value (INV-E-09).
+There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`, the collaborators' six (§3.9), and hydration's four (§4.3). A hydration diagnostic may also carry `expected` and `found`: two answer kinds, two canonicals or two answer counts, never a value (INV-E-09).
 
 ### 3.7 Validation
 
@@ -222,6 +238,38 @@ const response = emitResponse(session, { authored: '2026-09-18T10:00:00+02:00' }
 
 A hidden item is absent, never present with an empty answer, whatever the retention policy holds for it (INV-E-01). A repeating group is one item per instance in position order, and an instance with nothing answered is left out. Display items and lenient placeholders never appear. The items are built once per cycle and shared between calls, frozen. `QuestionnaireResponse` types the resource's own elements and leaves nested ones `unknown`, as `Questionnaire` does.
 
+### 3.9 Collaborators
+
+What the host plugs in (BC5, `04-domain.md` §3.5). Each is a `SessionOptions` field, fixed for the session's life. None performs I/O on core's behalf: whatever a resolver does is the host's.
+
+```ts
+createSession(questionnaire, {
+  resolver: (valueSet, { signal }) => terminology.expand(valueSet, { signal }),
+  scorers: { total: { inputs: ['q1', 'q2'], score: (projection) => sumOrdinals(projection) } },
+  evaluator: { evaluate: (expression, { path, projection }) => fhirpath(expression, projection) },
+  sanitize: (xhtml) => purify(xhtml),
+  onCollaboratorError: (error, diagnostic) => report(error, diagnostic.code),
+});
+```
+
+**Every call goes through one guard.**
+- A command dispatched inside it is refused as `collaborator-running`.
+- A throw clears what the call would have produced. It becomes a `warning` diagnostic that carries a code and a path or name, never the thrown text, and the form stays live (INV-X-09).
+- What was thrown goes to `onCollaboratorError`, verbatim, and never into state. A handler that throws is `listener-threw`.
+- Each failure is reported once per collaborator per session (once per path for the evaluator), so diagnostics cannot grow without bound. `resolver-failed` is the exception: it is reported once per failure.
+
+**`VisibleProjection`** is what scorers and the evaluator read: `{ status, nodes }`, each node with its `path`, its item's `linkId` and `type`, and its `answers`. Only enabled nodes are included, in document order, and the whole thing is deeply frozen. A hidden node's retained answer is never in it (INV-X-04). Rules keep their own shape (§3.7).
+
+| Field | Contract | Diagnostics |
+|---|---|---|
+| `resolver` | `OptionResolver`: `(valueSet, { signal }) => PromiseLike<{ system?, code, display? }[]>`. Called once per distinct canonical, at creation (restore and hydration included), whatever is enabled (ADR-0005, INV-X-01). It is called again only on `RetryOptions`. `signal` aborts on `dispose()`. A hydrated coded answer is loaded whatever the set's state (T8) | `unresolved-options` on each item when there is no resolver (`detail`: the canonical); `resolver-failed` on a rejection, a throw or a list that is not options (`detail`: the canonical) |
+| `scorers` | By name: `inputs` (`linkId`s) and `score(projection)`. A scorer runs when a visible node of its inputs, or its answers, changed. The result is opaque: stored in `SessionState.scores[name]` and never read by the engine (INV-X-05). It is not emitted and not in a snapshot; it is recomputed on restore | `scorer-threw` (`detail`: the name); the score is `null` |
+| `evaluator` | `ExpressionEvaluator`: `evaluate({ language, expression, name? }, { path, projection })` returns an `Answer` or `undefined`, synchronously. It is called for `calculatedExpression` only (ADR-0017), each cycle that changed answers or enablement, in document order: a calculated item that reads a later one sees the previous cycle's value (ADR-0009). The value is read-only (ADR-0003), emitted like an answer, and not in a snapshot. With an evaluator, a stored answer on a calculated item is replaced on hydration rather than quarantined | `no-evaluator` only when there is none; `evaluator-threw` on a throw, and with `detail: 'type'` for a value the item cannot hold; the value is cleared |
+| `sanitize` | `(xhtml) => string`. It runs once per rich-text item as the session opens, and its output is `ItemDefinition.xhtml`. The raw markup is never kept (INV-X-06) | `no-sanitizer` when there is none; `sanitizer-threw` on a throw, and with `detail: 'type'` for a result that is not a string; `xhtml` is `null` |
+| `onCollaboratorError` | `(error, diagnostic)`: the thrown value or rejection reason, and the diagnostic it became. Called on every failure, including those not reported again | a throwing handler is `listener-threw` |
+
+`restoreSession` and `hydrateSession` take the same fields, so a restored session resolves, scores and calculates again. A snapshot holds none of their results.
+
 ## 4. `@fhirq/core/resume`
 
 ```ts
@@ -257,7 +305,7 @@ What does not fit is never loaded and never emitted. It is a `warning` in `sessi
 |---|---|---|
 | `version-drift` | The stored canonical names another `url` or version | `expected` and `found` canonicals |
 | `orphan-answer` | A stored `linkId` the questionnaire does not have, or not at that place | The path |
-| `quarantined-answer` | An answer the item cannot hold; several on a single-answer item; a single-answer item stored twice; an answer on a group or a calculated item | The path, `expected` and `found` kinds or counts |
+| `quarantined-answer` | An answer the item cannot hold; several on a single-answer item; a single-answer item stored twice; an answer on a group, or on a calculated item when there is no evaluator | The path, `expected` and `found` kinds or counts |
 | `hydrated-answer-disabled` | An answer on an item that is disabled once everything is loaded | The path |
 
 Hydration never fails because of content (INV-E-08). It throws only `definition-rejected` and `invalid-options`, as `createSession` does, and `response-rejected` for something that is not an R4 `QuestionnaireResponse`. A session emitted, hydrated and emitted again gives the same response, `authored` and `status` aside (INV-E-06).
@@ -270,5 +318,6 @@ M1's presentation-model spike: `createView(session, options)` returns a `View` w
 
 ## 6. Not in the API yet
 
-- **M4:** the value-set resolver, scorer, expression evaluator and sanitizer ports.
+- **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
+- **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
 - **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.

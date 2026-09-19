@@ -5,7 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 import { Linter } from 'eslint';
 import { describe, expect, it } from 'vitest';
 
-import { CORE_FILES, CORE_IMPORTERS, CORE_MODULES, LOCALE_RULES } from '../../../eslint.config.js';
+import { CORE_FILES, CORE_IMPORTERS, CORE_MODULES, CORE_TYPES_ONLY, LOCALE_RULES } from '../../../eslint.config.js';
 import { fhirqPlugin } from '../src/index.js';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '');
@@ -124,7 +124,7 @@ describe('no-deep-imports', () => {
 describe('core-module-imports', () => {
   const rule = 'core-module-imports';
   const dir = `${fixtures}/${rule}/src`;
-  const options = { root: dir, modules: CORE_MODULES, files: CORE_FILES, importers: CORE_IMPORTERS };
+  const options = { root: dir, modules: CORE_MODULES, files: CORE_FILES, importers: CORE_IMPORTERS, typesOnly: CORE_TYPES_ONLY };
   const lint = (file, with_ = options) => lintFixture(`${dir}/${file}`, rule, with_);
 
   it.each([
@@ -149,6 +149,7 @@ describe('core-module-imports', () => {
     'interchange/must-pass.ts',
     'interchange/hydrate.ts',
     'session/snapshot.ts',
+    'ports/must-pass.ts',
   ])(
     'passes %s',
     (file) => {
@@ -189,6 +190,13 @@ describe('core-module-imports', () => {
     ]);
   });
 
+  it('keeps ports/ to types: each statement that would emit JavaScript fails (§4.1, M4)', () => {
+    const messages = lint('ports/must-fail.ts');
+    expect(ruleIds(messages)).toEqual(Array(3).fill(`fhirq/${rule}`));
+    expect(messages.map((message) => message.line)).toEqual([2, 5, 7]);
+    expect(messages[0].message).toContain('ports/ is types only');
+  });
+
   it('fails a root file with no row', () => {
     const messages = lint('unlisted.ts');
     expect(messages).toHaveLength(1);
@@ -198,6 +206,8 @@ describe('core-module-imports', () => {
   it('holds the rows 05-architecture.md §4.1 states', () => {
     expect(CORE_MODULES.kernel).toEqual([]);
     expect(CORE_MODULES.ports).toEqual(['kernel']);
+    expect(CORE_TYPES_ONLY).toEqual(['ports']);
+    expect(Object.entries(CORE_FILES).filter(([, allowed]) => allowed.includes('ports')).map(([file]) => file)).toEqual(['index']);
     expect(CORE_MODULES.session).not.toContain('validation');
     expect(Object.entries(CORE_MODULES).filter(([, allowed]) => allowed.includes('fhir/r4'))).toEqual([
       ['interchange', CORE_MODULES.interchange],

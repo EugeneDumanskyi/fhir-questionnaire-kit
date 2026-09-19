@@ -76,6 +76,11 @@ export type Command =
 /** Completes the session, or is refused with `validation-errors` and surfaces every issue (SM-01). */
 | {
     readonly type: 'RequestCompletion';
+}
+/** Calls the resolver again for a value set whose resolution failed (SM-04, AC-07.1.2). */
+| {
+    readonly type: 'RetryOptions';
+    readonly valueSet: string;
 };
 
 // @beta
@@ -102,12 +107,24 @@ export interface Diagnostic {
 }
 
 // @beta
-export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw' | 'version-drift' | 'orphan-answer' | 'quarantined-answer' | 'hydrated-answer-disabled';
+export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw' | 'scorer-threw' | 'evaluator-threw' | 'unresolved-options' | 'resolver-failed' | 'no-sanitizer' | 'sanitizer-threw' | 'version-drift' | 'orphan-answer' | 'quarantined-answer' | 'hydrated-answer-disabled';
 
 // @beta
 export function emitResponse(session: Session, options?: {
     readonly authored?: string;
 }): QuestionnaireResponse;
+
+// @beta
+export interface ExpressionEvaluator {
+    evaluate(expression: {
+        readonly language: string;
+        readonly expression: string;
+        readonly name?: string;
+    }, context: {
+        readonly path: ItemPath;
+        readonly projection: VisibleProjection;
+    }): Answer | undefined;
+}
 
 // @beta
 export class FhirqError extends Error {
@@ -168,11 +185,11 @@ export interface ItemDefinition {
     readonly repeats: boolean;
     // (undocumented)
     readonly required: boolean;
-    // (undocumented)
     readonly text: string;
     readonly type: ItemType | null;
     // (undocumented)
     readonly valueSet: string | null;
+    readonly xhtml: string | null;
 }
 
 // @beta
@@ -207,6 +224,15 @@ export interface NodeState {
 
 // @beta
 export type Operator = 'exists' | '=' | '!=' | '>' | '<' | '>=' | '<=';
+
+// @beta
+export type OptionResolver = (valueSet: string, context: {
+    readonly signal: AbortSignal;
+}) => PromiseLike<readonly {
+    readonly system?: string;
+    readonly code: string;
+    readonly display?: string;
+}[]>;
 
 // @beta
 export interface Quantity {
@@ -328,7 +354,7 @@ export interface QuestionnaireResponse {
 }
 
 // @beta
-export type RefusalReason = 'malformed-command' | 'unknown-path' | 'session-completed' | 'node-disabled' | 'node-calculated' | 'not-answerable' | 'empty-answers' | 'too-many-answers' | 'invalid-answer' | 'type-mismatch' | 'not-repeating' | 'at-max-occurs' | 'unknown-instance' | 'validation-errors';
+export type RefusalReason = 'malformed-command' | 'unknown-path' | 'session-completed' | 'node-disabled' | 'node-calculated' | 'not-answerable' | 'empty-answers' | 'too-many-answers' | 'invalid-answer' | 'type-mismatch' | 'not-repeating' | 'at-max-occurs' | 'unknown-instance' | 'validation-errors' | 'options-unresolved' | 'options-not-failed' | 'collaborator-running' | 'disposed';
 
 // @beta
 export type RetentionPolicy = 'retain-exclude' | 'discard';
@@ -337,6 +363,7 @@ export type RetentionPolicy = 'retain-exclude' | 'discard';
 export interface Session {
     readonly diagnostics: readonly Diagnostic[];
     readonly dispatch: (command: Command) => CommandResult;
+    readonly dispose: () => void;
     readonly getSnapshot: () => SessionState;
     readonly subscribe: (listener: (change: SessionChange) => void) => () => void;
 }
@@ -344,8 +371,7 @@ export interface Session {
 // @beta
 export interface SessionChange {
     readonly added: readonly ItemPath[];
-    // (undocumented)
-    readonly command: Command['type'];
+    readonly command: Command['type'] | 'OptionsSettled';
     // (undocumented)
     readonly completion: 'refused' | 'completed' | null;
     readonly disabled: readonly ItemPath[];
@@ -359,8 +385,11 @@ export interface SessionChange {
 
 // @beta
 export interface SessionOptions {
+    readonly evaluator?: ExpressionEvaluator;
     readonly hostIdentity?: HostIdentity;
     readonly loadMode?: LoadMode;
+    readonly onCollaboratorError?: (error: unknown, diagnostic: Diagnostic) => void;
+    readonly resolver?: OptionResolver;
     readonly retention?: RetentionPolicy;
     readonly rules?: readonly {
         readonly inputs: readonly LinkId[];
@@ -368,6 +397,11 @@ export interface SessionOptions {
         readonly severity?: 'error' | 'warning';
         readonly check: (answers: Readonly<Record<LinkId, readonly Answer[]>>) => string | null;
     }[];
+    readonly sanitize?: (xhtml: string) => string;
+    readonly scorers?: Readonly<Record<string, {
+        readonly inputs: readonly LinkId[];
+        readonly score: (projection: VisibleProjection) => unknown;
+    }>>;
 }
 
 // @beta
@@ -377,11 +411,29 @@ export interface SessionState {
     readonly cycle: number;
     readonly issues: readonly Issue[];
     readonly nodes: readonly NodeState[];
+    readonly optionSets: Readonly<Record<string, {
+        readonly status: 'pending' | 'resolved' | 'failed' | 'unresolved';
+        readonly options: readonly Coding[];
+    }>>;
+    readonly scores: Readonly<Record<string, unknown>>;
     readonly status: 'in-progress' | 'completed';
 }
 
 // @beta
 export type Severity = 'error' | 'warning' | 'info';
+
+// @beta
+export interface VisibleProjection {
+    readonly nodes: readonly {
+        readonly path: ItemPath;
+        readonly item: {
+            readonly linkId: LinkId;
+            readonly type: ItemType | null;
+        };
+        readonly answers: readonly Answer[];
+    }[];
+    readonly status: 'in-progress' | 'completed';
+}
 
 // (No @packageDocumentation comment for this package)
 
