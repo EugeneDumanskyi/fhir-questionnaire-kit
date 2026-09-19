@@ -19,8 +19,10 @@ import { addInstance, inDocumentOrder, isRepeatingGroup, removeInstance, type St
  * A snapshot is engine state, not a clinical record and not a migration
  * format: it names the canonical it was taken against, and restoring it
  * against another is refused (AC-05.3.3). Its format is versioned, and a
- * format change is a major change of core (A5). Option lists and cross-field
- * rules are not in it: restore needs the same rules (M3 plan D5).
+ * format change is a major change of core (A5). Option sets, scores,
+ * calculated values and the host's collaborators are not in it: restore
+ * recomputes the first three and needs the same collaborators (M3 plan D5,
+ * M4 plan D5, D8).
  */
 
 export const SNAPSHOT_FORMAT = 'fhirq-snapshot/1';
@@ -54,7 +56,8 @@ export function takeSnapshot(session: object): SnapshotJson {
   const surfaced: string[] = [];
   for (const node of inDocumentOrder(store)) {
     if (isRepeatingGroup(node.def)) instances[node.path] = { ordinals: node.instances.map((instance) => instance.ordinal), next: node.nextOrdinal };
-    if (node.answers.length > 0) answers[node.path] = node.answers;
+    // A calculated value is recomputed on restore, not stored (M4 plan D8).
+    if (node.answers.length > 0 && !node.def.calculated) answers[node.path] = node.answers;
     if (node.surfaced) surfaced.push(node.path);
   }
   const { url, version, loadMode } = store.definition;

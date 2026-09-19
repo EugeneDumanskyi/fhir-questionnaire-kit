@@ -73,4 +73,6 @@ export interface ExpressionUse {
   readonly url: string;
   readonly language: string | null;
   readonly expression: string | null;
+  /** The expression's `name`, which an evaluator may use (ADR-0017). */
+  readonly name: string | null;
 }

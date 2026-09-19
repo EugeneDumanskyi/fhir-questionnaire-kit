@@ -39,11 +39,44 @@ export interface VisibleProjection {
 }
 
 /**
- * The session is composed with its validator rather than importing it:
- * `session/` may not import `validation/` (`05-architecture.md` §4.1). A host
- * rule that throws is reported, never thrown (INV-V-05).
+ * Calls host code through the session's collaborator guard (`session/collaborator`):
+ * the value it returned, or `null` when it threw, which `finding` reports
+ * (INV-X-09). Commands are refused while it runs.
  */
-export type Validator = (projection: VisibleProjection, report: (diagnostic: Diagnostic) => void) => readonly Issue[];
+export type Collaborate = <T>(finding: Diagnostic, call: () => T) => { readonly value: T } | null;
+
+/** What cycle step 5 produces: the validation result and each scorer's result. */
+export interface Checked {
+  readonly issues: readonly Issue[];
+  /** By scorer name: the value it returned, or `null` once it threw. The same object while no score changed. */
+  readonly scores: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * The session is composed with its validator rather than importing it:
+ * `session/` may not import `validation/` (`05-architecture.md` §4.1). Host
+ * rules and scorers run through `call`, so a throw is reported, never thrown
+ * (INV-V-05, ADR-0006).
+ */
+export type Validator = (projection: VisibleProjection, call: Collaborate) => Checked;
+
+/**
+ * What a collaborator is given (INV-X-04, `ports/`): the status and the
+ * visible nodes, deeply frozen, so host code cannot change what the session,
+ * emission or the next collaborator reads (AC-04.3.2). Built only for
+ * sessions that have a scorer or an evaluator.
+ */
+export function shared(projection: VisibleProjection): Pick<VisibleProjection, 'status' | 'nodes'> {
+  return frozen({ status: projection.status, nodes: projection.nodes });
+}
+
+function frozen<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const key of Object.keys(value)) frozen((value as Readonly<Record<string, unknown>>)[key]);
+  }
+  return value;
+}
 
 /**
  * Each session's projection as of its latest cycle, keyed by the public

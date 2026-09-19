@@ -1,6 +1,7 @@
 import { isAnswer, type Answer } from '../kernel/answer.js';
 import type { ItemPath } from '../kernel/path.js';
 import type { ItemDef } from '../definition/compile.js';
+import type { OptionStatus } from './options.js';
 import { isRepeatingGroup, type ItemNode, type Store } from './store.js';
 
 /**
@@ -27,7 +28,9 @@ export type Command =
   /** The respondent left the item: its issues surface (SM-03). */
   | { readonly type: 'NoteItemLeft'; readonly path: ItemPath }
   /** Completes the session, or is refused with `validation-errors` and surfaces every issue (SM-01). */
-  | { readonly type: 'RequestCompletion' };
+  | { readonly type: 'RequestCompletion' }
+  /** Calls the resolver again for a value set whose resolution failed (SM-04, AC-07.1.2). */
+  | { readonly type: 'RetryOptions'; readonly valueSet: string };
 
 /**
  * Why a command was refused. A refusal changes nothing, except that a refused
@@ -49,22 +52,35 @@ export type RefusalReason =
   | 'not-repeating'
   | 'at-max-occurs'
   | 'unknown-instance'
-  | 'validation-errors';
+  | 'validation-errors'
+  /* M4: a coded answer while the item's option set is not resolved (SM-04), `RetryOptions` for a set that has not failed */
+  | 'options-unresolved'
+  | 'options-not-failed'
+  /* M4: a command sent while a rule, scorer or evaluator runs (ADR-0009), or to a disposed session */
+  | 'collaborator-running'
+  | 'disposed';
 
 export function isCommand(value: unknown): value is Command {
   if (typeof value !== 'object' || value === null) return false;
   const { type, path } = value as { type?: unknown; path?: unknown };
   if (type === 'RequestCompletion') return true;
+  if (type === 'RetryOptions') return typeof (value as { valueSet?: unknown }).valueSet === 'string';
   if (typeof path !== 'string') return false;
   if (type === 'SetAnswer') return Array.isArray((value as { answers?: unknown }).answers);
   if (type === 'RemoveRepeatInstance') return Number.isSafeInteger((value as { ordinal?: unknown }).ordinal);
   return type === 'ClearAnswer' || type === 'NoteItemLeft' || type === 'AddRepeatInstance';
 }
 
-/** The node a command targets, or the reason it is refused. */
-export function guard(store: Store, completed: boolean, command: Command): RefusalReason | ItemNode | null {
+/** The node a command targets, or the reason it is refused. `options` is each value set's status. */
+export function guard(
+  store: Store,
+  completed: boolean,
+  command: Command,
+  options: (valueSet: string) => OptionStatus | undefined,
+): RefusalReason | ItemNode | null {
   if (completed) return 'session-completed';
   if (command.type === 'RequestCompletion') return null;
+  if (command.type === 'RetryOptions') return options(command.valueSet) === 'failed' ? null : 'options-not-failed';
   const node = store.byPath.get(command.path);
   if (node === undefined) return 'unknown-path';
   if (!node.effective) return 'node-disabled';
@@ -72,14 +88,17 @@ export function guard(store: Store, completed: boolean, command: Command): Refus
   if (command.type === 'AddRepeatInstance' || command.type === 'RemoveRepeatInstance') return repeatRefusal(node, command) ?? node;
   if (node.def.accepts.length === 0) return 'not-answerable';
   if (node.def.calculated) return 'node-calculated';
-  return command.type === 'SetAnswer' ? answersRefusal(node.def, command.answers) ?? node : node;
+  return command.type === 'SetAnswer' ? answersRefusal(node.def, command.answers, options) ?? node : node;
 }
 
-function answersRefusal(def: ItemDef, answers: readonly unknown[]): RefusalReason | null {
+function answersRefusal(def: ItemDef, answers: readonly unknown[], options: (valueSet: string) => OptionStatus | undefined): RefusalReason | null {
   if (answers.length === 0) return 'empty-answers';
   if (answers.length > 1 && !def.repeats) return 'too-many-answers';
   if (!answers.every(isAnswer)) return 'invalid-answer';
-  return answers.every((answer) => def.accepts.includes(answer.kind)) ? null : 'type-mismatch';
+  if (!answers.every((answer) => def.accepts.includes(answer.kind))) return 'type-mismatch';
+  // SM-04: no coded answer until the options are known; `open-choice` text still goes in (AC-07.1.1).
+  const unresolved = def.valueSet !== null && options(def.valueSet) !== 'resolved';
+  return unresolved && answers.some((answer) => answer.kind === 'coding') ? 'options-unresolved' : null;
 }
 
 /**

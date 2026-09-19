@@ -1,0 +1,95 @@
+{
+  "behaviour": "A resumed coded answer is loaded, and never invalid only because its options are pending, failed or unknown (T8, AC-07.1.4, AC-06.1.1)",
+  "cases": [
+    {
+      "name": "options pending: the coded answer is loaded and raises no issue",
+      "loadMode": "strict",
+      "hydrate": "response.json",
+      "resolver": {
+        "urn:fhirq:conformance:ValueSet/drug": "pending"
+      },
+      "diagnostics": [],
+      "enabled": [
+        "drug"
+      ],
+      "answers": {
+        "drug": [
+          {
+            "kind": "coding",
+            "value": {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "x1"
+            }
+          }
+        ]
+      },
+      "issues": [],
+      "optionSets": {
+        "urn:fhirq:conformance:ValueSet/drug": "pending"
+      }
+    },
+    {
+      "name": "options failed: the coded answer is loaded and raises no issue",
+      "loadMode": "strict",
+      "hydrate": "response.json",
+      "resolver": {
+        "urn:fhirq:conformance:ValueSet/drug": "reject"
+      },
+      "diagnostics": [
+        {
+          "code": "resolver-failed",
+          "path": null,
+          "detail": "urn:fhirq:conformance:ValueSet/drug"
+        }
+      ],
+      "enabled": [
+        "drug"
+      ],
+      "answers": {
+        "drug": [
+          {
+            "kind": "coding",
+            "value": {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "x1"
+            }
+          }
+        ]
+      },
+      "issues": [],
+      "optionSets": {
+        "urn:fhirq:conformance:ValueSet/drug": "failed"
+      }
+    },
+    {
+      "name": "no resolver: the coded answer is loaded and raises no issue",
+      "loadMode": "strict",
+      "hydrate": "response.json",
+      "diagnostics": [
+        {
+          "code": "unresolved-options",
+          "path": "drug",
+          "detail": "urn:fhirq:conformance:ValueSet/drug"
+        }
+      ],
+      "enabled": [
+        "drug"
+      ],
+      "answers": {
+        "drug": [
+          {
+            "kind": "coding",
+            "value": {
+              "system": "urn:fhirq:conformance:codes",
+              "code": "x1"
+            }
+          }
+        ]
+      },
+      "issues": [],
+      "optionSets": {
+        "urn:fhirq:conformance:ValueSet/drug": "unresolved"
+      }
+    }
+  ]
+}

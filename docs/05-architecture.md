@@ -152,7 +152,7 @@ The core package is organised by bounded context so that `04-domain.md` can be r
 | `validation/` | BC3 | `kernel`, `definition`, `session/projection` | `session` internals, `fhir/*` |
 | `interchange/` | BC4 | `kernel`, `definition`, `session/projection`, `session/snapshot`, `fhir/r4` | `session` internals |
 | `resume` (entry `@fhirq/core/resume`; ADR-0021) | BC4's way back in: snapshot, restore, decode, hydrate | `kernel`, `definition`, `session`, `interchange`, `fhir/r4` | — ; nothing reachable from `index` or `view` may import `resume`, `session/snapshot`, `interchange/decode` or `interchange/hydrate` |
-| `ports/` | BC5 | `kernel` | everything else; types only |
+| `ports/` | BC5 | `kernel` | everything else; types only, held by lint from M4 (`CORE_TYPES_ONLY`: no statement in it may emit JavaScript) |
 | `view/` (entry `@fhirq/core/view`) | BC6, DOM-free half | `kernel`, public engine API | engine internals, DOM globals |
 
 The import restrictions are enforced by lint (NFR-M-06). ADR-0021 adds a bundle check as well: no input from the `resume` row may appear in the `@fhirq/core`, `@fhirq/core/view`, `@fhirq/element` or IIFE bundles. Only `session/session` and `session/snapshot` may import the session's internal state registry. One row is the architectural claim of US-05.3: `interchange/emit` can reach answers **only** through `session/projection`, so it has no way to read a disabled node (AC-05.3.2).
@@ -161,7 +161,7 @@ The import restrictions are enforced by lint (NFR-M-06). ADR-0021 adds a bundle 
 
 | File | May import | Only these may import it |
 |---|---|---|
-| `index` (entry `@fhirq/core`) | `kernel`, `definition`, `session`, `fhir/r4`, `interchange/emit`, `open` | — |
+| `index` (entry `@fhirq/core`) | `kernel`, `definition`, `session`, `fhir/r4`, `interchange/emit`, `open`, `ports` | — |
 | `open` (internal; what `index` and `resume` share to start a session) | `kernel`, `definition`, `session`, `validation`, `fhir/r4/parse` | — |
 | `resume` (entry `@fhirq/core/resume`) | `kernel`, `definition`, `session`, `interchange`, `fhir/r4`, `open`, `index` | nothing |
 | `interchange/emit` | `kernel`, `definition`, `session/projection`, `fhir/r4` | — |
@@ -172,6 +172,8 @@ The import restrictions are enforced by lint (NFR-M-06). ADR-0021 adds a bundle 
 | `fhir/r4/decode` | its module's row | `resume` |
 
 Two things go beyond ADR-0021's rows, and neither loosens one. `resume` also imports `open` and `index` (types only), so that restore and hydration read options and compose validation exactly as `createSession` does, rather than keeping a second copy of that code. And `fhir/r4/decode`, the stored-response codec, is resume-only code like the rest, so it is under the same importer rule and bundle check.
+
+**From M4,** `index` re-exports the three port types, and is the only importer of `ports/` (`06-roadmap.md` M4 D1). The engine modules that call a port type its call in their own terms, so no port can grow a reach into session state. One DOM-Standard name is admitted in core: `AbortController`, in `session/options` only, to abort the resolver's signal on dispose (ADR-0012 amendment note; `eslint.config.js` `ABORT_ALLOWED`).
 
 ---
 

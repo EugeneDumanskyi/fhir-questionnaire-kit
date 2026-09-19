@@ -53,7 +53,7 @@ export const COMPARABLE: Readonly<Record<ItemType, { readonly kinds: readonly An
   quantity: { kinds: ['quantity'], operators: ORDERED },
 };
 
-export function checkItems(input: DefinitionInput, mode: LoadMode): { items: DraftItem[] | null; findings: Finding[] } {
+export function checkItems(input: DefinitionInput, mode: LoadMode, evaluator = false): { items: DraftItem[] | null; findings: Finding[] } {
   const findings: Finding[] = [];
   const add: Add = (code, rejects, path, extra = {}) => {
     // A finding that rejects in strict mode is an `error` in both modes, so a
@@ -73,10 +73,10 @@ export function checkItems(input: DefinitionInput, mode: LoadMode): { items: Dra
   }
   if (findings.length > 0) return { items: null, findings };
 
-  for (const use of input.expressions) checkExpression(use, null, add);
+  for (const use of input.expressions) checkExpression(use, null, evaluator, add);
   const children = walked.map((): number[] => []);
   for (const item of walked) if (item.parent !== -1) slot(children, item.parent).push(item.id);
-  const drafts = walked.map((item) => draft(item, walked, slot(children, item.id), mode, add));
+  const drafts = walked.map((item) => draft(item, walked, slot(children, item.id), mode, evaluator, add));
   for (const [id, item] of walked.entries()) {
     const conditions = item.input.enableWhen.map((condition) => compileCondition(condition, id, drafts, byLinkId, item.path, add));
     drafts[id] = { ...slot(drafts, id), conditions };
@@ -100,12 +100,15 @@ function walk(roots: readonly ItemInput[]): Walked[] {
   return out;
 }
 
-function draft(item: Walked, walked: readonly Walked[], children: readonly number[], mode: LoadMode, add: Add): DraftItem {
+function draft(item: Walked, walked: readonly Walked[], children: readonly number[], mode: LoadMode, evaluator: boolean, add: Add): DraftItem {
   const { input, path } = item;
   const placeholder = checkShape(input, path, add) || item.underQuestion;
-  const { forcedDisabled, calculated } = checkExpressions(input, path, mode, add);
+  const { forcedDisabled, calculation, optionless } = checkExpressions(input, path, mode, evaluator, add);
   const type = placeholder ? null : input.type;
-  const options = input.options.flatMap((option) => (option.value === null ? [] : [option.value]));
+  // Lenient `answerExpression` and `candidateExpression`: the item has no options,
+  // and takes no coded answer, as an unresolved value set (ADR-0017, M2 plan D13).
+  const options = optionless ? [] : input.options.flatMap((option) => (option.value === null ? [] : [option.value]));
+  const accepts = acceptedKinds(type, options);
   const limits = checkLimits(input, type, path, add);
 
   return {
@@ -123,10 +126,11 @@ function draft(item: Walked, walked: readonly Walked[], children: readonly numbe
     conditions: [],
     behavior: input.enableBehavior ?? 'all',
     forcedDisabled,
-    calculated,
+    calculated: calculation !== null,
+    calculation: evaluator ? calculation : null,
     options,
     valueSet: input.valueSet,
-    accepts: acceptedKinds(type, options),
+    accepts: optionless ? accepts.filter((kind) => kind !== 'coding') : accepts,
     maxLength: input.maxLength,
     ...limits,
     itemControl: input.itemControl,
@@ -211,22 +215,32 @@ function checkLimits(input: ItemInput, type: ItemType | null, path: string, add:
   };
 }
 
-function checkExpressions(input: ItemInput, path: string, mode: LoadMode, add: Add): { forcedDisabled: boolean; calculated: boolean } {
+function checkExpressions(
+  input: ItemInput,
+  path: string,
+  mode: LoadMode,
+  evaluator: boolean,
+  add: Add,
+): { forcedDisabled: boolean; calculation: DraftItem['calculation']; optionless: boolean } {
   let forcedDisabled = false;
-  let calculated = false;
+  let calculation: DraftItem['calculation'] = null;
+  let optionless = false;
   for (const use of input.expressions) {
-    checkExpression(use, path, add);
+    checkExpression(use, path, evaluator, add);
     forcedDisabled ||= use.kind === 'enableWhen' && mode === 'lenient';
-    calculated ||= use.kind === 'calculated';
+    optionless ||= use.kind === 'answer' || use.kind === 'candidate';
+    if (use.kind === 'calculated') {
+      calculation ??= { language: use.language ?? '', expression: use.expression ?? '', ...(use.name === null ? {} : { name: use.name }) };
+    }
   }
-  return { forcedDisabled, calculated };
+  return { forcedDisabled, calculation, optionless };
 }
 
-/** INV-D-09 and INV-D-15: what each expression extension costs. */
-function checkExpression(use: ExpressionUse, path: string | null, add: Add): void {
+/** INV-D-09 and INV-D-15: what each expression extension costs. A `calculatedExpression` costs nothing with an evaluator. */
+function checkExpression(use: ExpressionUse, path: string | null, evaluator: boolean, add: Add): void {
   switch (use.kind) {
     case 'calculated':
-      add('no-evaluator', 'never', path, { detail: use.url });
+      if (!evaluator) add('no-evaluator', 'never', path, { detail: use.url });
       return;
     case 'variable':
     case 'launchContext':

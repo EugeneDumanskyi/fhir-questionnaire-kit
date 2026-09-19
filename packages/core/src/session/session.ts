@@ -1,11 +1,14 @@
-import { copyAnswer, sameAnswer } from '../kernel/answer.js';
+import { copyAnswer, sameAnswer, type Coding } from '../kernel/answer.js';
 import { diagnostic, type Diagnostic } from '../kernel/diagnostic.js';
 import { slot } from '../kernel/dense.js';
 import type { Issue } from '../kernel/issue.js';
 import type { ItemPath } from '../kernel/path.js';
 import type { Definition } from '../definition/compile.js';
+import { calculate } from './calculated.js';
+import { collaborators } from './collaborator.js';
 import { settle, settleInitial, type RetentionPolicy } from './enablement.js';
 import { guard, isCommand, type Command, type RefusalReason } from './guard.js';
+import { optionSets } from './options.js';
 import { publishProjection, type Validator } from './projection.js';
 import { project, publicItem, publishNodes, type NodeState } from './publish.js';
 import { register } from './registry.js';
@@ -27,7 +30,10 @@ import { recordTrace } from './trace.js';
  * validates the visible projection, surfaces (SM-03), publishes per-node
  * objects and the projection emission reads, and notifies.
  * No observer ever sees a cycle in progress (INV-S-05); a command issued
- * during one waits for it and gets a cycle of its own.
+ * during one waits for it and gets a cycle of its own, and so does an option
+ * set settling (T12). Host code called inside a cycle — rules, scorers, the
+ * evaluator, the resolver — goes through one guard (`collaborator.ts`), and a
+ * command it sends is refused.
  */
 
 /**
@@ -47,7 +53,8 @@ export type CommandResult =
  * @beta
  */
 export interface SessionChange {
-  readonly command: Command['type'];
+  /** `OptionsSettled` for the cycle an option set's resolution settling ran (T12). */
+  readonly command: Command['type'] | 'OptionsSettled';
   /** Nodes that became effectively enabled, in document order. */
   readonly enabled: readonly ItemPath[];
   /** Nodes that became disabled, in document order. */
@@ -82,6 +89,19 @@ export interface SessionState {
   readonly issues: readonly Issue[];
   /** Whether a completion has been refused: every issue on a node is surfaced then, and form-level issues are shown. */
   readonly completionRefused: boolean;
+  /**
+   * Each scorer's result by name (US-07.2): the value it returned, stored and
+   * never interpreted (INV-X-05), or `null` when it returned nothing or threw,
+   * never a stale value (ADR-0006). Recomputed, never in a snapshot.
+   */
+  readonly scores: Readonly<Record<string, unknown>>;
+  /**
+   * Each value set the questionnaire references, by canonical as authored
+   * (SM-04): `pending` until the resolver settles, then `resolved` with its
+   * options or `failed`; `unresolved` when the session has no resolver. An
+   * item bound to a set that is not `resolved` takes no coded answer.
+   */
+  readonly optionSets: Readonly<Record<string, { readonly status: 'pending' | 'resolved' | 'failed' | 'unresolved'; readonly options: readonly Coding[] }>>;
   /** The cycle that produced this state; `null` for the initial state. */
   readonly change: SessionChange | null;
 }
@@ -97,16 +117,25 @@ export interface Session {
   readonly subscribe: (listener: (change: SessionChange) => void) => () => void;
   /** The current snapshot; the same reference until a cycle changes something visible. */
   readonly getSnapshot: () => SessionState;
-  /** Runs the command as one cycle. A command sent from a listener is `deferred` and runs in its own cycle straight after. */
+  /**
+   * Runs the command as one cycle. A command sent from a listener is `deferred` and runs in its own cycle straight after;
+   * one sent from a rule, scorer, evaluator or resolver call is refused (`collaborator-running`).
+   */
   readonly dispatch: (command: Command) => CommandResult;
   /** Load findings, then runtime ones as they happen. */
   readonly diagnostics: readonly Diagnostic[];
+  /** Aborts the resolver's signal. A resolution that settles later is dropped, and every command after is refused (`disposed`). */
+  readonly dispose: () => void;
 }
 
 export interface SessionSettings {
   readonly retention: RetentionPolicy;
   /** Stored verbatim for emission; the session never reads or invents it (INV-S-32). */
   readonly hostIdentity: object | null;
+  /** The host's collaborators (BC5), as `open` checked them: the option resolver, the evaluator and the error handler. */
+  readonly resolver?: unknown;
+  readonly evaluator?: Parameters<typeof calculate>[2];
+  readonly onError?: unknown;
 }
 
 /**
@@ -124,28 +153,76 @@ export interface Seed {
 
 const NO_PATHS: readonly ItemPath[] = [];
 
+/** A cycle that changed no node: an option set settling. */
+const QUIET: Omit<SessionChange, 'command'> = {
+  enabled: NO_PATHS,
+  disabled: NO_PATHS,
+  surfaced: NO_PATHS,
+  added: NO_PATHS,
+  removed: NO_PATHS,
+  completion: null,
+  responseChanged: false,
+};
+
 export function createResponseSession(definition: Definition, settings: SessionSettings, validate: Validator, seed?: Seed): Session {
   const store = createStore(definition, settings.hostIdentity);
   const diagnostics: Diagnostic[] = [...definition.diagnostics];
   const report = (finding: Diagnostic): void => {
     diagnostics.push(finding);
   };
+  const host = collaborators(report, settings.onError);
+  const { evaluator } = settings;
   seed?.write(store);
   settleInitial(store, settings.retention);
   seed?.settled?.(store, report);
   const items = definition.items.map(publicItem);
   const listeners = new Set<(change: SessionChange) => void>();
-  const queue: Command[] = [];
+  const queue: (() => unknown)[] = [];
   let running = false;
+  let disposed = false;
   let settleRun = 0;
   let completionRefused = seed?.completionRefused ?? false;
   let status: SessionState['status'] = seed?.status ?? 'in-progress';
+  /** Cycle step 4: only a change to answers or enablement can change a calculated value (M4 plan D8). */
+  const recalculate = (touched: boolean): void => {
+    if (evaluator !== undefined && touched) calculate(store, status, evaluator, host);
+  };
+  recalculate(true);
 
   const evaluate = () => {
     const { projection, visible } = project(store, status);
-    const issues = validate(projection, report);
-    return { projection, visible, issues, byPath: groupByPath(issues), answered: answeredSignature(visible) };
+    const { issues, scores } = validate(projection, host.call);
+    return { projection, visible, issues, scores, byPath: groupByPath(issues), answered: answeredSignature(visible) };
   };
+
+  /** Runs `work` as the one writer, then every cycle queued meanwhile (ADR-0009). */
+  const exclusive = <T>(work: () => T): T => {
+    running = true;
+    try {
+      const result = work();
+      for (let next = queue.shift(); next !== undefined; next = queue.shift()) next();
+      return result;
+    } finally {
+      running = false;
+      queue.length = 0;
+    }
+  };
+
+  /**
+   * SM-04 T12: a settlement is its own cycle, dropped once disposed. It
+   * arrives in a promise callback, which never runs while a cycle does, since
+   * a cycle is synchronous; `exclusive` still queues any command a listener
+   * sends from it.
+   */
+  const settleOptions = (apply: () => void): void =>
+    exclusive(() => {
+      if (disposed) return;
+      apply();
+      const change: SessionChange = { ...QUIET, command: 'OptionsSettled' };
+      state = { ...state, cycle: state.cycle + 1, optionSets: options.sets(), change };
+      notify(change);
+    });
+  const options = optionSets(definition, settings.resolver, host, report, settleOptions);
 
   let settled = evaluate();
   let state: SessionState = {
@@ -154,6 +231,8 @@ export function createResponseSession(definition: Definition, settings: SessionS
     nodes: publishNodes(settled.visible, items, settled.byPath, []),
     issues: settled.issues,
     completionRefused,
+    scores: settled.scores,
+    optionSets: options.sets(),
     change: null,
   };
 
@@ -169,14 +248,16 @@ export function createResponseSession(definition: Definition, settings: SessionS
   };
 
   const run = (command: Command): CommandResult => {
-    const target = guard(store, state.status === 'completed', command);
+    const target = guard(store, state.status === 'completed', command, (valueSet) => options.sets()[valueSet]?.status);
     if (typeof target === 'string') return { outcome: 'refused', reason: target };
+    if (command.type === 'RetryOptions') options.retry(command.valueSet);
 
     settleRun += 1;
     const firstNew = store.sequence;
-    const instances = { added: [] as ItemPath[], removed: [] as ItemPath[] };
-    const settlement = settle(store, settings.retention, settleRun, apply(command, target, instances));
+    const changes = { added: [] as ItemPath[], removed: [] as ItemPath[], answered: false };
+    const settlement = settle(store, settings.retention, settleRun, apply(command, target, changes));
     recordTrace(session, settlement.recomputed.map((node) => node.path));
+    recalculate(changes.answered || changes.added.length + changes.removed.length + settlement.flipped.length > 0);
     const next = evaluate();
 
     const { completion, surfaced } = verdict(command, target, next);
@@ -184,7 +265,16 @@ export function createResponseSession(definition: Definition, settings: SessionS
     const previous = settled;
     settled = next;
     publishProjection(session, completion === 'completed' ? { ...next.projection, status } : next.projection);
-    if (nodes === state.nodes && completion === null && sameIssueList(state.issues, next.issues)) return { outcome: 'unchanged' };
+    const optionSets = options.sets();
+    if (
+      nodes === state.nodes &&
+      completion === null &&
+      sameIssueList(state.issues, next.issues) &&
+      next.scores === state.scores &&
+      optionSets === state.optionSets
+    ) {
+      return { outcome: 'unchanged' };
+    }
 
     const flips = flipsInDocumentOrder(store, settlement.flipped, next.visible, firstNew);
     const change: SessionChange = {
@@ -192,12 +282,12 @@ export function createResponseSession(definition: Definition, settings: SessionS
       enabled: flips.enabled,
       disabled: flips.disabled,
       surfaced: surfaced.length > 0 ? surfaced : NO_PATHS,
-      added: instances.added.length > 0 ? instances.added : NO_PATHS,
-      removed: instances.removed.length > 0 ? instances.removed : NO_PATHS,
+      added: changes.added.length > 0 ? changes.added : NO_PATHS,
+      removed: changes.removed.length > 0 ? changes.removed : NO_PATHS,
       completion,
       responseChanged: !sameSignature(previous.answered, next.answered),
     };
-    state = { status, cycle: state.cycle + 1, nodes, issues: next.issues, completionRefused, change };
+    state = { status, cycle: state.cycle + 1, nodes, issues: next.issues, completionRefused, scores: next.scores, optionSets, change };
     notify(change);
     return completion === 'refused' ? { outcome: 'refused', reason: 'validation-errors' } : { outcome: 'applied' };
   };
@@ -220,30 +310,30 @@ export function createResponseSession(definition: Definition, settings: SessionS
     return { completion: 'completed' as const, surfaced: [] };
   };
 
-  const apply = (command: Command, target: ItemNode | null, instances: { added: ItemPath[]; removed: ItemPath[] }): ItemNode[] => {
+  const apply = (command: Command, target: ItemNode | null, changes: { added: ItemPath[]; removed: ItemPath[]; answered: boolean }): ItemNode[] => {
     if (target === null) return [];
     if (command.type === 'AddRepeatInstance') {
       const instance = addInstance(store, target);
-      instances.added.push(instance.path);
+      changes.added.push(instance.path);
       return subtree(instance.children);
     }
     if (command.type === 'RemoveRepeatInstance') {
       const instance = target.instances.find((candidate) => candidate.ordinal === command.ordinal);
       if (instance !== undefined) {
-        instances.removed.push(instance.path);
+        changes.removed.push(instance.path);
         removeInstance(store, instance);
       }
       return [];
     }
     if (command.type === 'SetAnswer' && !sameAnswers(target.answers, command.answers)) {
       target.answers = Object.freeze(command.answers.map(copyAnswer));
-      return dependentNodes(store, target);
-    }
-    if (command.type === 'ClearAnswer' && target.answers.length > 0) {
+    } else if (command.type === 'ClearAnswer' && target.answers.length > 0) {
       target.answers = [];
-      return dependentNodes(store, target);
+    } else {
+      return [];
     }
-    return [];
+    changes.answered = true;
+    return dependentNodes(store, target);
   };
 
   const notify = (change: SessionChange): void => {
@@ -268,21 +358,20 @@ export function createResponseSession(definition: Definition, settings: SessionS
     getSnapshot: () => state,
     dispatch(command) {
       if (!isCommand(command)) return { outcome: 'refused', reason: 'malformed-command' };
+      if (disposed) return { outcome: 'refused', reason: 'disposed' };
+      // Host code inside a cycle is pure: a command from a rule, scorer, evaluator or resolver call is refused.
+      if (host.busy()) return { outcome: 'refused', reason: 'collaborator-running' };
       // Single writer: a command issued while a cycle runs (from a listener)
       // waits for that cycle to finish and gets its own cycle.
       if (running) {
-        queue.push(command);
+        queue.push(() => run(command));
         return { outcome: 'deferred' };
       }
-      running = true;
-      try {
-        const result = run(command);
-        for (let next = queue.shift(); next !== undefined; next = queue.shift()) run(next);
-        return result;
-      } finally {
-        running = false;
-        queue.length = 0;
-      }
+      return exclusive(() => run(command));
+    },
+    dispose() {
+      disposed = true;
+      options.dispose();
     },
   };
   publishProjection(session, settled.projection);

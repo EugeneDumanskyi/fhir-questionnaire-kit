@@ -19,8 +19,17 @@ nothing is copied from a published instrument.
   `integer`, `date`, `dateTime`, `string`, `text`, `choice`, `open-choice` and
   `quantity`.
 
-**Later versions** add what AC-15.1.1 also asks for once the engine has it: a
-cross-field validation rule (M3) and a scored block (M4).
+**Version 2 (M4)** adds a scored block, `wellbeing`: two questions on energy
+and sleep over the last two weeks, each answered on a four-point scale (never,
+some days, most days, every day) whose options carry an ordinal score of 0–3
+through the registered HL7 extension
+`http://hl7.org/fhir/StructureDefinition/ordinalValue`. The block is shaped
+like a two-item screener but its wording is original; it is not the PHQ-2 and
+is not to be read as one. The kit does not interpret it: `demo.test.ts` scores
+it with a test-only scorer that adds the ordinals (US-07.2), and holds the
+demo's cross-field rule there too: the date someone stopped smoking may not
+come after the visit date (M3's rule shape, AC-15.1.1). The rule lives in the test, not
+the form, since R4 has no standard way to author one.
 
 Codes in `answerOption` carry no `system`: they are local to this form, and no
 code system is invented for them.

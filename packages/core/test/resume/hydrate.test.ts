@@ -227,7 +227,11 @@ describe('hydration (US-06.1, 04-domain.md §8)', () => {
         { linkId: 'pick', answer: [{ valueCoding: { system: 'urn:s', code: 'c', extension: [] } }] },
       ]),
     );
-    expect(found(session)).toEqual([{ code: 'quarantined-answer', path: 'dose', expected: 'quantity', found: 'Quantity' }]);
+    // The coding loads although its value set is unresolved (T8, AC-07.1.4).
+    expect(found(session)).toEqual([
+      { code: 'quarantined-answer', path: 'dose', expected: 'quantity', found: 'Quantity' },
+      { code: 'unresolved-options', path: 'pick', detail: 'http://example.org/vs' },
+    ]);
     expect(answersOf(session)).toEqual({ pick: [{ kind: 'coding', value: { system: 'urn:s', code: 'c' } }] });
   });
 

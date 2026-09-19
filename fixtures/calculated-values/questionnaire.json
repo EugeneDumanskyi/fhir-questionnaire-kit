@@ -1,0 +1,52 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:calculated-values",
+  "version": "1",
+  "status": "draft",
+  "title": "calculated-values",
+  "item": [
+    {
+      "linkId": "earlier",
+      "text": "Reads the total, one cycle behind",
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.repeat(item).where(linkId='total').answer.value"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a",
+      "text": "A",
+      "type": "integer"
+    },
+    {
+      "linkId": "b",
+      "text": "B",
+      "type": "integer"
+    },
+    {
+      "linkId": "total",
+      "text": "A plus B",
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.repeat(item).where(linkId='a' or linkId='b').answer.value.sum()"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "note",
+      "text": "Note",
+      "type": "string"
+    }
+  ]
+}

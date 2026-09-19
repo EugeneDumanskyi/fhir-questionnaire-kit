@@ -1,0 +1,216 @@
+{
+  "behaviour": "A calculatedExpression is computed by the host's evaluator in document order, read-only, and emitted like an answer; one that reads a later calculated item sees the previous cycle's value; without an evaluator it has no value (US-07.3, AC-07.3.1-3, ADR-0017, ADR-0009 step 4, INV-D-09)",
+  "cases": [
+    {
+      "name": "no evaluator: loads, reports each item, and has no value",
+      "loadMode": "strict",
+      "diagnostics": [
+        {
+          "code": "no-evaluator",
+          "path": "earlier",
+          "detail": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression"
+        },
+        {
+          "code": "no-evaluator",
+          "path": "total",
+          "detail": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression"
+        }
+      ],
+      "enabled": [
+        "earlier",
+        "a",
+        "b",
+        "total",
+        "note"
+      ],
+      "steps": [
+        {
+          "name": "a",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 1
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "earlier",
+            "a",
+            "b",
+            "total",
+            "note"
+          ]
+        },
+        {
+          "name": "b",
+          "command": {
+            "type": "SetAnswer",
+            "path": "b",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 2
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "earlier",
+            "a",
+            "b",
+            "total",
+            "note"
+          ]
+        }
+      ],
+      "answers": {
+        "total": [],
+        "earlier": []
+      }
+    },
+    {
+      "name": "an evaluator: values in document order, one cycle behind for a later item",
+      "loadMode": "strict",
+      "evaluator": {
+        "total": {
+          "sum": [
+            "a",
+            "b"
+          ],
+          "kind": "integer"
+        },
+        "earlier": {
+          "sum": [
+            "total"
+          ],
+          "kind": "integer"
+        }
+      },
+      "enabled": [
+        "earlier",
+        "a",
+        "b",
+        "total",
+        "note"
+      ],
+      "steps": [
+        {
+          "name": "a",
+          "command": {
+            "type": "SetAnswer",
+            "path": "a",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 1
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "earlier",
+            "a",
+            "b",
+            "total",
+            "note"
+          ]
+        },
+        {
+          "name": "b: the total follows in the same cycle; earlier still reads the last one",
+          "command": {
+            "type": "SetAnswer",
+            "path": "b",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 2
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "earlier",
+            "a",
+            "b",
+            "total",
+            "note"
+          ]
+        },
+        {
+          "name": "the total is read-only",
+          "command": {
+            "type": "SetAnswer",
+            "path": "total",
+            "answers": [
+              {
+                "kind": "integer",
+                "value": 9
+              }
+            ]
+          },
+          "result": {
+            "outcome": "refused",
+            "reason": "node-calculated"
+          },
+          "enabled": [
+            "earlier",
+            "a",
+            "b",
+            "total",
+            "note"
+          ]
+        },
+        {
+          "name": "any later change catches earlier up",
+          "command": {
+            "type": "SetAnswer",
+            "path": "note",
+            "answers": [
+              {
+                "kind": "string",
+                "value": "done"
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "earlier",
+            "a",
+            "b",
+            "total",
+            "note"
+          ]
+        }
+      ],
+      "answers": {
+        "total": [
+          {
+            "kind": "integer",
+            "value": 3
+          }
+        ],
+        "earlier": [
+          {
+            "kind": "integer",
+            "value": 3
+          }
+        ]
+      },
+      "response": "expected-response.json"
+    }
+  ]
+}

@@ -36,7 +36,7 @@ describe('the public API surface (NFR-U-05)', () => {
 
   it('counts each entry point', () => {
     expect(Object.fromEntries(ENTRY_POINTS.map((entry) => [entry.name, symbols(entry).length]))).toEqual({
-      '@fhirq/core': 32,
+      '@fhirq/core': 35,
       '@fhirq/core/view': 15,
       '@fhirq/core/resume': 3,
       '@fhirq/react': 2,

@@ -1,0 +1,38 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:option-resolution",
+  "version": "1",
+  "status": "draft",
+  "title": "option-resolution",
+  "item": [
+    {
+      "linkId": "uses",
+      "text": "Do you use any substance?",
+      "type": "boolean"
+    },
+    {
+      "linkId": "substance",
+      "text": "Which one?",
+      "type": "choice",
+      "answerValueSet": "urn:fhirq:conformance:ValueSet/substance",
+      "enableWhen": [
+        {
+          "question": "uses",
+          "operator": "=",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "route",
+      "text": "How do you take it?",
+      "type": "open-choice",
+      "answerValueSet": "urn:fhirq:conformance:ValueSet/route"
+    },
+    {
+      "linkId": "note",
+      "text": "Anything else?",
+      "type": "string"
+    }
+  ]
+}

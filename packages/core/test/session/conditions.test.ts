@@ -252,7 +252,7 @@ describe('own condition (INV-S-02, INV-S-04)', () => {
 
   it('is false for a condition load degraded, and for an item an expression disables (INV-D-04, INV-D-15)', () => {
     const [dangling, gated] = compiled(
-      [item('a', 'string', { enableBehavior: 'any', enableWhen: [when('ghost', '=', yes)] }), item('b', 'string', { expressions: [{ kind: 'enableWhen', url: 'urn:x', language: null, expression: null }] })],
+      [item('a', 'string', { enableBehavior: 'any', enableWhen: [when('ghost', '=', yes)] }), item('b', 'string', { expressions: [{ kind: 'enableWhen', url: 'urn:x', language: null, expression: null, name: null }] })],
       'lenient',
     );
     expect(dangling && ownCondition(dangling, states({}))).toBe(false);

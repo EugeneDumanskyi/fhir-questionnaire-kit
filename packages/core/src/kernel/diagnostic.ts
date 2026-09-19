@@ -45,9 +45,16 @@ export type DiagnosticCode =
   | 'initial-value-ignored'
   | 'unsupported-option-type'
   | 'inapplicable-constraint'
-  /* Runtime (INV-V-05) */
+  /* Runtime: host code that failed (INV-V-05, INV-X-09, M4 plan D7) */
   | 'listener-threw'
   | 'rule-threw'
+  | 'scorer-threw'
+  | 'evaluator-threw'
+  /* Option sets (SM-04, INV-D-08) and rich text (INV-X-06) */
+  | 'unresolved-options'
+  | 'resolver-failed'
+  | 'no-sanitizer'
+  | 'sanitizer-threw'
   /* Hydration (`04-domain.md` §8, INV-E-08 … E-10) */
   | 'version-drift'
   | 'orphan-answer'
