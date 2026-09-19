@@ -272,7 +272,7 @@ C4Container
 
 | Container | Bounded contexts | Budget (NFR-S-02/03) | Network | DOM |
 |---|---|---|---|---|
-| Engine `@fhirq/core` | BC1–BC5 | ≤ 14 kB | none (NFR-X-01) | none (NFR-C-04) |
+| Engine `@fhirq/core` | BC1–BC5 | ≤ 15 kB (ADR-0022) | none (NFR-X-01) | none (NFR-C-04) |
 | Presentation model `@fhirq/core/view` | BC6, DOM-free half | ≤ 5 kB | none | none |
 | React adapter | BC6 markup | ≤ 6 kB excl. React, excl. core and view | none | via React |
 | Web component | BC6 markup + default resolver | ≤ 24 kB incl. core, view, theme | default resolver only | yes |

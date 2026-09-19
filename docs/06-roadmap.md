@@ -316,12 +316,12 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 
 **Effort.** ASSUMPTION: 10 h.
 
-**Plan decisions, 2026-09-19.** Taken with the M4 plan, D1–D10 as recommended, plus a ruling made during the build.
+**Plan decisions, 2026-09-19.** Taken with the M4 plan, D1–D10 as recommended, plus two rulings made during the build.
 
 | # | Decision | Resolution |
 |---|---|---|
 | D1 | Public symbols (5 left) | Three named exports: `OptionResolver`, `ExpressionEvaluator`, `VisibleProjection`. Scorers, the sanitizer and the error handler are inline shapes on `SessionOptions`. 58 of 60 used |
-| D2 | Byte headroom | Build in order, measure after each step, stop at 13.8 kB |
+| D2 | Byte headroom | Build in order, measure after each step, stop at 13.8 kB. It fired: see "Core bytes" below |
 | D3 | The sanitizer | `SessionOptions.sanitize(xhtml) → string`, run once as the session opens over `rendering-xhtml`; its output is `ItemDefinition.xhtml`. None, a throw or a non-string: `null` and `no-sanitizer` or `sanitizer-threw`, and the plain text renders |
 | D4 | What collaborators read | Scorers and the evaluator get the deeply frozen `VisibleProjection`; rules keep M3's shape (frozen answers by `inputs`, per repeat instance). ADR-0009 amendment note. AC-04.3.2 and AC-07.2.1's "state snapshot" read as the visible projection, since a snapshot holds retained answers (INV-X-04) |
 | D5 | Scorers | `SessionOptions.scorers: Record<name, { inputs, score(projection) }>`, results opaque on `SessionState.scores[name]`, `null` once cleared. Not emitted, not in the snapshot: recomputed. Re-run only when their inputs' visible nodes or answers change |
@@ -331,6 +331,7 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 | D9 | NFR-X-04 lint rule | Type-aware: `fhirq/no-answer-in-diagnostics` reports an answer, or anything holding one, reaching `diagnostic(…)`, `new FhirqError(…)` or `console.*` |
 | D10 | PHQ-9/GAD-7 and the demo | The fixture is HL7's published copy, fetched by the maintainer, who also confirms the free-use terms. The demo gets an original PHQ-2-shaped block with `ordinalValue`, scored by a test-only scorer; the demo test also gains M3's cross-field rule assertion (AC-15.1.1) |
 | — | `AbortController` in core | Allowed in `session/options.ts` only, by the `no-dom-in-core` allowlist; `AbortSignal` is declared structurally in `ports/`. ADR-0012 stands |
+| — | Core bytes over 14 kB | Trim, then amend: compacting the new modules took 14.68 to 14.57 kB; ADR-0022 (accepted 2026-09-19) sets core's figure to 15 kB from the measured reading, with the gate blocking |
 
 ---
 
