@@ -333,6 +333,28 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 | — | `AbortController` in core | Allowed in `session/options.ts` only, by the `no-dom-in-core` allowlist; `AbortSignal` is declared structurally in `ports/`. ADR-0012 stands |
 | — | Core bytes over 14 kB | Trim, then amend: compacting the new modules took 14.68 to 14.57 kB; ADR-0022 (accepted 2026-09-19) sets core's figure to 15 kB from the measured reading, with the gate blocking |
 
+**Built on 2026-09-19, in PRs #43–#47.** Evidence per acceptance criterion:
+- **AC-1.** `test/session/options.test.ts`: one call per distinct canonical, eager whatever is enabled, and `url|1` and `url|2` kept apart. A fast-check property shows the call count is independent of the command sequence. A pending set blocks no other node, and a late settlement after `dispose()` is dropped. Fixture `option-resolution`, three cases.
+- **AC-2.** `option-resolution`: a coded answer is `options-unresolved` while the set is unresolved, pending or failed, and `open-choice` text still goes in; `options.test.ts`.
+- **AC-3.** `resumed-coded-answers`, one case each for pending, failed and absent: the coded answer is loaded and raises no issue. `test/resume/options.test.ts` covers restore and hydrate, and resolution restarts on restore.
+- **AC-4.** Each of the three gets frozen input and cannot change the session: `test/validation/scores.test.ts`, `test/session/calculated.test.ts` (the projection) and `test/validation/rules.test.ts` (a rule's answers). The `scores` fixture shows a hidden input leaves the total, retained answer and all.
+- **AC-5.** `test/session/collaborator.test.ts`, `scores.test.ts` and `calculated.test.ts`. A throw clears the score or value and yields a message-free diagnostic, reported once. The error reaches `onCollaboratorError` verbatim, and the next command still applies. Fixtures `scores` (a throwing scorer beside a working one) and `calculated-values`.
+- **AC-6.** `collaborator-running` from inside a rule (`collaborator.test.ts`), a scorer (`scores.test.ts`), the evaluator (`calculated.test.ts`) and a resolver (`options.test.ts`). A listener's command is still `deferred`.
+- **AC-7.** `test/view.test.ts` › the message catalogue: per-key fallback, blank and wrong-shape overrides ignored, own-property lookup only, and an unknown rule key falls back to the generic message, never the raw key.
+- **AC-8.** `test/safety/no-io.test.ts`. Throwing getters stand in for the eight doors the criterion names; `XMLHttpRequest`, `WebSocket` and `EventSource` are added. A lifecycle runs through the public entries: create, answers, a resolver that settles and one that fails, retry, rule, scorer, evaluator, sanitizer, view with message overrides, completion, emit, snapshot, restore, hydrate and dispose. It touches none of them.
+- **AC-9.** `fhirq/no-answer-in-diagnostics`, which is type-aware (`tools/eslint-rules/src/no-answer-in-diagnostics.js`). Its must-fail fixture interpolates, concatenates, stringifies and logs an answer value; its must-pass fixture holds codes, paths, kinds and counts. It runs over `packages/*/src` and reports nothing on the current source.
+- **Scope, demo (AC-15.1.1).** `fixtures/demo/` version 2 has an original scored block with `ordinalValue`. `test/conformance/demo.test.ts` scores it with a test-only scorer and asserts M3's cross-field rule.
+- **Gates.** The `ports/` types-only row, and ADR-0020's `Intl` lint pair, each with must-fail fixtures, both blocking in `pnpm lint`. Core coverage is 99.92 % line and 98.72 % branch. `stryker.config.json` mutates `session/options`, `session/collaborator`, `session/calculated` and `validation/scores`. Mutation on the new modules is 91.7 % locally (collaborator 95.1, options 94.0, scores 91.4, calculated 84.6), on the changed guard and session modules 98.8 and 99.4 %, and 95.40 % over all 1,846 mutants in a full local run of 9 min 47 s; the incremental lane on #47 scored 92.09 %, above the 80 % break. Benchmarks are within 20 % of `main`. `@fhirq/core` is 14.60 kB of 15 kB (ADR-0022) and `@fhirq/core/resume` 3.35 kB of 4 kB, both gated. The API is 58 of 60 symbols, with a changeset.
+
+**Still open.**
+- **`fixtures/scoring/`, the HL7 PHQ-9 and GAD-7 copies (D10),** needs network access and a check of the free-use terms, both the maintainer's. `fixtures/scores/` covers the behaviour meanwhile.
+- **The element projection** is now 24.9 and 28.9 kB (`03-nfr.md` §2). ADR-0021's rung-2 trigger, read at the end of M5, is expected to fire.
+
+**Found on the way.**
+- **K1 tripped again, as forecast.** The incremental mutation lane took 524 s on #47, against spike S2's K1 of 4 min, because that PR ran the four new modules' mutants for the first time; the docs and lint PRs #43–#46 took under a minute. The blocking pipeline took 8 min 47 s wall-clock, inside NFR-M-07's 10 min, so K2 has not tripped. No new relief is taken: the next one stays splitting the lane into a matrix of jobs by module, and `ignoreStatic` is the maintainer's call only.
+- The M3 runner deferred every command sent during a cycle. A command from inside a collaborator is now refused instead, so a rule cannot write state mid-cycle. A listener's command is still deferred.
+- A lenient `answerExpression` or `candidateExpression` item now has no options and accepts no coded answer, as an unresolved value set does. Before, it kept its authored options and admitted codings.
+
 ---
 
 ### M5 — Presentation model
