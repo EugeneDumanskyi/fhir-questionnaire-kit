@@ -228,3 +228,48 @@ describe('no-fhir-shapes-outside-codec', () => {
     expect(lintFixture(codec, rule, { allow: [] })).toHaveLength(2);
   });
 });
+
+describe('no-answer-in-diagnostics (NFR-X-04, M4 plan D9)', () => {
+  const dir = `${fixtures}/no-answer-in-diagnostics`;
+  const typed = (file) => {
+    const typedLinter = new Linter({ configType: 'flat', cwd: root });
+    return typedLinter.verify(
+      readFileSync(`${root}/${dir}/${file}`, 'utf8'),
+      {
+        files: ['**/*.ts'],
+        plugins: { fhirq: fhirqPlugin },
+        languageOptions: {
+          parser: tsParser,
+          ecmaVersion: 2022,
+          sourceType: 'module',
+          parserOptions: { project: `${root}/${dir}/tsconfig.json`, tsconfigRootDir: `${root}/${dir}` },
+        },
+        rules: { 'fhirq/no-answer-in-diagnostics': 'error' },
+      },
+      `${root}/${dir}/${file}`,
+    );
+  };
+
+  it('fails the fixture that interpolates, concatenates, stringifies or logs an answer value (AC-9)', () => {
+    const messages = typed('must-fail.ts');
+    expect(messages.map((message) => [message.line, message.ruleId])).toEqual([
+      [8, 'fhirq/no-answer-in-diagnostics'],
+      [10, 'fhirq/no-answer-in-diagnostics'],
+      [12, 'fhirq/no-answer-in-diagnostics'],
+      [14, 'fhirq/no-answer-in-diagnostics'],
+      [16, 'fhirq/no-answer-in-diagnostics'],
+    ]);
+    expect(messages[0].message).toContain('reaches a diagnostic');
+    expect(messages[3].message).toContain('reaches an error');
+    expect(messages[4].message).toContain('reaches the console');
+  });
+
+  it('passes kinds, counts and paths, which are what diagnostics name', () => {
+    expect(typed('must-pass.ts')).toEqual([]);
+  });
+
+  it('says so when it has no type information, rather than passing silently', () => {
+    const messages = lintFixture(`${dir}/must-pass.ts`, 'no-answer-in-diagnostics');
+    expect(messages.map((message) => message.message)).toEqual([expect.stringContaining('needs type information')]);
+  });
+});
