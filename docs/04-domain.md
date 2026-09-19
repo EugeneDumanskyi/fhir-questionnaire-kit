@@ -429,7 +429,7 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | INV-D-05 | The dependency graph is acyclic. The error names every `linkId` in each cycle. | Reject | Reject — no evaluation is attempted | AC-02.5.1 |
 | INV-D-06 | Every condition's operator and `answer[x]` type are meaningful for its question's type (e.g. no `>` on string); `integer` and `decimal` may be compared with each other. A condition that breaks this evaluates `false`. | Diagnostic | Diagnostic | AC-02.5.3; `06-roadmap.md` M2 D3 |
 | INV-D-07 | Nesting depth ≤ the published ceiling; dependency chain depth ≤ the published ceiling. | Reject | Reject | NFR-P-05 |
-| INV-D-08 | A value set reference with no resolver configured does **not** fail load; affected items carry `unresolved-options`. | — | — | AC-01.1.2 |
+| INV-D-08 | A value set reference with no resolver configured does **not** fail load; affected items carry `unresolved-options`. A resolver that rejects raises `resolver-failed` instead (M4 D7). | — | — | AC-01.1.2 |
 | INV-D-09 | An expression binding with no evaluator configured does **not** fail load; it raises a diagnostic. | — | — | AC-07.3.1 |
 | INV-D-10 | No load error or diagnostic contains answer data; every one names the rule and the `linkId` path. | — | — | AC-01.1.3, NFR-X-04, NFR-U-07 |
 | INV-D-11 | Building a Definition performs no I/O and completes synchronously. | — | — | AC-01.1.1 |
@@ -808,7 +808,9 @@ stateDiagram-v2
 | `RemoveRepeatInstance(groupPath, ordinal)` | Respondent / host | Unknown ordinal; group disabled; session completed — **never** on cardinality | AC-03.2.2, INV-S-23 |
 | `NoteItemLeft(path)` | Presentation | — (no-op on disabled node) | AC-04.2.3 |
 | `RequestCompletion` | Host | Session already completed | AC-04.1.1, AC-05.1.3 |
-| `RetryOptions(valueSetUrl)` | Host or respondent | Option set not in `Failed` | AC-07.1.2 |
+| `RetryOptions(valueSetUrl)` | Host or respondent | Option set not in `Failed` (`options-not-failed`) | AC-07.1.2 |
+
+From M4, any command is also refused as `collaborator-running` when it is sent from inside a rule, scorer, evaluator, resolver or sanitizer call, and as `disposed` after `Session.dispose()`. A coded `SetAnswer` whose option set is not `Resolved` is refused as `options-unresolved`. A resolver settling runs as its own cycle, with `command: 'OptionsSettled'` on its change (T12).
 
 A refused command is **not** an exception at the domain level: it is a no-op cycle with a reason, so that a presentation bug cannot break form interaction.
 
@@ -848,7 +850,7 @@ Hydration is a short, synchronous process rather than a long-running machine, bu
 3. **Walk stored items against the Definition, in document order.**
    - Unknown `linkId` → `orphan-answer` diagnostic; skip the item and its subtree (AC-06.1.3).
    - Answer type incompatible with the item definition → `quarantined-answer` diagnostic with path, expected and found type, **no value**; not loaded (AC-06.3.2, §9 T6).
-   - More answers than a non-repeating item allows → `quarantined-answer`; none loaded (AC-06.3.3 — partial loading would pick a winner silently). The same for a non-repeating item stored more than once, an answer on a group, and an answer on a calculated item (ADR-0003).
+   - More answers than a non-repeating item allows → `quarantined-answer`; none loaded (AC-06.3.3 — partial loading would pick a winner silently). The same for a non-repeating item stored more than once, an answer on a group, and an answer on a calculated item (ADR-0003). *(Amended 2026-09-19, `06-roadmap.md` M4 D8: when an evaluator is given, a stored answer on a calculated item is not loaded and raises nothing, since the evaluator's value replaces it in the first cycle.)*
    - Repeating group → one instance per stored occurrence, ordinals `0…n-1` in stored order (INV-E-11). Counts outside `min`/`max` are accepted and surface through SM-05.
 4. **Settle enablement** against the loaded answers (AC-06.1.1).
 5. **Drop answers that landed on disabled nodes**, raising `hydrated-answer-disabled` (§9 T7). After this step, no hydrated node is in SM-02 `DR`.

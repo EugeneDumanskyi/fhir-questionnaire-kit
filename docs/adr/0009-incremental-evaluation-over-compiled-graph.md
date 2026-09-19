@@ -74,6 +74,8 @@ settles within one further cycle because any later change re-runs both.
 
 **Rules and scorers declare their inputs.** Registration takes the `linkId`s a rule or scorer reads. That list controls *when* it re-runs; what it receives is still the full read-only visible projection. Reading something undeclared is a contract violation: the result goes stale until one of the declared inputs changes. This is documented, not detected.
 
+  *Amended 2026-09-19 (`06-roadmap.md` M4 plan decision D4).* Scorers and the expression evaluator receive the full visible projection, deeply frozen, as written here. Cross-field rules keep the narrower shape M3 shipped (M3 plan decision D5): the frozen answers of their declared `inputs`, scoped per shared repeat instance as `enableWhen` is. That shape is also read-only and holds nothing hidden, so INV-X-04 holds for both. A rule cannot read what it did not declare, which removes the stale-result case above for rules. Moving rules onto the full projection would be a breaking change to a `@beta` shape, and nothing needs it yet.
+
 ## Consequences
 
 **Benefits**
