@@ -1,4 +1,4 @@
-import type { Answer } from './answer.js';
+import type { Answer, Coding } from './answer.js';
 import type { ItemType, LinkId, Operator } from './item-type.js';
 
 /**
@@ -40,6 +40,8 @@ export interface ItemInput {
   readonly maxDecimalPlaces: number | null;
   readonly minOccurs: number | null;
   readonly maxOccurs: number | null;
+  /** The `questionnaire-unitOption` codings, in authored order: the units a quantity may be answered in (AC-01.2.4). */
+  readonly units: readonly Coding[];
   /** The `itemControl` code, recorded and not interpreted (`04-domain.md` BC1). */
   readonly itemControl: string | null;
   /** Authored XHTML. Never rendered without a host sanitizer (INV-X-06). */

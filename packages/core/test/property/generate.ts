@@ -159,6 +159,7 @@ function build(raws: readonly RawItem[]): Generated {
       maxDecimalPlaces: null,
       minOccurs: null,
       maxOccurs: item.kind === 'repeat' ? item.maxOccurs : null,
+      units: [],
       itemControl: null,
       renderingXhtml: null,
       expressions: [],

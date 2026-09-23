@@ -1,0 +1,22 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "urn:fhirq:conformance:unit-options|1",
+  "status": "in-progress",
+  "authored": "2026-01-01T00:00:00Z",
+  "item": [
+    {
+      "linkId": "weight",
+      "text": "Body weight",
+      "answer": [
+        {
+          "valueQuantity": {
+            "value": 72.5,
+            "unit": "kilograms",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -133,6 +133,7 @@ function draft(item: Walked, walked: readonly Walked[], children: readonly numbe
     accepts: optionless ? accepts.filter((kind) => kind !== 'coding') : accepts,
     maxLength: input.maxLength,
     ...limits,
+    units: checkUnits(input, type, path, add),
     itemControl: input.itemControl,
     renderingXhtml: input.renderingXhtml,
   };
@@ -213,6 +214,13 @@ function checkLimits(input: ItemInput, type: ItemType | null, path: string, add:
     minOccurs: keepOccurs ? (input.minOccurs ?? 0) : 0,
     maxOccurs: keepOccurs ? input.maxOccurs : null,
   };
+}
+
+/** A `questionnaire-unitOption` is a quantity's only (M5 plan D6); on another type it is inapplicable, as INV-D-20's constraints are. */
+function checkUnits(input: ItemInput, type: ItemType | null, path: string, add: Add): DraftItem['units'] {
+  if (input.units.length === 0 || type === 'quantity') return input.units;
+  add('inapplicable-constraint', 'strict', path, { detail: 'unitOption' });
+  return [];
 }
 
 function checkExpressions(

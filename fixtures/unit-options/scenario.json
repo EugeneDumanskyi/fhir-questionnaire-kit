@@ -1,0 +1,118 @@
+{
+  "behaviour": "A quantity offers the units `questionnaire-unitOption` permits, and its answer carries value, unit, system and code; a value with no unit fails validation (AC-01.2.4, M5 plan D6). A unit option on another type is an inapplicable constraint (INV-D-20)",
+  "cases": [
+    {
+      "name": "a unit option on another type rejects a strict load",
+      "loadMode": "strict",
+      "rejected": [
+        {
+          "code": "inapplicable-constraint",
+          "path": "count",
+          "detail": "unitOption"
+        }
+      ]
+    },
+    {
+      "name": "a permitted unit is emitted with value, unit, system and code",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "inapplicable-constraint",
+          "path": "count",
+          "detail": "unitOption"
+        }
+      ],
+      "enabled": [
+        "weight",
+        "count"
+      ],
+      "steps": [
+        {
+          "name": "weigh in kilograms",
+          "command": {
+            "type": "SetAnswer",
+            "path": "weight",
+            "answers": [
+              {
+                "kind": "quantity",
+                "value": {
+                  "value": 72.5,
+                  "unit": "kilograms",
+                  "system": "http://unitsofmeasure.org",
+                  "code": "kg"
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "weight",
+            "count"
+          ]
+        }
+      ],
+      "answers": {
+        "weight": [
+          {
+            "kind": "quantity",
+            "value": {
+              "value": 72.5,
+              "unit": "kilograms",
+              "system": "http://unitsofmeasure.org",
+              "code": "kg"
+            }
+          }
+        ]
+      },
+      "issues": [],
+      "response": "expected-response.json"
+    },
+    {
+      "name": "a value with no unit fails validation",
+      "loadMode": "lenient",
+      "diagnostics": [
+        {
+          "code": "inapplicable-constraint",
+          "path": "count",
+          "detail": "unitOption"
+        }
+      ],
+      "enabled": [
+        "weight",
+        "count"
+      ],
+      "steps": [
+        {
+          "name": "a bare number",
+          "command": {
+            "type": "SetAnswer",
+            "path": "weight",
+            "answers": [
+              {
+                "kind": "quantity",
+                "value": {
+                  "value": 70
+                }
+              }
+            ]
+          },
+          "result": {
+            "outcome": "applied"
+          },
+          "enabled": [
+            "weight",
+            "count"
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "code": "unit-missing",
+          "path": "weight"
+        }
+      ]
+    }
+  ]
+}

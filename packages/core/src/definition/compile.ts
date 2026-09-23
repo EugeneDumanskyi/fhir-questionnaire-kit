@@ -1,4 +1,4 @@
-import type { Answer, AnswerKind } from '../kernel/answer.js';
+import type { Answer, AnswerKind, Coding } from '../kernel/answer.js';
 import { slot } from '../kernel/dense.js';
 import type { Diagnostic } from '../kernel/diagnostic.js';
 import type { DefinitionInput } from '../kernel/input.js';
@@ -81,6 +81,8 @@ export interface ItemDef {
   readonly minOccurs: number;
   /** From `questionnaire-maxOccurs`; `null` is unbounded. */
   readonly maxOccurs: number | null;
+  /** The `questionnaire-unitOption` codings of a quantity; empty on any other type. */
+  readonly units: readonly Coding[];
   readonly itemControl: string | null;
   /**
    * The authored `rendering-xhtml` as compiled. Once a session opens it, the

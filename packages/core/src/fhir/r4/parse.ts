@@ -13,6 +13,7 @@ import {
   MIN_OCCURS,
   MIN_VALUE,
   RENDERING_XHTML,
+  UNIT_OPTION,
 } from './extensions.js';
 
 /**
@@ -179,6 +180,7 @@ function readItem(json: Json, parent: ItemPath | null, index: number, findings: 
     maxDecimalPlaces: integerExtension(json, MAX_DECIMAL_PLACES, path, findings),
     minOccurs: integerExtension(json, MIN_OCCURS, path, findings),
     maxOccurs: integerExtension(json, MAX_OCCURS, path, findings),
+    units: readUnits(json, path, findings),
     itemControl: readItemControl(json),
     renderingXhtml: readRenderingXhtml(json),
     expressions: readExpressions(json, path, findings),
@@ -324,6 +326,16 @@ function limitExtension(json: Json, url: string, path: string, findings: Finding
     return null;
   }
   return { value, valueType: choice.key.slice('value'.length) };
+}
+
+/** `questionnaire-unitOption`, repeatable, each a `valueCoding`: the units a quantity item offers. */
+function readUnits(json: Json, path: string, findings: Findings): Coding[] {
+  return extensions(json).flatMap((extension): Coding[] => {
+    if (extension['url'] !== UNIT_OPTION) return [];
+    const coding = neutralCoding(extension['valueCoding']);
+    if (coding === undefined) findings.add('malformed', path, UNIT_OPTION);
+    return coding === undefined ? [] : [coding];
+  });
 }
 
 function readItemControl(json: Json): string | null {

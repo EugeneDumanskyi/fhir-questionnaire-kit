@@ -1,4 +1,4 @@
-import type { Answer } from '../kernel/answer.js';
+import type { Answer, Coding } from '../kernel/answer.js';
 import type { Issue } from '../kernel/issue.js';
 import type { ItemType, LinkId } from '../kernel/item-type.js';
 import type { ItemPath } from '../kernel/path.js';
@@ -39,6 +39,8 @@ export interface ItemDefinition {
   readonly calculated: boolean;
   readonly options: readonly Answer[];
   readonly valueSet: string | null;
+  /** The units a quantity may be answered in, from `questionnaire-unitOption`; empty when none are authored, and on any other type. */
+  readonly units: readonly Coding[];
   readonly itemControl: string | null;
   readonly maxLength: number | null;
   readonly minOccurs: number;
@@ -76,6 +78,7 @@ export function publicItem(def: ItemDef): ItemDefinition {
     calculated: def.calculated,
     options: def.options,
     valueSet: def.valueSet,
+    units: def.units,
     itemControl: def.itemControl,
     maxLength: def.maxLength,
     minOccurs: def.minOccurs,

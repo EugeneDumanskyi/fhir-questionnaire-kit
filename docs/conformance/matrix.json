@@ -1211,6 +1211,17 @@
       "tests": [
         "packages/core/test/definition/sanitize.test.ts > authored rich text (INV-X-06, AC-01.4.2)"
       ]
+    },
+    {
+      "id": "extension.unit-option",
+      "feature": "`questionnaire-unitOption`: the units a `quantity` may be answered in, emitted with `unit`, `system` and `code` (AC-01.2.4)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > unit-options: a permitted unit is emitted with value, unit, system and code",
+        "packages/core/test/conformance/fixtures.test.ts > unit-options: a value with no unit fails validation",
+        "packages/core/test/conformance/fixtures.test.ts > unit-options: a unit option on another type rejects a strict load"
+      ]
     }
   ]
 }
