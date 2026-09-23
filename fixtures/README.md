@@ -54,7 +54,10 @@ the public `createSession`, as a host would, and replays each case as the test
       "evaluator": { "total": { "kind": "integer", "sum": ["a", "b"] } },
       // Optional: each option set's status and each score at the end.
       "optionSets": { "urn:example:ValueSet/route": "resolved" },
-      "scores": { "total": 3 }
+      "scores": { "total": 3 },
+      // From M5, optional: the view's control kind for each node path, at the start. The engine
+      // runner ignores it; packages/core/test/conformance/view.test.ts checks it (fixtures/item-control).
+      "controls": { "q": "single-choice" }
     }
   ]
 }
