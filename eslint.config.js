@@ -47,7 +47,9 @@ const NO_INLINE_STYLE = [
  * `05-architecture.md` §4.1, row by row (NFR-M-06). A module may import its own
  * files and the entries listed; `fhir/r4/parse` and `session/projection` are
  * single files, `index` is the public engine API. `ports/` is types only
- * (`CORE_TYPES_ONLY`), and from M4 `index` exports its three types.
+ * (`CORE_TYPES_ONLY`), and from M4 `index` exports its three types. From M5
+ * every key here, in `CORE_FILES` and in `CORE_IMPORTERS` has a must-fail
+ * fixture, which `tools/eslint-rules/test/rules.test.js` checks by these keys.
  */
 export const CORE_MODULES = {
   kernel: [],

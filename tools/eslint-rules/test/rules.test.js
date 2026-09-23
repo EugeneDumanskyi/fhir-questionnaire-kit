@@ -197,6 +197,71 @@ describe('core-module-imports', () => {
     expect(messages[0].message).toContain('ports/ is types only');
   });
 
+  /**
+   * M5 AC-9: every row of the §4.1 table has a fixture that must fail against
+   * it. A module row by a file in that module; a file row by the file itself,
+   * or by a stand-in linted under the row; an importer rule by a file its list
+   * does not name. The keys are the config's own, so a row added to
+   * `eslint.config.js` without a fixture fails here.
+   */
+  const MUST_FAIL = {
+    modules: {
+      kernel: ['kernel/must-fail.ts', 'reaches session/store from kernel/'],
+      'fhir/r4': ['fhir/r4/must-fail.ts', 'reaches definition/compile from fhir/r4/'],
+      definition: ['definition/must-fail.ts', 'reaches session/store from definition/'],
+      session: ['session/must-fail.ts', 'reaches view/view from session/'],
+      validation: ['validation/must-fail.ts', 'reaches session/store from validation/'],
+      interchange: ['interchange/must-fail.ts', 'reaches session/store from interchange/'],
+      ports: ['ports/must-fail-imports.ts', 'reaches session/store from ports/'],
+      view: ['view/must-fail.ts', 'reaches session/session from view/'],
+    },
+    files: {
+      index: ['index-must-fail.ts', 'reaches validation/validate from index-must-fail/'],
+      open: ['open.ts', 'reaches view/view from open/'],
+      resume: ['resume-must-fail.ts', 'reaches view/view from resume-must-fail/'],
+      'interchange/emit': ['interchange/emit.ts', 'reaches session/store from interchange/emit/'],
+    },
+    importers: {
+      'session/registry': ['session/must-fail-registry.ts', 'reaches session/registry, which only'],
+      'session/snapshot': ['view/must-fail-resume.ts', 'reaches session/snapshot, which only'],
+      'interchange/hydrate': ['interchange/must-fail.ts', 'reaches interchange/hydrate, which only resume may import'],
+      'interchange/decode': ['leaky.ts', 'reaches interchange/decode, which only'],
+      'fhir/r4/decode': ['leaky.ts', 'reaches fhir/r4/decode, which only'],
+      resume: ['view/must-fail-resume.ts', 'reaches resume, which only'],
+    },
+  };
+  /** Stand-ins for the root entry files, each linted under the row it stands in for. */
+  const STAND_INS = { 'index-must-fail': CORE_FILES.index, 'resume-must-fail': CORE_FILES.resume, leaky: CORE_FILES.index };
+
+  it('has a must-fail fixture for every row of the §4.1 table (M5 AC-9)', () => {
+    expect(Object.keys(MUST_FAIL.modules).sort()).toEqual(Object.keys(CORE_MODULES).sort());
+    expect(Object.keys(MUST_FAIL.files).sort()).toEqual(Object.keys(CORE_FILES).sort());
+    expect(Object.keys(MUST_FAIL.importers).sort()).toEqual(Object.keys(CORE_IMPORTERS).sort());
+  });
+
+  it.each(Object.values(MUST_FAIL).flatMap((rows) => Object.entries(rows)))('fails the row %s by its fixture', (row, [file, message]) => {
+    const messages = lint(file, { ...options, files: { ...CORE_FILES, ...STAND_INS } });
+    expect(messages.map((found) => found.message)).toContainEqual(expect.stringContaining(message));
+  });
+
+  it('fails the entry points and the opener on each import their rows leave out', () => {
+    const withStandIns = { ...options, files: { ...CORE_FILES, ...STAND_INS } };
+    expect(lint('index-must-fail.ts', withStandIns).map((found) => found.message)).toEqual([
+      expect.stringContaining('reaches validation/validate from'),
+      expect.stringContaining('reaches view/view from'),
+    ]);
+    expect(lint('resume-must-fail.ts', withStandIns).map((found) => found.message)).toEqual([
+      expect.stringContaining('reaches view/view from'),
+      expect.stringContaining('reaches ports/index from'),
+    ]);
+    expect(lint('open.ts').map((found) => found.message)).toEqual([
+      expect.stringContaining('reaches interchange/emit from open/'),
+      expect.stringContaining('reaches view/view from open/'),
+    ]);
+    expect(lint('interchange/must-fail.ts')).toHaveLength(2);
+    expect(lint('ports/must-fail-imports.ts')).toHaveLength(1);
+  });
+
   it('fails a root file with no row', () => {
     const messages = lint('unlisted.ts');
     expect(messages).toHaveLength(1);
