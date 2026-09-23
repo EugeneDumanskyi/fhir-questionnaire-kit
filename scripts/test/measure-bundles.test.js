@@ -79,9 +79,9 @@ describe('measure-bundles', () => {
     expect(resume.externals.every((path) => path.startsWith('./packages/core/src/'))).toBe(true);
   });
 
-  it('gates @fhirq/core from M2 and @fhirq/core/resume from M3, and only entries that have a budget', () => {
+  it('gates @fhirq/core from M2, @fhirq/core/resume from M3 and @fhirq/core/view from M5, and only entries that have a budget', () => {
     const { entries, gated } = JSON.parse(readFileSync(new URL('../budgets.json', import.meta.url), 'utf8'));
-    expect(gated).toEqual(['@fhirq/core', '@fhirq/core/resume']);
+    expect(gated).toEqual(['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume']);
     for (const name of gated) expect(entries[name]).toBeTypeOf('number');
   });
 
