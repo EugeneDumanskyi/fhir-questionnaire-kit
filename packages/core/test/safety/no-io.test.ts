@@ -123,7 +123,7 @@ describe('no network, no storage, no telemetry (AC-14.6.1, NFR-X-01, NFR-X-02)',
     const options = { ...collaborators, hostIdentity: { subject: { reference: 'Patient/1' } } };
 
     const session = createSession(FORM, options);
-    const view = createView(session, { idPrefix: 'io', messages: { yes: 'Ja' } });
+    const view = createView(session, { idPrefix: 'io', locale: 'en', timeZone: 'Europe/Berlin', messages: { yes: 'Ja' } });
     view.subscribe(() => undefined);
     await flush();
     expect(session.getSnapshot().optionSets[`${VS}|2`]?.status).toBe('failed');

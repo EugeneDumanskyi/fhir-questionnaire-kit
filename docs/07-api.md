@@ -1,8 +1,8 @@
 # FHIR Questionnaire Kit — Public API
 
-*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M5 replaces the view.*
+*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M6's React adapter.*
 
-**Status, 2026-09-19.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view`, `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M5–M8.
+**Status, 2026-09-23.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M6–M8.
 
 ---
 
@@ -37,6 +37,8 @@
 **Allocation (`06-roadmap.md` M3 D3).** M3 had at most 5 symbols and used 5: `emitResponse` and `QuestionnaireResponse` in `@fhirq/core`, and `snapshot`, `restoreSession` and `hydrateSession` in `@fhirq/core/resume`. It paid for the rest in shapes rather than names: cross-field rules are an inline field of `SessionOptions`, the resume functions reuse `SessionOptions`, and a snapshot is typed as JSON. Five symbols remain, for M4's ports and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types; if M4 needs more than five, that is an NFR-U-05 decision, not a quiet overrun.
 
 **M4 (`06-roadmap.md` M4 D1)** used 3: `OptionResolver`, `ExpressionEvaluator` and `VisibleProjection`, the port types ADR-0012 and ADR-0017 name. Scorers, the sanitizer and the error handler are inline `SessionOptions` fields, as rules are; `RetryOptions` is a command and `dispose` a session member, neither a symbol. **Two remain** for M5–M8; the view's 15 are still the likeliest to shrink.
+
+**M5 (`06-roadmap.md` M5 D10)** kept the view at 15: the spike's per-kind node types (`YesNoViewNode`, `ShortTextViewNode`, `YesNoChoice`, `ErrorSummaryEntry`) went, and `ControlView`, `ControlProps`, `ChoiceView` and `InstanceView` came. One `ViewNode` union covers every kind, with its shared fields written inline, so no base type is left unexported. `ItemDefinition.units` is a field, not a symbol. **Two remain** for M6–M8.
 
 ## 3. `@fhirq/core`
 
@@ -312,12 +314,77 @@ Hydration never fails because of content (INV-E-08). It throws only `definition-
 
 ## 5. `@fhirq/core/view` (`@alpha`)
 
-M1's presentation-model spike: `createView(session, options)` returns a `View` with `subscribe` and `getSnapshot`, and a `ViewModel` of yes/no and short-text nodes with their ids, issues, announcement, error summary and focus target (ADR-0007). It renders only `boolean` and `string` items until M5 replaces it with the full view model. Its report notes three types it reaches without exporting them: two from `@fhirq/core`, which API Extractor does not follow across a package's two entry points, and one internal base interface. M5 resolves both when it fixes the view's surface.
+The presentation model (ADR-0007): every BC6 behaviour that is not markup, written once, for both renderers and for a headless host (tier 4, ADR-0013). `createView(session, options)` returns a `View` whose `subscribe` and `getSnapshot` go straight into `useSyncExternalStore`. `getSnapshot` returns one `ViewModel` until the session or the text being typed changes. The view holds no domain state: another view over the same session, with another locale or prefix, changes nothing in it (INV-P-01).
 
-**Messages (M4, US-07.4, ADR-0020).** `options.messages` overrides the built-in `en` catalogue key by key. A key the host leaves out, or gives as blank text or as the wrong shape (a plural needs both `one` and `other`), falls back to the default, so no string is ever empty or a raw key (INV-X-08). An issue's own message key is looked up as well. That is how a cross-field rule's key gets its text, and a key with no text falls back to the generic message. The catalogue has 18 keys, including those M5 renders for pending, failed and retried options and for an unavailable score.
+```ts
+import { createSession } from '@fhirq/core';
+import { createView } from '@fhirq/core/view';
+
+const view = createView(createSession(questionnaire), { idPrefix: 'intake', locale: 'en-GB', timeZone: 'Europe/London' });
+const model = view.getSnapshot();
+```
+
+### 5.1 Options
+
+| Option | Meaning |
+|---|---|
+| `idPrefix` | Prefixes every id, so two forms on a page cannot collide |
+| `locale` | Required. BCP 47; every date, number and count is formatted in it through `Intl` (ADR-0020). Never read from the environment |
+| `timeZone` | IANA. A `dateTime` with a time is shown in it, and a typed time of day is read in it. Without it, a `dateTime` is shown at its own offset and a time must be typed with its offset: the view never assumes UTC |
+| `messages` | Catalogue overrides, key by key (below) |
+
+### 5.2 The model
+
+`ViewModel` has `nodes` (the top-level nodes), `announcement`, `errorSummary`, `focusTarget`, `completed`, `requiredMarker`, and `labels` (fixed strings a renderer shows: `retry`, `other`, `unit`, `choose`).
+
+**The tree (M5 plan D1).** A `group` node holds `children`. A `repeating-group` node holds `instances`, each an `InstanceView` with its own `children`, `path`, `number` (1-based place), `label` ("Medicine 2"), `ids` and `remove`. **Identity:** a node is a new object only when its node state, its option set, its draft or something under it changed. An unchanged subtree keeps its object, so `React.memo` and the element's patcher skip it by reference (AC-4). Commands are bound once per path.
+
+**Every node** has `path`, `control` (a `ControlKind`), `label`, `richLabel` (the host-sanitized `rendering-xhtml`, else `null`), `description` (always `null` in v1, M5 plan D5), the four `ids` (`control`, `label`, `description`, `error`, from the item path, INV-P-02), `required`, `invalid`, `issues` (surfaced only, each a `ViewIssue` with `rule` and a filled-in `message`) and `leave()`.
+
+| `control` | For | Carries |
+|---|---|---|
+| `yes-no` | `boolean` | `value` (`boolean \| null`), `display`, `options` (keys `true`, `false`), `set(key)`, `clear()` |
+| `short-text`, `long-text` | `string`, `text` | `value`, `display`, `entry`, `entries`, `set(text)`, `setAt(index, text)`, `clear()` |
+| `integer`, `decimal` | the same types | as above, `value` a number |
+| `calendar-date`, `date-time` | `date`, `dateTime` | as above, `value` the FHIR string |
+| `quantity` | `quantity` | as above, `value` a `Quantity`, plus `units` (the permitted units as options), `unit` (typed, when none are permitted), `setUnit(keyOrText)` |
+| `single-choice`, `single-list`, `single-menu` | `choice`, `open-choice` without `repeats` | `value` (`Answer \| null`), `display`, `options`, `optionState`, `optionMessage`, `retry()`, `other`, `setOther(text)`, `set(key)`, `clear()` |
+| `multi-choice`, `multi-list` | the same with `repeats` | as above, `value` a list, `set(keys)`, `toggle(key)` |
+| `calculated` | an item with a `calculatedExpression` | `value`, `display` (the catalogue's `scoreUnavailable` while there is none) |
+| `statement` | `display` | — |
+| `group`, `repeating-group` | `group` | `children`; or `instances`, `canAdd`, `reason`, `addLabel`, `add()` |
+| `unsupported` | a lenient-mode placeholder (AC-01.3.2) | `notice` |
+
+**Control choice (INV-P-05).** `itemControl` `check-box` is honoured on a choice that repeats, and `radio-button` and `drop-down` on one that does not. Any other hint, or one that does not fit, falls back silently to the count rule: up to 5 options are all shown (`*-choice`), more are a list (`*-list`). A value set's options count once resolved.
+
+**Entry controls take text (INV-P-06, M5 plan D3).** `set(text)` gets the text as typed, in FHIR's form: `2024`, `2024-05`, `2024-05-01`, `2024-05-01T14:30`, `0.50`. There is no locale parsing (NFR-I-04). Text that is a value becomes the answer. Text that is not stays as `entry`, clears the answer, and raises `not-a-date` or `not-a-number` once the item is left or a completion is refused. So the response never holds a value the screen does not show. The view keeps drafts while they match the answers; a change from elsewhere wins. A repeating question has `entries`: one per answer and an empty one while another is allowed (AC-03.3.1). `display` is the value formatted for reading (ADR-0020). A decimal keeps the scale it was typed at while its draft lasts (ADR-0020 amendment).
+
+**Options take keys.** An option's `key` is a string, so it can be a DOM value as it is; `set`, `toggle` and `setUnit` take keys (ADR-0013 amendment note). An answer that matches no option is kept as a selected option of its own (T8). On `open-choice`, `other` is the free text: on a single choice it replaces the selected option, and the reverse (T10).
+
+**Repeats (INV-P-04).** `canAdd` is `false` at `maxOccurs`; the add control stays, inert, with `reason`. `remove` is never refused.
+
+**Issue text (AC-04.2.1).** Each built-in rule has its own default message, filled with the formatted limit and the value entered: "Enter 1,000 or more. You entered 12."
+
+**The error summary (AC-11.3.1).** After a refused completion, and while any issue is still surfaced, it lists the issues in `SessionState.issues` order: form-level ones first, with `focusId: null`, then document order and position. Each entry links to the node's control. A group's entry links to its label, and a repeating group's to its add control while it can add. `focusTarget` then names the summary.
+
+**Announcements (INV-P-03, AC-11.3.2).** At most one per cycle, naming what changed and how many: questions shown or hidden (groups are not counted), sections added or removed, answers needing attention, a refused or a finished completion. An option set settling is announced on its own (T12). `cycle` tells a repeat from a re-render. A view announces nothing and targets nothing on its first model.
+
+**Focus targets.** After a refused completion: the summary. After an add: the new instance's first control (AC-03.2.1). After a removal: the first control of the instance that took its place, else of the one before, else the add control (M5 plan D12).
+
+### 5.3 The tier-3 contract (ADR-0013)
+
+`ControlView<K>` is the node of one kind. `ControlProps<K>` is what a host's replacement control receives: `node`, `ids`, `set`, `clear` and `leave`. The replacement renders the control only. It puts `ids.control` on its focusable element, `aria-describedby` on `ids.description` and `ids.error` while they hold text, and `aria-invalid` from `node.invalid`, and it calls `leave()` when focus leaves. The kit renders the label, help, error text and required marker around it.
+
+### 5.4 Messages
+
+**Messages (M4, US-07.4, ADR-0020).** `options.messages` overrides the built-in `en` catalogue key by key. A key the host leaves out, or gives as blank text or in the wrong shape (a plural needs both `one` and `other`), falls back to the default, so no string is ever empty or a raw key (INV-X-08). An issue's own message key is looked up first. For a built-in rule that key is its code, so `'max-length': 'At most {limit}'` rewords one rule. For a cross-field rule it is the rule's key; a key with no text falls back to the generic message. The catalogue has 38 keys of NFR-I-02's 45, each documented with its context in `view/messages/en.ts`.
+
+**What the report leaves unexported.** The view's report names four types it reaches from `@fhirq/core`: `Session`, `IssueCode`, `Answer` and `Quantity`. API Extractor does not follow a package's own entry points into each other, and the resume report shows the same for its types. A host imports them from `@fhirq/core`. No internal type is left unexported.
 
 ## 6. Not in the API yet
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M5–M8:** the full view model, the React hook and default UI, the custom element's attributes and events, and the theme tokens.
+- **M6–M8:** the React hook and default UI, the custom element's attributes and events, and the theme tokens.
+- **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
+- **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).

@@ -1,11 +1,5 @@
 import type { Session } from '@fhirq/core';
-import {
-  createView,
-  type ErrorSummary,
-  type ShortTextViewNode,
-  type ViewNode,
-  type YesNoViewNode,
-} from '@fhirq/core/view';
+import { createView, type ControlView, type ErrorSummary, type ViewNode } from '@fhirq/core/view';
 import {
   memo,
   useEffect,
@@ -17,6 +11,10 @@ import {
   type MouseEvent,
   type ReactElement,
 } from 'react';
+
+/** The two control kinds the S1 slice renders; the rest are M6 (M5 plan D14). */
+type SliceNode = ControlView<'yes-no'> | ControlView<'short-text'>;
+const inSlice = (node: ViewNode): node is SliceNode => node.control === 'yes-no' || node.control === 'short-text';
 
 export interface QuestionnaireProps {
   /** A host-created session (ADR-0015). The S1 slice accepts nothing else. */
@@ -32,7 +30,8 @@ export interface QuestionnaireProps {
  */
 export function Questionnaire({ session }: QuestionnaireProps): ReactElement {
   const idPrefix = useId();
-  const view = useMemo(() => createView(session, { idPrefix }), [session, idPrefix]);
+  // A fixed locale, never sniffed, so server and client agree (ADR-0020); the `locale` option is M6.
+  const view = useMemo(() => createView(session, { idPrefix, locale: 'en' }), [session, idPrefix]);
   const model = useSyncExternalStore(view.subscribe, view.getSnapshot, view.getSnapshot);
   const form = useRef<HTMLDivElement>(null);
   const status = useRef<HTMLDivElement>(null);
@@ -49,7 +48,7 @@ export function Questionnaire({ session }: QuestionnaireProps): ReactElement {
   return (
     <div className="fhirq-form" part="form" ref={form}>
       {model.errorSummary !== null && <Summary summary={model.errorSummary} />}
-      {model.nodes.map((node) => (
+      {model.nodes.filter(inSlice).map((node) => (
         <Item key={node.path} node={node} marker={model.requiredMarker} />
       ))}
       <div className="fhirq-status" part="status" role="status" ref={status} />
@@ -58,7 +57,7 @@ export function Questionnaire({ session }: QuestionnaireProps): ReactElement {
 }
 
 interface ItemProps {
-  readonly node: ViewNode;
+  readonly node: SliceNode;
   readonly marker: string;
 }
 
@@ -90,7 +89,7 @@ function Marker({ node, marker }: ItemProps): ReactElement | null {
   ) : null;
 }
 
-function ShortText({ node, marker }: { readonly node: ShortTextViewNode; readonly marker: string }): ReactElement {
+function ShortText({ node, marker }: { readonly node: ControlView<'short-text'>; readonly marker: string }): ReactElement {
   return (
     <>
       <label className="fhirq-label" part="label" id={node.ids.label} htmlFor={node.ids.control}>
@@ -105,14 +104,14 @@ function ShortText({ node, marker }: { readonly node: ShortTextViewNode; readonl
         aria-required={node.required}
         aria-invalid={node.invalid}
         aria-describedby={node.invalid ? node.ids.error : undefined}
-        value={node.value}
+        value={node.entry}
         onChange={(event) => node.set(event.currentTarget.value)}
       />
     </>
   );
 }
 
-function YesNo({ node, marker }: { readonly node: YesNoViewNode; readonly marker: string }): ReactElement {
+function YesNo({ node, marker }: { readonly node: ControlView<'yes-no'>; readonly marker: string }): ReactElement {
   return (
     <>
       <span className="fhirq-label" part="label" id={node.ids.label}>
@@ -128,17 +127,17 @@ function YesNo({ node, marker }: { readonly node: YesNoViewNode; readonly marker
         aria-invalid={node.invalid}
         aria-describedby={node.invalid ? node.ids.error : undefined}
       >
-        {node.choices.map((choice, index) => (
-          <label key={String(choice.value)} className="fhirq-choice" part="choice">
+        {node.options.map((choice, index) => (
+          <label key={choice.key} className="fhirq-choice" part="choice">
             <input
               className="fhirq-radio"
               part="radio"
               type="radio"
               name={node.ids.control}
               id={index === 0 ? node.ids.control : undefined}
-              value={String(choice.value)}
+              value={choice.key}
               checked={choice.selected}
-              onChange={() => node.set(choice.value)}
+              onChange={() => node.set(choice.key)}
             />
             <span className="fhirq-choice-label" part="choice-label">
               {choice.label}
@@ -163,9 +162,13 @@ function Summary({ summary }: { readonly summary: ErrorSummary }): ReactElement 
       <ul className="fhirq-summary-list" part="error-summary-list">
         {summary.entries.map((entry) => (
           <li key={`${entry.path} ${entry.message}`} className="fhirq-summary-entry" part="error-summary-entry">
-            <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId)}>
-              {entry.message}
-            </a>
+            {entry.focusId === null ? (
+              entry.message
+            ) : (
+              <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId ?? '')}>
+                {entry.message}
+              </a>
+            )}
           </li>
         ))}
       </ul>
