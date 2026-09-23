@@ -384,6 +384,31 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 
 **Effort.** ASSUMPTION: 16 h.
 
+**Plan decisions, 2026-09-23.** Taken with the M5 plan, D1–D15 as recommended, plus rulings made during the build.
+
+| # | Decision | Resolution |
+|---|---|---|
+| D1 | The view's shape and "unchanged" | A tree: groups hold `children`, repeating groups `instances`, each with `children`. A node is a new object when its node state, option set, draft or anything under it changed; AC-4 reads "changed" as "itself or a descendant" |
+| D2 | Control kinds and hints | Semantic kind names, none an element or `<input type>`. `check-box` honoured on a repeating choice, `radio-button` and `drop-down` on a non-repeating one; any other or unfitting hint falls back to the count rule silently, with a matrix row. A repeating choice: up to 5 options shown, more a multi-select list. INV-P-05 amended |
+| D3 | Drafts | The view keeps typed text per path. Text that is not a value clears the answer and raises `not-a-date` or `not-a-number`, blur-then-live. A new view starts without drafts. INV-P-06 amended |
+| D4 | Entering dates and numbers | One text entry in FHIR's form, no locale parsing. A `dateTime`'s time is read in `timeZone`, or with its offset written; without either it is not a value. `display` is for reading |
+| D5 | Help text | `description` is always `null` in v1; matrix row `presentation.help-text`, not supported |
+| D6 | Quantity units | `questionnaire-unitOption` read in `fhir/r4/parse` into `ItemDefinition.units`, fixture `unit-options`. Core +0.08 kB |
+| D7 | Decimal scale | From the draft while the view holds one, from the number otherwise. ADR-0020 amendment note; matrix row `partial` |
+| D8 | The rung-2 reading | Recorded with the measured theme slice and with S1's theme band, triggering on the band |
+| D9 | View byte stop-line | Stop at 4.6 kB and trim; if trimming cannot hold 5 kB, an ADR amends the figure. It fired: see "View bytes" below |
+| D10 | Public symbols | The view stays at 15: `createView`, `View`, `ViewOptions`, `ViewModel`, `ViewNode`, `ControlKind`, `ControlView`, `ControlProps`, `NodeIds`, `ViewIssue`, `ChoiceView`, `InstanceView`, `Announcement`, `ErrorSummary`, `FocusTarget`. 58 of 60 |
+| D11 | Leaving an item | The DOM contract states it: `focusout` with `relatedTarget` outside the item root (`08-dom-contract.md` §1) |
+| D12 | Focus after removal; group summary links | The instance that took its place, else the one before, else the add control. A group issue links to the add control while it can add, else to the label |
+| D13 | Scores | The view renders no scorer result. `scoreUnavailable` is a calculated item's display while it has no value |
+| D14 | Spike renderers | Minimal edits: both compile and render `yes-no` and `short-text` from the tree; the rest waits for M6 and M7 |
+| D15 | Mutation lane | `view/*.ts` that holds code joins `stryker.config.json`. K1 tripped, and the lane runs as five shards by module (see "Mutation" below) |
+| — | Repeating questions | Not in the plan's control list, and AC-03.3.1 is a `Must`: entry kinds carry `entries` and `setAt` when the item repeats, one entry per answer plus an empty one while another is allowed |
+| — | Option commands take keys | `set`, `toggle` and `setUnit` take an option's string key, so it is a DOM value as it is. ADR-0013 amendment note, accepted 2026-09-23 |
+| — | A misplaced unit option | `questionnaire-unitOption` on a non-quantity item is `inapplicable-constraint` (INV-D-20), not silently dropped |
+| — | A view's first model | Announces nothing and targets no focus: a cycle before the view existed is not news to the respondent, and mounting never moves focus |
+| — | Summary entry text | `{label}: {message}`, now that issue messages are sentences |
+
 ---
 
 ### M6 — React adapter

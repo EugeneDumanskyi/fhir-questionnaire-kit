@@ -241,10 +241,12 @@ A **default option resolver** (plain GET against a base URL) exists for the embe
 
 | Concept | Kind | Notes |
 |---|---|---|
-| Control choice | D | From item type + presentation hint; for `choice` without a hint: ≤ 5 options → radio, > 5 → listbox (AC-01.2.2, R1). |
+| Control choice | D | From item type + presentation hint; for `choice` without a hint: ≤ 5 options → radio, > 5 → listbox (AC-01.2.2, R1). A hint is honoured only where it fits `repeats` (INV-P-05). |
 | Customization tier | VO | `defaults` \| `tokens` \| `slots` \| `headless`. Changes rendering, never engine state (AC-12.4.1). |
 | Control override | VO | Replacement for one item type; must receive value, change command, surfaced issues and accessibility identifiers (AC-10.3.1). |
-| Accessibility identifiers | VO | Per node: control id, description id, invalid flag. Derived from item path. |
+| Accessibility identifiers | VO | Per node: control, label, description and error ids, and the invalid flag. Derived from item path (INV-P-02). |
+| Draft | VO | Text typed into an entry control that is not a value yet. Held by the view, never by the engine; it clears the answer and raises *not a date* or *not a number* (INV-P-06). |
+| Focus target | VO | Where focus goes after a cycle that implies it: the error summary, a new repeat instance's first control, the neighbour of a removed one. |
 | Announcement | VO | Coalesced message per evaluation cycle: what changed, how many items (AC-11.3.2). |
 | Error summary | D | The surfaced issues after a refused completion, each linking to its node (AC-11.3.1). |
 | Unsupported placeholder | VO | For lenient-mode unsupported items (AC-01.3.2). |
@@ -561,8 +563,8 @@ Each invariant holds **at the end of every evaluation cycle** unless it says "at
 | INV-P-02 | Every surfaced issue is programmatically associated with its control; every node's control has a stable identifier derived from its item path. | AC-10.3.1, AC-11.2.2 |
 | INV-P-03 | At most one announcement per evaluation cycle, stating what changed and how many items. | AC-11.3.2, NFR-A-08 |
 | INV-P-04 | The add control of a repeating group at `maxOccurs` is inert and explains why. | AC-03.2.4 |
-| INV-P-05 | Choice control is the hinted one when the hint is honoured; otherwise ≤ 5 options → radio group, > 5 → listbox. | AC-01.2.2, R1 |
-| INV-P-06 | A date or date-time draft that is not a valid FHIR value is reported as *not a date*, distinct from BC3's range issue, and never reaches the engine. Moved here from INV-V-07 (`06-roadmap.md` M3 D2); built in M5. | AC-04.2.2 |
+| INV-P-05 | Choice control is the hinted one when the hint is honoured; otherwise ≤ 5 options → radio group, > 5 → listbox. **Amended 2026-09-23 (`06-roadmap.md` M5 D2):** a hint is honoured only where it fits `repeats`: `check-box` on a choice that repeats, `radio-button` and `drop-down` on one that does not. Any other hint, or one that does not fit, falls back to the count rule without a diagnostic. A choice that repeats shows all its options up to 5, and a multi-select list beyond. | AC-01.2.2, R1 |
+| INV-P-06 | A date or date-time draft that is not a valid FHIR value is reported as *not a date*, distinct from BC3's range issue, and never reaches the engine. Moved here from INV-V-07 (`06-roadmap.md` M3 D2); built in M5. **Amended 2026-09-23 (`06-roadmap.md` M5 D3):** the same holds for a number draft (*not a number*). A draft that is not a value clears the node's answer, so an earlier answer never stays in the response behind text the screen no longer shows. Its issue surfaces blur-then-live, as SM-03 does. Drafts belong to the view; a new view starts without them. | AC-04.2.2, AC-04.2.1 |
 
 ---
 

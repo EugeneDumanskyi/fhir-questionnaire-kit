@@ -72,3 +72,9 @@ The override renders **the control only**. The label, help text, error text, req
 - A lint or stylelint check that `base.css` contains no literal colours or lengths other than `0` and relative units derived from tokens, and no physical-direction properties (NFR-I-05).
 - Tier-3 test per renderer: override `date` with a minimal accessible control, and assert that label association, error association and `aria-invalid` hold; override with a control that omits `id`, and assert that the development diagnostic names `date` and `id`.
 - The NFR-A-01 automated gate runs across all four tiers, using the reference tier-3 and tier-4 implementations from the playground.
+
+**Amendment note, accepted 2026-09-23 (`06-roadmap.md` M5): what `set` takes.** The Decision's sketch types `set(value: AnswerOf<T>)`. M5 builds `ControlProps<K>` with `set` taking what the control holds:
+- **typed text for entry kinds** (text, numbers, dates, the quantity's value). A date or number being typed is not a value yet, and INV-P-06 keeps it out of the engine, so `set` cannot take the answer type (M5 plan D3);
+- **an option key for option kinds** (`yes-no`, the choice kinds, a quantity's unit). A key is a string, so a renderer or an override writes it as a DOM `value` and passes it back as read, and never maps a key to an answer itself.
+
+The domain value stays on the node as `node.value` (ADR-0020), so an override that wants the answer type reads it there. The obligations (`ids.control`, `aria-describedby`, `aria-invalid`, `leave()`) and the development check are unchanged. The typed-text half follows from M5 plan D3; the option-key half was M5's own choice, accepted with it.
