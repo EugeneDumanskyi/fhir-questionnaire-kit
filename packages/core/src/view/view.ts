@@ -1,323 +1,253 @@
-import type { Issue, IssueCode, ItemPath, NodeState, Session, SessionChange, SessionState } from '../index.js';
-import { fill, plural } from './format.js';
-import { nodeIds, type NodeIds } from './ids.js';
-import { en, type Messages, type PluralMessage } from './messages/en.js';
+import type { Answer, Command, ItemPath, NodeState, Session, SessionState } from '../index.js';
+import { announce } from './announce.js';
+import { choiceParts, entryType, instanceView, nodeView, type Commands, type Context } from './build.js';
+import { catalogue } from './catalogue.js';
+import { controlKind, isChoice } from './controls.js';
+import { entries, fromTexts, type Unit } from './drafts.js';
+import { focusAfter } from './focus.js';
+import { summarise } from './summary.js';
+import type { InstanceView, View, ViewModel, ViewNode, ViewOptions } from './types.js';
 
 /**
- * The presentation model's S1 field list (ADR-0007, `06-roadmap.md` M1 AC-3).
- * Every field carries meaning, never markup: no field names an element, an
- * ARIA attribute or a CSS property. `label` and `clear` are the two names
- * that coincide with an HTML element and a CSS property; both are ADR-0007's
- * own field names and are recorded as such in the deny-list test.
+ * The presentation model (ADR-0007): a pure function of the session's
+ * snapshot, the presentation options and the text being typed. Typed text is
+ * the only thing the view holds, and it is not domain state: it never reaches
+ * the engine until it is a value (INV-P-01, INV-P-06). A new view over the
+ * same session starts without it.
+ *
+ * The view is a tree (M5 plan D1). A node is a new object only when its
+ * `NodeState`, its option set, its draft or a node under it changed, so a
+ * renderer skips an unchanged subtree by reference. Commands are bound once
+ * per path, so they never change a node's identity.
  */
 
-/** @alpha */
-export interface ViewOptions {
-  /** Prefixes every id, so two forms on one page or one React tree cannot collide. */
-  readonly idPrefix: string;
-  /**
-   * Message overrides (US-07.4, ADR-0020): any key of the built-in catalogue,
-   * and the message keys an issue carries, such as a cross-field rule's. Each
-   * key falls back on its own (INV-X-08): one that is missing, empty or
-   * shaped wrong gets the built-in `en` text, and an issue whose key has no
-   * text anywhere gets the generic issue message, never the key itself.
-   */
-  readonly messages?: Readonly<Record<string, string | { readonly one: string; readonly other: string }>>;
-}
+const NONE: readonly never[] = [];
+
+/** The parent of a node path: a node, an instance (`meds[2]`), or the root (`''`). */
+const parentOf = (path: string): string => path.slice(0, Math.max(0, path.lastIndexOf('/')));
+
+/** A unit's fields that are present, so a quantity never carries an `undefined` one. */
+const unitFields = (fields: Readonly<Record<'unit' | 'system' | 'code', string | undefined>>): Unit => JSON.parse(JSON.stringify(fields)) as Unit;
 
 /**
- * Semantic control kinds. Which element and role each maps to is the DOM contract's business.
+ * Creates the presentation model over a session. The options are fixed for
+ * the view's life; another tier, theme or locale is another view over the
+ * same session, which leaves the session untouched (INV-P-01).
  *
  * @alpha
  */
-export type ControlKind = 'yes-no' | 'short-text';
-
-/** @alpha */
-export interface ViewIssue {
-  /** The rule that raised it. Not `code`, which names an HTML element. */
-  readonly rule: IssueCode;
-  readonly message: string;
-}
-
-interface ViewNodeCommon {
-  /** Item path: the key for identity, React keys and patcher records. */
-  readonly path: string;
-  readonly label: string;
-  /** Help text; the slice has none, so always `null`. */
-  readonly description: string | null;
-  readonly ids: NodeIds;
-  readonly required: boolean;
-  /** `true` exactly when there are surfaced issues. */
-  readonly invalid: boolean;
-  /** Surfaced issues only (SM-03). */
-  readonly issues: readonly ViewIssue[];
-  readonly clear: () => void;
-  /** The domain meaning of blur: `NoteItemLeft`. */
-  readonly leave: () => void;
-}
-
-/** @alpha */
-export interface YesNoChoice {
-  readonly value: boolean;
-  readonly label: string;
-  readonly selected: boolean;
-}
-
-/** @alpha */
-export interface YesNoViewNode extends ViewNodeCommon {
-  readonly control: 'yes-no';
-  /** `null` is unanswered, which FHIR `boolean` allows and a two-state control cannot show. */
-  readonly value: boolean | null;
-  readonly choices: readonly YesNoChoice[];
-  readonly set: (value: boolean) => void;
-}
-
-/** @alpha */
-export interface ShortTextViewNode extends ViewNodeCommon {
-  readonly control: 'short-text';
-  /** `''` when unanswered. */
-  readonly value: string;
-  /** `set('')` clears the answer: FHIR has no empty string. */
-  readonly set: (value: string) => void;
-}
-
-/** @alpha */
-export type ViewNode = YesNoViewNode | ShortTextViewNode;
-
-/** @alpha */
-export interface ErrorSummaryEntry {
-  readonly path: string;
-  /** The issue and the question it is about, so the link makes sense out of context. */
-  readonly message: string;
-  /** The id to move focus to: the node's control. Not `target`, which on `<a>` names a browsing context. */
-  readonly focusId: string;
-}
-
-/** @alpha */
-export interface ErrorSummary {
-  readonly id: string;
-  readonly headingId: string;
-  readonly heading: string;
-  readonly entries: readonly ErrorSummaryEntry[];
-}
-
-/**
- * One coalesced message per cycle (INV-P-03). `cycle` lets a renderer tell a repeat from a re-render.
- *
- * @alpha
- */
-export interface Announcement {
-  readonly text: string;
-  readonly cycle: number;
-}
-
-/** @alpha */
-export interface FocusTarget {
-  readonly id: string;
-  readonly cycle: number;
-}
-
-/** @alpha */
-export interface ViewModel {
-  readonly completed: boolean;
-  readonly requiredMarker: string;
-  /** Visible nodes in document order. Unchanged nodes keep their object identity. */
-  readonly nodes: readonly ViewNode[];
-  readonly announcement: Announcement | null;
-  /** Present after a refused completion while any issue is still surfaced (AC-11.3.1). */
-  readonly errorSummary: ErrorSummary | null;
-  readonly focusTarget: FocusTarget | null;
-}
-
-/**
- * A view over one session. `getSnapshot` is a pure function of the session's
- * snapshot, memoised on its identity, so it can be handed straight to
- * `useSyncExternalStore`.
- *
- * @alpha S1 spike surface.
- */
-export interface View {
-  readonly subscribe: (listener: () => void) => () => void;
-  readonly getSnapshot: () => ViewModel;
-}
-
-interface Commands {
-  readonly setYesNo: (value: boolean) => void;
-  readonly setText: (value: string) => void;
-  readonly clear: () => void;
-  readonly leave: () => void;
-}
-
-const NO_ISSUES: readonly ViewIssue[] = [];
-
-/** Text a person can read: a non-empty string, not blanks. */
-const readable = (value: unknown): value is string => typeof value === 'string' && value.trim() !== '';
-
-/**
- * The catalogue with the host's overrides, key by key (INV-X-08). A key is
- * looked up as an own property only, so no inherited name can answer for it.
- */
-function catalogue(overrides: ViewOptions['messages'] = {}): Messages & { readonly issue: (issue: Issue) => string } {
-  const own = (key: string): unknown => (Object.hasOwn(overrides, key) ? overrides[key] : undefined);
-  const merged: Record<string, unknown> = {};
-  for (const [key, fallback] of Object.entries(en)) {
-    const given = own(key) as Partial<PluralMessage> | undefined;
-    const fits = typeof fallback === 'string' ? readable(given) : readable(given?.one) && readable(given?.other);
-    merged[key] = fits ? given : fallback;
-  }
-  const messages = merged as Messages;
-  // The spike's issue text: the issue's own key when the host gave it text, else required or generic.
-  // M5 writes one default per rule and fills in the limit and the entered value (M3 plan D1).
-  const issue = ({ code, message }: Issue): string => {
-    const given = own(message);
-    return readable(given) ? given : code === 'required' ? messages.issueRequired : messages.issueInvalid;
-  };
-  return { ...messages, issue };
-}
-
-/** @alpha S1 spike surface. */
 export function createView(session: Session, options: ViewOptions): View {
+  const { idPrefix, locale, timeZone } = options;
   const messages = catalogue(options.messages);
-  const summaryId = `${options.idPrefix}-summary`;
-  const cache = new Map<string, { readonly state: NodeState; readonly view: ViewNode }>();
+  const labels = { retry: messages.optionsRetry, other: messages.other, unit: messages.unit, choose: messages.optionsChoose };
+  /** Text as typed, by path: one entry per answer (INV-P-06). */
+  const drafts = new Map<string, readonly string[]>();
+  /** A unit chosen before a value is typed, by path. */
+  const units = new Map<string, string>();
+  /** Paths the respondent has left: a draft's issue shows once its node is left (blur-then-live, as SM-03). */
+  const left = new Set<string>();
+  /** Paths whose draft issue a `leave` surfaced since the last model, for its announcement. */
+  let surfacedDrafts = new Set<string>();
   const commands = new Map<string, Commands>();
+  const memo = new Map<string, { readonly inputs: readonly unknown[]; readonly value: unknown }>();
+  const listeners = new Set<() => void>();
+  let version = 0;
   let lastState: SessionState | undefined;
+  let lastVersion = -1;
   let lastModel: ViewModel | undefined;
+  let lastIndex: ReadonlyMap<string, ViewNode | InstanceView> = new Map();
 
-  const commandsFor = (path: ItemPath): Commands => {
+  const stateOf = (path: string): NodeState | undefined => session.getSnapshot().nodes.find((node) => node.path === path);
+
+  /** Runs a command. A change the view made itself reaches the listeners even when the session had nothing to notify. */
+  const run = (command: Command | null, changed: boolean): void => {
+    if (changed) version += 1;
+    const outcome = command === null ? null : session.dispatch(command).outcome;
+    if (changed && outcome !== 'applied' && outcome !== 'deferred') for (const listener of [...listeners]) listener();
+  };
+
+  /** A quantity's unit: its answer's, else the one chosen while there was no value. */
+  const chosenUnit = (state: NodeState): Unit => {
+    const chosen = units.get(state.path);
+    if (chosen === undefined || chosen === '') return {};
+    if (state.item.units.length === 0) return { unit: chosen };
+    const coding = state.item.units[Number(chosen)];
+    return coding === undefined ? {} : unitFields({ unit: coding.display ?? coding.code, system: coding.system, code: coding.code });
+  };
+  const unitOf = (state: NodeState): Unit => {
+    const [first] = state.answers;
+    return first?.kind === 'quantity' ? unitFields({ unit: first.value.unit, system: first.value.system, code: first.value.code }) : chosenUnit(state);
+  };
+
+  const textsOf = (state: NodeState) => entries(entryType(state) ?? 'string', state.answers, drafts.get(state.path), timeZone, unitOf(state));
+
+  /** Types `texts` into the node: the entries that are values become its answers, the rest stay a draft (INV-P-06). */
+  const type = (state: NodeState, typed: readonly string[], unit = unitOf(state)): void => {
+    const texts = [...typed];
+    while (texts.at(-1) === '') texts.pop();
+    drafts.set(state.path, texts);
+    const { answers } = fromTexts(entryType(state) ?? 'string', texts, timeZone, unit);
+    const path = state.path;
+    run(answers.length > 0 ? { type: 'SetAnswer', path, answers } : { type: 'ClearAnswer', path }, true);
+  };
+
+  /** Sends a choice's answers: the picked options, then the free text, if any. */
+  const choose = (state: NodeState, picked: readonly Answer[], other: string | null): void => {
+    const answers = other === null || other === '' ? picked : [...picked, { kind: 'string' as const, value: other }];
+    const path = state.path;
+    run(answers.length > 0 ? { type: 'SetAnswer', path, answers } : { type: 'ClearAnswer', path }, false);
+  };
+
+  const commandsFor = (path: string): Commands => {
     let bound = commands.get(path);
-    if (bound === undefined) {
-      const clear = () => void session.dispatch({ type: 'ClearAnswer', path });
-      bound = {
-        setYesNo: (value) => void session.dispatch({ type: 'SetAnswer', path, answers: [{ kind: 'boolean', value }] }),
-        setText: (value) =>
-          value === '' ? clear() : void session.dispatch({ type: 'SetAnswer', path, answers: [{ kind: 'string', value }] }),
-        clear,
-        leave: () => void session.dispatch({ type: 'NoteItemLeft', path }),
-      };
-      commands.set(path, bound);
-    }
+    if (bound !== undefined) return bound;
+    const at = path as ItemPath;
+    /** Runs `act` on the node's current state, if it is still visible. */
+    const on = <A extends unknown[]>(act: (state: NodeState, ...args: A) => void) => (...args: A) => {
+      const state = stateOf(path);
+      if (state !== undefined) act(state, ...args);
+    };
+    const choices = (state: NodeState) => choiceParts(state, { sets: session.getSnapshot().optionSets, messages, locale, timeZone });
+    const setAt = on((state, index: number, text: string) => {
+      const texts = [...textsOf(state).texts];
+      texts[index] = text;
+      type(state, Array.from(texts, (entry) => entry ?? ''));
+    });
+    bound = {
+      set: on((state, value: string | readonly string[]) => {
+        const kind = controlKind(state.item, 0);
+        if (kind === 'yes-no') run({ type: 'SetAnswer', path: at, answers: [{ kind: 'boolean', value: value === 'true' }] }, false);
+        else if (!isChoice(kind)) setAt(0, String(value));
+        else {
+          const { options, answers, other } = choices(state);
+          const keys: readonly string[] = typeof value === 'string' ? [value] : value;
+          choose(state, answers.filter((_, i) => keys.includes(options[i]?.key ?? '')), state.item.repeats ? other : null);
+        }
+      }),
+      setAt,
+      setUnit: on((state, unit: string) => {
+        units.set(path, unit);
+        // Re-sent with the new unit; with no value yet, the choice waits for one.
+        if (state.answers.length > 0) type(state, textsOf(state).texts, chosenUnit(state));
+        else run(null, true);
+      }),
+      setOther: on((state, text: string) => {
+        const { answers, options } = choices(state);
+        choose(state, state.item.repeats ? answers.filter((_, i) => options[i]?.selected === true) : NONE, text);
+      }),
+      toggle: on((state, key: string) => {
+        const { options, answers, other } = choices(state);
+        choose(state, answers.filter((_, i) => (options[i]?.key === key) !== (options[i]?.selected === true)), other);
+      }),
+      clear: () => {
+        drafts.delete(path);
+        run({ type: 'ClearAnswer', path: at }, true);
+      },
+      leave: () => {
+        const state = stateOf(path);
+        const surfaces = !left.has(path) && state !== undefined && entryType(state) !== null && textsOf(state).invalid;
+        left.add(path);
+        if (surfaces) surfacedDrafts.add(path);
+        run({ type: 'NoteItemLeft', path: at }, surfaces);
+      },
+      retry: on((state) => {
+        if (state.item.valueSet !== null) run({ type: 'RetryOptions', valueSet: state.item.valueSet }, false);
+      }),
+      add: () => run({ type: 'AddRepeatInstance', path: at }, false),
+      remove: () => {
+        const open = path.lastIndexOf('[');
+        run({ type: 'RemoveRepeatInstance', path: path.slice(0, open) as ItemPath, ordinal: Number(path.slice(open + 1, -1)) }, false);
+      },
+    };
+    commands.set(path, bound);
     return bound;
   };
 
-  const nodeView = (state: NodeState): ViewNode => {
-    const cached = cache.get(state.path);
-    if (cached?.state === state) return cached.view;
-    const view = buildNode(state, nodeIds(options.idPrefix, state.path), commandsFor(state.path), messages);
-    cache.set(state.path, { state, view });
-    return view;
+  /**
+   * The view tree: nodes under their parents, instances under their groups,
+   * each kept by identity while nothing it is built from changed (M5 plan D1).
+   * Also indexes every node and instance by path, for focus targets.
+   */
+  const tree = (state: SessionState) => {
+    const cx: Context = { messages, locale, timeZone, idPrefix, sets: state.optionSets, commands: commandsFor, texts: textsOf, unit: unitOf };
+    const under = new Map<string, NodeState[]>();
+    for (const node of state.nodes) {
+      const parent = parentOf(node.path);
+      const siblings = under.get(parent) ?? [];
+      siblings.push(node);
+      under.set(parent, siblings);
+    }
+    const seen = new Set<string>();
+    const index = new Map<string, ViewNode | InstanceView>();
+    /** The cached value when every input is the same object as last time; otherwise a new one. */
+    const keep = <T extends ViewNode | InstanceView>(key: string, inputs: readonly unknown[], make: () => T): T => {
+      seen.add(key);
+      const hit = memo.get(key);
+      const same = hit !== undefined && hit.inputs.length === inputs.length && hit.inputs.every((input, i) => input === inputs[i]);
+      const value = same ? (hit.value as T) : make();
+      if (!same) memo.set(key, { inputs, value });
+      index.set(key, value);
+      return value;
+    };
+    const make = (node: NodeState): ViewNode => {
+      const { path, item } = node;
+      const children = (under.get(path) ?? NONE).map(make);
+      const instances = node.instances.map((ordinal, position) => {
+        const at = `${path}[${ordinal}]`;
+        const inside = (under.get(at) ?? NONE).map(make);
+        return keep(at, [item, position, ...inside], () => instanceView(at, position + 1, item.text, inside, cx));
+      });
+      const draft = drafts.get(path);
+      // A draft's issue shows once the node is left or a completion is refused.
+      const shown = draft !== undefined && (left.has(path) || state.completionRefused);
+      const set = item.valueSet === null ? null : state.optionSets[item.valueSet];
+      return keep(path, [node, set, draft, units.get(path), shown, ...children, NONE, ...instances], () => nodeView(node, children, instances, shown, cx));
+    };
+    const nodes = (under.get('') ?? NONE).map(make);
+    for (const key of memo.keys()) if (!seen.has(key)) memo.delete(key);
+    return { nodes, index };
   };
 
   const build = (state: SessionState, previous: ViewModel | undefined): ViewModel => {
-    const built = state.nodes.filter(rendered).map(nodeView);
+    const { nodes: built, index } = tree(state);
     const same = previous !== undefined && built.length === previous.nodes.length && built.every((node, i) => node === previous.nodes[i]);
     const nodes = same ? previous.nodes : built;
-    const errorSummary = summarise(state, nodes, summaryId, messages, previous?.errorSummary ?? null);
+    // A view announces and moves focus for the cycles it sees after its first model, not for one before it existed.
+    const fresh = lastState !== undefined && state !== lastState;
+    const errorSummary = summarise(state, nodes, idPrefix, messages, locale, timeZone, previous?.errorSummary ?? null);
+    const surfaced = surfacedDrafts;
+    surfacedDrafts = new Set();
+    const announcement = fresh || surfaced.size > 0 ? announce(state, lastState, fresh, surfaced, errorSummary, messages, locale) : (previous?.announcement ?? null);
+    const focusTarget = fresh ? focusAfter(state, index, lastIndex, errorSummary) : (previous?.focusTarget ?? null);
+    lastIndex = index;
     return {
       completed: state.status === 'completed',
       requiredMarker: messages.requiredMarker,
+      labels,
       nodes,
-      announcement: announce(state.change, state.cycle, errorSummary, messages),
+      announcement,
       errorSummary,
-      focusTarget: state.change?.completion === 'refused' ? { id: summaryId, cycle: state.cycle } : null,
+      focusTarget,
     };
   };
 
   return {
-    subscribe: (listener) => session.subscribe(() => listener()),
+    subscribe(listener) {
+      listeners.add(listener);
+      const unsubscribe = session.subscribe(() => listener());
+      return () => {
+        listeners.delete(listener);
+        unsubscribe();
+      };
+    },
     getSnapshot() {
       const state = session.getSnapshot();
-      if (state !== lastState || lastModel === undefined) {
+      if (state !== lastState || version !== lastVersion || lastModel === undefined) {
         lastModel = build(state, lastModel);
         lastState = state;
+        lastVersion = version;
       }
       return lastModel;
     },
   };
-}
-
-/**
- * The two control kinds M1 built. Other item types reach the snapshot from M2
- * but are not rendered until M5 writes their controls (M2 plan D9).
- */
-function rendered(state: NodeState): boolean {
-  return state.item.type === 'boolean' || state.item.type === 'string';
-}
-
-function buildNode(state: NodeState, ids: NodeIds, commands: Commands, messages: ReturnType<typeof catalogue>): ViewNode {
-  const issues = state.surfaced && state.issues.length > 0
-    ? state.issues.map((issue): ViewIssue => ({ rule: issue.code, message: messages.issue(issue) }))
-    : NO_ISSUES;
-  const common = {
-    path: state.path,
-    label: state.item.text,
-    description: null,
-    ids,
-    required: state.item.required,
-    invalid: issues.length > 0,
-    issues,
-    clear: commands.clear,
-    leave: commands.leave,
-  };
-  const [answer] = state.answers;
-  if (state.item.type === 'boolean') {
-    const value = answer?.kind === 'boolean' ? answer.value : null;
-    return {
-      ...common,
-      control: 'yes-no',
-      value,
-      choices: [
-        { value: true, label: messages.yes, selected: value === true },
-        { value: false, label: messages.no, selected: value === false },
-      ],
-      set: commands.setYesNo,
-    };
-  }
-  return {
-    ...common,
-    control: 'short-text',
-    value: answer?.kind === 'string' ? answer.value : '',
-    set: commands.setText,
-  };
-}
-
-function summarise(
-  state: SessionState,
-  nodes: readonly ViewNode[],
-  id: string,
-  messages: Messages,
-  previous: ErrorSummary | null,
-): ErrorSummary | null {
-  if (!state.completionRefused || state.status === 'completed') return null;
-  const entries = nodes.flatMap((node) =>
-    node.issues.map((issue): ErrorSummaryEntry => ({
-      path: node.path,
-      message: fill(messages.errorSummaryEntry, { message: issue.message, label: node.label }),
-      focusId: node.ids.control,
-    })),
-  );
-  if (entries.length === 0) return null;
-  const unchanged =
-    previous !== null &&
-    previous.entries.length === entries.length &&
-    previous.entries.every((entry, i) => entry.path === entries[i]?.path && entry.message === entries[i]?.message);
-  return unchanged ? previous : { id, headingId: `${id}-heading`, heading: messages.errorSummaryHeading, entries };
-}
-
-function announce(
-  change: SessionChange | null,
-  cycle: number,
-  errorSummary: ErrorSummary | null,
-  messages: Messages,
-): Announcement | null {
-  if (change === null) return null;
-  const parts: string[] = [];
-  if (change.completion === 'refused') parts.push(plural(messages.announceRefused, errorSummary?.entries.length ?? 0));
-  if (change.completion === 'completed') parts.push(messages.announceCompleted);
-  if (change.enabled.length > 0) parts.push(plural(messages.announceShown, change.enabled.length));
-  if (change.disabled.length > 0) parts.push(plural(messages.announceHidden, change.disabled.length));
-  if (change.completion === null && change.surfaced.length > 0) {
-    parts.push(plural(messages.announceIssues, change.surfaced.length));
-  }
-  return parts.length > 0 ? { text: parts.join(' '), cycle } : null;
 }

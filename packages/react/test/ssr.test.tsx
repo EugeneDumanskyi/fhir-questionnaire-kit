@@ -46,6 +46,6 @@ describe(`server rendering on React ${version}`, () => {
     expect(html).toContain(`data-path="${AMOUNT}"`);
     expect(html).toContain('aria-invalid="true"');
     expect(html).toMatch(/<section class="fhirq-summary"[^>]*tabindex="-1"/);
-    expect(html).toContain('Answer this question: How much do you smoke per day?');
+    expect(html).toContain('How much do you smoke per day?: Answer this question');
   });
 });

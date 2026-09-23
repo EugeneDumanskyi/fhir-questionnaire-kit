@@ -4,7 +4,7 @@ import base from '@fhirq/themes/base.css';
 import preset from '@fhirq/themes/default.css';
 
 import { el } from './dom.js';
-import { createItem, summaryPart, type ItemRecord } from './items.js';
+import { createItem, inSlice, summaryPart, type ItemRecord } from './items.js';
 
 /** One parsed sheet per stylesheet, shared by every instance (ADR-0014). */
 let sheets: CSSStyleSheet[] | undefined;
@@ -58,7 +58,8 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#rendered = null;
     this.#session = session;
     // Ids are scoped by the shadow root, so a fixed prefix cannot collide (ADR-0014).
-    this.#view = session === null ? null : createView(session, { idPrefix: 'fhirq' });
+    // `lang` and the `locale` property are M7 (ADR-0020); the slice formats nothing.
+    this.#view = session === null ? null : createView(session, { idPrefix: 'fhirq', locale: 'en' });
     if (this.isConnected) this.connectedCallback();
   }
 
@@ -100,7 +101,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
 
   #onChange(event: Event): void {
     const node = this.#recordOf(event.target)?.node;
-    if (node?.control === 'yes-no' && event.target instanceof HTMLInputElement) node.set(event.target.value === 'true');
+    if (node?.control === 'yes-no' && event.target instanceof HTMLInputElement) node.set(event.target.value);
   }
 
   #onFocusOut(event: FocusEvent): void {
@@ -138,7 +139,8 @@ export class FhirQuestionnaireElement extends HTMLElement {
    * around existing ones, so a focused control is never detached.
    */
   #patchItems(model: ViewModel): void {
-    const visible = new Set(model.nodes.map((node) => node.path));
+    const nodes = model.nodes.filter(inSlice);
+    const visible = new Set(nodes.map((node) => node.path));
     for (const [path, record] of this.#records) {
       if (!visible.has(path)) {
         record.root.remove();
@@ -146,7 +148,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
       }
     }
     let cursor: Element | null = this.#form.querySelector('.fhirq-summary')?.nextElementSibling ?? this.#form.firstElementChild;
-    for (const node of model.nodes) {
+    for (const node of nodes) {
       let record = this.#records.get(node.path);
       if (record === undefined) {
         record = createItem(node, model.requiredMarker);

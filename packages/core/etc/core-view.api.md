@@ -13,7 +13,38 @@ export interface Announcement {
 }
 
 // @alpha
-export type ControlKind = 'yes-no' | 'short-text';
+export interface ChoiceView {
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly label: string;
+    // (undocumented)
+    readonly selected: boolean;
+}
+
+// @alpha
+export type ControlKind = 'yes-no' | 'short-text' | 'long-text' | 'integer' | 'decimal' | 'calendar-date' | 'date-time' | 'quantity' | 'single-choice' | 'single-list' | 'single-menu' | 'multi-choice' | 'multi-list' | 'calculated' | 'statement' | 'group' | 'repeating-group' | 'unsupported';
+
+// @alpha
+export interface ControlProps<K extends ControlKind> {
+    // (undocumented)
+    readonly clear: () => void;
+    // (undocumented)
+    readonly ids: NodeIds;
+    // (undocumented)
+    readonly leave: () => void;
+    // (undocumented)
+    readonly node: ControlView<K>;
+    // (undocumented)
+    readonly set: ControlView<K> extends {
+        readonly set: infer S;
+    } ? S : never;
+}
+
+// @alpha
+export type ControlView<K extends ControlKind> = ViewNode & {
+    readonly control: K;
+};
 
 // Warning: (ae-forgotten-export) The symbol "Session" needs to be exported by the entry point index.d.ts
 //
@@ -22,8 +53,11 @@ export function createView(session: Session, options: ViewOptions): View;
 
 // @alpha (undocumented)
 export interface ErrorSummary {
-    // (undocumented)
-    readonly entries: readonly ErrorSummaryEntry[];
+    readonly entries: readonly {
+        readonly path: string | null;
+        readonly message: string;
+        readonly focusId: string | null;
+    }[];
     // (undocumented)
     readonly heading: string;
     // (undocumented)
@@ -32,20 +66,26 @@ export interface ErrorSummary {
     readonly id: string;
 }
 
-// @alpha (undocumented)
-export interface ErrorSummaryEntry {
-    readonly focusId: string;
-    readonly message: string;
-    // (undocumented)
-    readonly path: string;
-}
-
-// @alpha (undocumented)
+// @alpha
 export interface FocusTarget {
     // (undocumented)
     readonly cycle: number;
     // (undocumented)
     readonly id: string;
+}
+
+// @alpha
+export interface InstanceView {
+    // (undocumented)
+    readonly children: readonly ViewNode[];
+    // (undocumented)
+    readonly ids: NodeIds;
+    readonly label: string;
+    readonly number: number;
+    readonly path: string;
+    readonly remove: () => void;
+    // (undocumented)
+    readonly removeLabel: string;
 }
 
 // @alpha (undocumented)
@@ -60,16 +100,6 @@ export interface NodeIds {
     readonly label: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ViewNodeCommon" needs to be exported by the entry point index.d.ts
-//
-// @alpha (undocumented)
-export interface ShortTextViewNode extends ViewNodeCommon {
-    // (undocumented)
-    readonly control: 'short-text';
-    readonly set: (value: string) => void;
-    readonly value: string;
-}
-
 // @alpha
 export interface View {
     // (undocumented)
@@ -80,10 +110,9 @@ export interface View {
 
 // @alpha (undocumented)
 export interface ViewIssue {
-    // (undocumented)
     readonly message: string;
     // Warning: (ae-forgotten-export) The symbol "IssueCode" needs to be exported by the entry point index.d.ts
-    readonly rule: IssueCode;
+    readonly rule: IssueCode | 'not-a-date' | 'not-a-number';
 }
 
 // @alpha (undocumented)
@@ -95,43 +124,110 @@ export interface ViewModel {
     readonly errorSummary: ErrorSummary | null;
     // (undocumented)
     readonly focusTarget: FocusTarget | null;
+    readonly labels: {
+        readonly retry: string;
+        readonly other: string;
+        readonly unit: string;
+        readonly choose: string;
+    };
     readonly nodes: readonly ViewNode[];
     // (undocumented)
     readonly requiredMarker: string;
 }
 
-// @alpha (undocumented)
-export type ViewNode = YesNoViewNode | ShortTextViewNode;
+// @alpha
+export type ViewNode = {
+    readonly path: string;
+    readonly control: ControlKind;
+    readonly label: string;
+    readonly richLabel: string | null;
+    readonly description: string | null;
+    readonly ids: NodeIds;
+    readonly required: boolean;
+    readonly invalid: boolean;
+    readonly issues: readonly ViewIssue[];
+    readonly leave: () => void;
+} & ({
+    readonly control: 'yes-no';
+    readonly value: boolean | null;
+    readonly display: string;
+    readonly options: readonly ChoiceView[];
+    readonly set: (key: string) => void;
+    readonly clear: () => void;
+} | ({
+    readonly value: string | number | Quantity | null;
+    readonly display: string;
+    readonly entry: string;
+    readonly entries: readonly string[] | null;
+    readonly set: (text: string) => void;
+    readonly setAt: (index: number, text: string) => void;
+    readonly clear: () => void;
+} & ({
+    readonly control: 'short-text' | 'long-text' | 'calendar-date' | 'date-time';
+    readonly value: string | null;
+} | {
+    readonly control: 'integer' | 'decimal';
+    readonly value: number | null;
+} | {
+    readonly control: 'quantity';
+    readonly value: Quantity | null;
+    readonly units: readonly ChoiceView[];
+    readonly unit: string;
+    readonly setUnit: (unit: string) => void;
+})) | ({
+    readonly display: string;
+    readonly options: readonly ChoiceView[];
+    readonly optionState: 'ready' | 'pending' | 'failed' | 'unavailable';
+    readonly optionMessage: string | null;
+    readonly retry: () => void;
+    readonly other: string | null;
+    readonly setOther: (text: string) => void;
+    readonly clear: () => void;
+} & ({
+    readonly control: 'single-choice' | 'single-list' | 'single-menu';
+    readonly value: Answer | null;
+    readonly set: (key: string) => void;
+} | {
+    readonly control: 'multi-choice' | 'multi-list';
+    readonly value: readonly Answer[];
+    readonly set: (keys: readonly string[]) => void;
+    readonly toggle: (key: string) => void;
+})) | {
+    readonly control: 'calculated';
+    readonly value: Answer | null;
+    readonly display: string;
+} | {
+    readonly control: 'statement';
+} | {
+    readonly control: 'unsupported';
+    readonly notice: string;
+} | {
+    readonly control: 'group';
+    readonly children: readonly ViewNode[];
+} | {
+    readonly control: 'repeating-group';
+    readonly instances: readonly InstanceView[];
+    readonly canAdd: boolean;
+    readonly reason: string | null;
+    readonly addLabel: string;
+    readonly add: () => void;
+});
 
 // @alpha (undocumented)
 export interface ViewOptions {
     readonly idPrefix: string;
+    readonly locale: string;
     readonly messages?: Readonly<Record<string, string | {
         readonly one: string;
         readonly other: string;
     }>>;
+    readonly timeZone?: string;
 }
 
-// @alpha (undocumented)
-export interface YesNoChoice {
-    // (undocumented)
-    readonly label: string;
-    // (undocumented)
-    readonly selected: boolean;
-    // (undocumented)
-    readonly value: boolean;
-}
-
-// @alpha (undocumented)
-export interface YesNoViewNode extends ViewNodeCommon {
-    // (undocumented)
-    readonly choices: readonly YesNoChoice[];
-    // (undocumented)
-    readonly control: 'yes-no';
-    // (undocumented)
-    readonly set: (value: boolean) => void;
-    readonly value: boolean | null;
-}
+// Warnings were encountered during analysis:
+//
+// src/view/types.ts:156:7 - (ae-forgotten-export) The symbol "Quantity" needs to be exported by the entry point index.d.ts
+// src/view/types.ts:198:11 - (ae-forgotten-export) The symbol "Answer" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

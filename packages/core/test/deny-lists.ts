@@ -87,13 +87,14 @@ export const CSS_PROPERTIES = words(`
  * these are domain names an accepted ADR gave the field. Every entry here is a
  * question for the AC-3 reviewer, not a silent pass.
  *
- * `display` (ADR-0020's formatted text) is already decided as the third, on
- * 2026-09-17. It is added here with the field in M5, not before: the test
- * requires every entry to be in use.
+ * `display` (ADR-0020's formatted text) was decided as the third on
+ * 2026-09-17 and added with the field in M5: the test requires every entry to
+ * be in use.
  */
 export const ALLOWED_COINCIDENCES: Readonly<Record<string, string>> = {
   label: 'ADR-0007 Decision names the view node field "label" and the id "label" (the item text); it is not <label>',
   clear: 'ADR-0007 Decision and ADR-0013 ControlProps name the bound command "clear"; it is not the CSS property',
+  display: 'ADR-0020 Decision names the formatted value "display", FHIR\'s own word for rendered text (Coding.display); it is not the CSS property',
 };
 
 const kebab = (name: string): string => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);

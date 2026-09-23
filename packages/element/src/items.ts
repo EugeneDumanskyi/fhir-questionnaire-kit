@@ -1,15 +1,19 @@
-import type { ErrorSummary, ShortTextViewNode, ViewModel, ViewNode, YesNoViewNode } from '@fhirq/core/view';
+import type { ControlView, ErrorSummary, ViewModel, ViewNode } from '@fhirq/core/view';
 
 import { attr, el, text } from './dom.js';
+
+/** The two control kinds the S1 slice renders; the rest are M7 (M5 plan D14). */
+export type SliceNode = ControlView<'yes-no'> | ControlView<'short-text'>;
+export const inSlice = (node: ViewNode): node is SliceNode => node.control === 'yes-no' || node.control === 'short-text';
 
 /**
  * One item's DOM, created once per item path and patched in place for as
  * long as the path is visible. Markup follows docs/08-dom-contract.md.
  */
 export interface ItemRecord {
-  node: ViewNode;
+  node: SliceNode;
   readonly root: HTMLElement;
-  update(node: ViewNode, marker: string): void;
+  update(node: SliceNode, marker: string): void;
 }
 
 /** Label text plus the required marker, which is visual only. */
@@ -55,7 +59,7 @@ function controlState(control: HTMLElement, node: ViewNode): void {
   attr(control, 'aria-describedby', node.invalid ? node.ids.error : null);
 }
 
-function shortText(node: ShortTextViewNode): ItemRecord {
+function shortText(node: ControlView<'short-text'>): ItemRecord {
   const root = el('div', 'fhirq-item', 'item');
   const label = el('label', 'fhirq-label', 'label', root);
   const updateLabel = labelParts(label);
@@ -67,7 +71,7 @@ function shortText(node: ShortTextViewNode): ItemRecord {
     node,
     root,
     update(next, marker) {
-      const current = next as ShortTextViewNode;
+      const current = next as ControlView<'short-text'>;
       record.node = current;
       attr(root, 'data-path', current.path);
       attr(label, 'id', current.ids.label);
@@ -76,24 +80,24 @@ function shortText(node: ShortTextViewNode): ItemRecord {
       attr(input, 'id', current.ids.control);
       controlState(input, current);
       // The caret survives because an equal value is never written back.
-      if (input.value !== current.value) input.value = current.value;
+      if (input.value !== current.entry) input.value = current.entry;
       updateError(current);
     },
   };
   return record;
 }
 
-function yesNo(node: YesNoViewNode): ItemRecord {
+function yesNo(node: ControlView<'yes-no'>): ItemRecord {
   const root = el('div', 'fhirq-item', 'item');
   const label = el('span', 'fhirq-label', 'label', root);
   const updateLabel = labelParts(label);
   const group = el('div', 'fhirq-choices', 'choices', root);
   group.setAttribute('role', 'radiogroup');
-  const radios = node.choices.map((choice) => {
+  const radios = node.options.map((choice) => {
     const wrapper = el('label', 'fhirq-choice', 'choice', group);
     const radio = el('input', 'fhirq-radio', 'radio', wrapper);
     radio.type = 'radio';
-    radio.value = String(choice.value);
+    radio.value = choice.key;
     const caption = el('span', 'fhirq-choice-label', 'choice-label', wrapper);
     return { radio, caption: caption.appendChild(document.createTextNode('')) };
   });
@@ -103,14 +107,14 @@ function yesNo(node: YesNoViewNode): ItemRecord {
     node,
     root,
     update(next, marker) {
-      const current = next as YesNoViewNode;
+      const current = next as ControlView<'yes-no'>;
       record.node = current;
       attr(root, 'data-path', current.path);
       attr(label, 'id', current.ids.label);
       updateLabel(current, marker);
       attr(group, 'aria-labelledby', current.ids.label);
       controlState(group, current);
-      current.choices.forEach((choice, index) => {
+      current.options.forEach((choice, index) => {
         const parts = radios[index];
         if (parts === undefined) return;
         // Same-name native radios give the roving tab stop and arrow keys (NFR-A-07).
@@ -125,7 +129,7 @@ function yesNo(node: YesNoViewNode): ItemRecord {
   return record;
 }
 
-export function createItem(node: ViewNode, marker: string): ItemRecord {
+export function createItem(node: SliceNode, marker: string): ItemRecord {
   const record = node.control === 'yes-no' ? yesNo(node) : shortText(node);
   record.update(node, marker);
   return record;
@@ -153,8 +157,10 @@ export function summaryPart(form: HTMLElement) {
     heading.textContent = summary.heading;
     const list = el('ul', 'fhirq-summary-list', 'error-summary-list');
     for (const entry of summary.entries) {
-      const link = el('a', 'fhirq-summary-link', 'error-summary-link', el('li', 'fhirq-summary-entry', 'error-summary-entry', list));
-      link.href = `#${entry.focusId}`;
+      const item = el('li', 'fhirq-summary-entry', 'error-summary-entry', list);
+      // A form-level issue has no item to link to.
+      const link = entry.focusId === null ? item : el('a', 'fhirq-summary-link', 'error-summary-link', item);
+      if (link instanceof HTMLAnchorElement) link.href = `#${entry.focusId ?? ''}`;
       link.textContent = entry.message;
     }
     section.replaceChildren(heading, list);
