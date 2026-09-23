@@ -75,3 +75,14 @@ M2's later steps added three suites that S2 never timed: the generated propertie
 - **K2 is not near.** The blocking pipeline runs in about 3 min wall-clock, because its lanes run in parallel.
 
 **Watch in M3.** §5's growth estimate stands, and the static-mutant share makes it steeper. Every test file M3 adds is paid for once per static mutant. The next reliefs, in order: keep slow tests out of the mutation suite as here; split the lane into a matrix of jobs by module; `ignoreStatic` only as the maintainer's call, since it drops the D2 and D3 table mutants.
+
+## 8. Addendum, 2026-09-23: K1 triggered at M5, and relieved twice
+
+M5 added the view's ten modules to the mutated set (M5 plan D15): 1,376 mutants, 83 % of them static. A full run over the view took 908 s locally on 11 workers, about 40 min projected on the 4-core runner. **K1 triggered**, and so would the 10-minute pipeline figure and the nightly job's 60-minute timeout.
+
+- **Cause.** The static share was a test, not the modules. `test/view-fields.test.ts` built its models in `beforeAll`. StrykerJS counts a `beforeAll` as outside any test, just like the time a file is collected. Every module the models reach was static, and that is most of the view and the session. The test now builds inside each test. Static mutants fell to 59 of 1,376 in the view and 176 of 1,343 in the engine. That test has run since M1 (AC-3), so it is the likeliest source of §7's 84 %, which §7 put down to the D2 and D3 tables.
+- **The relief taken, first.** The test fix. A full run over the view took 379 s instead of 908 s.
+- **The relief taken, second.** §7's next relief: the lane is a matrix of shards by module, in the pull-request lane and nightly (`scripts/mutation-shard.mjs`: enablement, session, rules, view-tree, view-parts). Full runs locally: 250, 259, 159, 215 and 222 s. Every module stays mutated, and each shard holds 80 % on its own. `ignoreStatic` was not needed.
+- **A lower score, and a truer one.** The view scores 87.3 % where the earlier, mostly static run reported 96.58 %. §5's warning is the likeliest reason: on a loaded machine, timeouts count as kills. Survivors applied by hand pass the whole core suite.
+
+**Watch in M6.** These figures are local. The branch's first pull-request run and the first sharded nightly give the runner's. A shard that stays over K1 on an ordinary pull request splits again. A test that builds outside a test body brings this back, whatever its file.
