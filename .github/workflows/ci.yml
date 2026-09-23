@@ -118,15 +118,22 @@ jobs:
             reports/api/
           retention-days: 30
 
-  # Mutation score ≥ 80 % on the enablement modules (NFR-Q-03), required from
-  # M2. Spike S2 measured it (docs/00-s2-mutation-cost.md): about 2 min
-  # incrementally on this runner. The incremental file travels in the Actions
-  # cache, keyed per branch with main as the fallback, and the nightly full run
-  # refreshes main's (ADR-0018, A6).
-  mutation:
-    name: Mutation, incremental
+  # Mutation score ≥ 80 % on the engine and view modules (NFR-Q-03), required
+  # from M2. Spike S2 measured it (docs/00-s2-mutation-cost.md): about 2 min
+  # incrementally on this runner. From M5 the lane is a matrix of shards by
+  # module, S2's relief for K1: every module is still mutated, and each shard
+  # holds the 80 % on its own (scripts/mutation-shard.mjs). Each shard's
+  # incremental file travels in the Actions cache, keyed per shard and branch
+  # with main as the fallback, and the nightly full run refreshes main's
+  # (ADR-0018, A6).
+  mutation-shard:
+    name: Mutation, incremental (${{ matrix.shard }})
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [enablement, session, rules, view-tree, view-parts]
     steps:
       - uses: actions/checkout@v4
 
@@ -156,33 +163,45 @@ jobs:
       - name: Restore the incremental result
         uses: actions/cache/restore@v4
         with:
-          path: reports/stryker/incremental.json
-          key: stryker-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
+          path: reports/stryker/${{ matrix.shard }}/incremental.json
+          key: stryker-${{ matrix.shard }}-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            stryker-${{ github.head_ref || github.ref_name }}-
-            stryker-main-
+            stryker-${{ matrix.shard }}-${{ github.head_ref || github.ref_name }}-
+            stryker-${{ matrix.shard }}-main-
 
       - name: Mutation test
         run: |
           echo "cores: $(nproc)"
           start=$(date +%s)
-          pnpm test:mutation
+          pnpm test:mutation:shard ${{ matrix.shard }}
           echo "mutation wall-clock: $(( $(date +%s) - start )) s"
 
       - name: Save the incremental result
         if: ${{ !cancelled() }}
         uses: actions/cache/save@v4
         with:
-          path: reports/stryker/incremental.json
-          key: stryker-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
+          path: reports/stryker/${{ matrix.shard }}/incremental.json
+          key: stryker-${{ matrix.shard }}-${{ github.head_ref || github.ref_name }}-${{ github.sha }}
 
       - name: Upload the mutation report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: mutation
+          name: mutation-${{ matrix.shard }}
           path: reports/stryker/
           retention-days: 30
+
+  # One check for the lane, whatever the shards: it passes only when every
+  # shard did, so a required check names this and not a shard.
+  mutation:
+    name: Mutation, incremental
+    needs: mutation-shard
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Every shard passed
+        run: test "${{ needs.mutation-shard.result }}" = success
 
   # NFR-P-01, P-02 and P-08 (M2 plan D7, revised 2026-09-17). Hosted runners
   # differ by up to 2× between jobs and about 1 % within one, so timings are

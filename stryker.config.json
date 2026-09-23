@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "_comment": "NFR-Q-03 on the enablement modules (06-roadmap.md M2, spike S2), from M3 on validation and emission (M3 plan D7), and from M4 on option resolution, the collaborator guard, calculated values and scoring; kernel/compare.ts holds the comparison that moved out of session/conditions.ts. Incremental on PRs, full nightly (ADR-0018, A6). Mutants run against the core suite only, in Node, through stryker.vitest.config.ts. The plugin is named because pnpm's isolated node_modules hides it from Stryker's auto-discovery.",
+  "_comment": "NFR-Q-03 on the enablement modules (06-roadmap.md M2, spike S2), from M3 on validation and emission (M3 plan D7), from M4 on option resolution, the collaborator guard, calculated values and scoring, and from M5 on every view module that holds code (M5 plan D15; `view/types.ts`, `view/index.ts` and the catalogue's text hold none); kernel/compare.ts holds the comparison that moved out of session/conditions.ts. Incremental on PRs, full nightly (ADR-0018, A6); in CI both run as shards by module, which scripts/mutation-shard.mjs holds and checks against this list, and `pnpm test:mutation` still runs the whole list. Mutants run against the core suite only, in Node, through stryker.vitest.config.ts. The plugin is named because pnpm's isolated node_modules hides it from Stryker's auto-discovery.",
   "packageManager": "pnpm",
   "plugins": [
     "@stryker-mutator/vitest-runner"
@@ -27,7 +27,17 @@
     "packages/core/src/validation/rules.ts",
     "packages/core/src/validation/validate.ts",
     "packages/core/src/validation/scores.ts",
-    "packages/core/src/interchange/emit.ts"
+    "packages/core/src/interchange/emit.ts",
+    "packages/core/src/view/view.ts",
+    "packages/core/src/view/build.ts",
+    "packages/core/src/view/controls.ts",
+    "packages/core/src/view/drafts.ts",
+    "packages/core/src/view/format.ts",
+    "packages/core/src/view/catalogue.ts",
+    "packages/core/src/view/summary.ts",
+    "packages/core/src/view/announce.ts",
+    "packages/core/src/view/focus.ts",
+    "packages/core/src/view/ids.ts"
   ],
   "coverageAnalysis": "perTest",
   "incremental": true,

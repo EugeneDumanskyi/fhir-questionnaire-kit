@@ -19,6 +19,7 @@
     "test:coverage:core": "vitest run --project core --coverage --coverage.include='packages/core/src/**'",
     "test:browser": "playwright test",
     "test:mutation": "stryker run",
+    "test:mutation:shard": "node scripts/mutation-shard.mjs",
     "bench": "node scripts/bench-run.mjs",
     "bench:compare": "node scripts/bench-compare.mjs",
     "api:check": "tsc --build packages/core && api-extractor run -c packages/core/api-extractor.json && api-extractor run -c packages/core/api-extractor.view.json && api-extractor run -c packages/core/api-extractor.resume.json",
