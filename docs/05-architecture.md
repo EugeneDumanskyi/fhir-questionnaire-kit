@@ -355,7 +355,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 - **R1 stays open.** The element's extrapolated band, 12.6–35.5 kB, straddles its 24 kB budget; the view's, 3.0–9.0 kB, straddles 5 kB. Architecture B is not what is at risk here — Architecture A would carry the same engine and theme, and a heavier BC6 in each renderer — but the published numbers may be.
 - **R2 is proven on two control kinds,** not fourteen. The drift ADR-0007 fears is gradual; the deny-list test that caught `code` in S1 carries into M5.
 - **Two accepted ADRs disagreed on a name; resolved 2026-09-17.** ADR-0020's `display` field is a CSS property under ADR-0007's review rule. It is allowed as a coincidence, like `label` and `clear`: it is ADR-0020's name and FHIR's own word for rendered text (`Coding.display`), and it means formatted text, not styling. M5 adds it to the allowed list when the field lands.
-- **Leaving an item is decided in both renderers** (focus containment), the one duplicated behaviour left. M5 decides whether the DOM contract states it or `view/` helps.
+- **Leaving an item is decided in both renderers** (focus containment), the one duplicated behaviour left. M5 decides whether the DOM contract states it or `view/` helps. **Decided 2026-09-23 (M5 plan D11):** the DOM contract states it (`08-dom-contract.md` §1, the leave rule). `leave()` fires on `focusout` from the item root when `relatedTarget` is outside it; a view helper would need the DOM.
 
 **What M2 keeps from the spike** (P4: nothing is kept by default).
 
