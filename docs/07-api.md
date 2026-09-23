@@ -148,7 +148,7 @@ A refusal changes nothing, except that a refused completion surfaces issues.
 - `scores`: each scorer's result by name, or `null` while it has none (§3.9).
 
 **`NodeState`:**
-- `path` and `item` (an `ItemDefinition`; its `xhtml` is the sanitizer's output for authored rich text, or `null`);
+- `path` and `item` (an `ItemDefinition`; its `xhtml` is the sanitizer's output for authored rich text, or `null`, and its `units` are a quantity's `questionnaire-unitOption` codings in authored order, empty on any other type);
 - `answers`;
 - `instances`: a repeating group's live ordinals, in order;
 - `issues`: every current issue, surfaced or not;

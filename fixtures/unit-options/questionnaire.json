@@ -1,0 +1,47 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:unit-options",
+  "version": "1",
+  "status": "draft",
+  "title": "unit-options",
+  "item": [
+    {
+      "linkId": "weight",
+      "text": "Body weight",
+      "type": "quantity",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kg",
+            "display": "kilograms"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "[lb_av]",
+            "display": "pounds"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "count",
+      "text": "How many?",
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "1",
+            "display": "each"
+          }
+        }
+      ]
+    }
+  ]
+}

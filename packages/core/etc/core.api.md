@@ -187,6 +187,7 @@ export interface ItemDefinition {
     readonly required: boolean;
     readonly text: string;
     readonly type: ItemType | null;
+    readonly units: readonly Coding[];
     // (undocumented)
     readonly valueSet: string | null;
     readonly xhtml: string | null;

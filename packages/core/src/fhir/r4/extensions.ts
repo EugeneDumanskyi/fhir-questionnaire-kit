@@ -12,6 +12,7 @@ const SDC = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/';
 export const MIN_OCCURS = `${CORE}questionnaire-minOccurs`;
 export const MAX_OCCURS = `${CORE}questionnaire-maxOccurs`;
 export const ITEM_CONTROL = `${CORE}questionnaire-itemControl`;
+export const UNIT_OPTION = `${CORE}questionnaire-unitOption`;
 export const RENDERING_XHTML = `${CORE}rendering-xhtml`;
 export const MIN_VALUE = `${CORE}minValue`;
 export const MAX_VALUE = `${CORE}maxValue`;

@@ -25,6 +25,7 @@ export function item(linkId: string, type: ItemType | null, extra: Partial<ItemI
     maxDecimalPlaces: null,
     minOccurs: null,
     maxOccurs: null,
+    units: [],
     itemControl: null,
     renderingXhtml: null,
     expressions: [],
