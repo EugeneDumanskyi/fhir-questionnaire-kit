@@ -1,0 +1,34 @@
+{
+  "behaviour": "Each choice gets the control its `itemControl` hint asks for when the hint fits the item, and otherwise the count rule: up to 5 options all shown, more a list (INV-P-05, AC-01.2.2, M5 plan D2). The engine records the hint and does not interpret it",
+  "cases": [
+    {
+      "name": "hints honoured where they fit, the count rule elsewhere",
+      "loadMode": "strict",
+      "diagnostics": [],
+      "enabled": [
+        "radio",
+        "drop-down",
+        "check-box",
+        "check-box-on-single",
+        "radio-on-repeating",
+        "five",
+        "six",
+        "six-repeating",
+        "unknown-hint",
+        "open-drop-down"
+      ],
+      "controls": {
+        "radio": "single-choice",
+        "drop-down": "single-menu",
+        "check-box": "multi-choice",
+        "check-box-on-single": "single-choice",
+        "radio-on-repeating": "multi-list",
+        "five": "single-choice",
+        "six": "single-list",
+        "six-repeating": "multi-list",
+        "unknown-hint": "single-choice",
+        "open-drop-down": "single-menu"
+      }
+    }
+  ]
+}

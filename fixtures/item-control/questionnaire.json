@@ -1,0 +1,516 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:conformance:item-control",
+  "version": "1",
+  "status": "draft",
+  "title": "item-control",
+  "item": [
+    {
+      "linkId": "radio",
+      "text": "Radio",
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o4",
+            "display": "Option 4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o5",
+            "display": "Option 5"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o6",
+            "display": "Option 6"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o7",
+            "display": "Option 7"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "drop-down",
+      "text": "Drop down",
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "check-box",
+      "text": "Check box",
+      "type": "choice",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o4",
+            "display": "Option 4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o5",
+            "display": "Option 5"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o6",
+            "display": "Option 6"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o7",
+            "display": "Option 7"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "check-box-on-single",
+      "text": "Check box on single",
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "radio-on-repeating",
+      "text": "Radio on repeating",
+      "type": "choice",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o4",
+            "display": "Option 4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o5",
+            "display": "Option 5"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o6",
+            "display": "Option 6"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o7",
+            "display": "Option 7"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "five",
+      "text": "Five",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o4",
+            "display": "Option 4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o5",
+            "display": "Option 5"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "six",
+      "text": "Six",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o4",
+            "display": "Option 4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o5",
+            "display": "Option 5"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o6",
+            "display": "Option 6"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "six-repeating",
+      "text": "Six repeating",
+      "type": "choice",
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o4",
+            "display": "Option 4"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o5",
+            "display": "Option 5"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o6",
+            "display": "Option 6"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "unknown-hint",
+      "text": "Unknown hint",
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "slider"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "open-drop-down",
+      "text": "Open drop down",
+      "type": "open-choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o1",
+            "display": "Option 1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o2",
+            "display": "Option 2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "urn:fhirq:conformance:item-control",
+            "code": "o3",
+            "display": "Option 3"
+          }
+        }
+      ]
+    }
+  ]
+}

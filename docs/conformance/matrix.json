@@ -901,10 +901,12 @@
     },
     {
       "id": "validation.not-a-date",
-      "feature": "Telling \"not a date\" from \"outside the permitted range\" (AC-04.2.2, INV-V-07)",
-      "status": "partial",
-      "reason": "The engine holds typed answers only and reports the range; \"not a date\" is the view model's issue on a draft, from M5 (M3 plan D2)",
+      "feature": "A date or dateTime typed that is not one is reported as \"not a date\", distinct from the range issue, and never reaches the engine (AC-04.2.2, INV-P-06)",
+      "status": "supported",
+      "reason": null,
       "tests": [
+        "packages/core/test/view/drafts.test.ts > keeps an invalid date on screen, clears the answer, and says \"not a date\" once the item is left",
+        "packages/core/test/view/drafts.test.ts > never lets an invalid draft reach the engine: a required item stays unanswered (INV-P-06)",
         "packages/core/test/validation/built-in.test.ts > built-in rules (BC3, AC-04.2.1)"
       ]
     },
@@ -1207,9 +1209,57 @@
       "id": "extension.rendering-xhtml",
       "feature": "`rendering-xhtml` rich text",
       "status": "partial",
-      "reason": "Kept only through the host's sanitizer, else plain text with a diagnostic (INV-X-06, AC-01.4.2); rendering it lands with the renderers (M5–M7)",
+      "reason": "Kept only through the host's sanitizer, else plain text with a diagnostic (INV-X-06, AC-01.4.2). The view carries it as `richLabel` (M5); the renderers show it from M6 and M7",
       "tests": [
-        "packages/core/test/definition/sanitize.test.ts > authored rich text (INV-X-06, AC-01.4.2)"
+        "packages/core/test/definition/sanitize.test.ts > authored rich text (INV-X-06, AC-01.4.2)",
+        "packages/core/test/view/ids.test.ts > carries the host-sanitized rich label, never raw markup (INV-X-06)"
+      ]
+    },
+    {
+      "id": "presentation.item-control.hinted",
+      "feature": "`itemControl` `radio-button`, `drop-down` and `check-box` choose the control where they fit the item (AC-01.2.2, INV-P-05)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/conformance/fixtures.test.ts > item-control: hints honoured where they fit, the count rule elsewhere",
+        "packages/core/test/conformance/view.test.ts > item-control: hints honoured where they fit, the count rule elsewhere"
+      ]
+    },
+    {
+      "id": "presentation.item-control.other-hints",
+      "feature": "Any other `itemControl` code, or a hint that does not fit the item, on a choice",
+      "status": "partial",
+      "reason": "Falls back to the count rule (up to 5 options shown, more a list) without a diagnostic: the view has no diagnostic channel (AC-01.2.2 R1, M5 plan D2)",
+      "tests": [
+        "packages/core/test/conformance/view.test.ts > item-control: hints honoured where they fit, the count rule elsewhere"
+      ]
+    },
+    {
+      "id": "presentation.date-precision",
+      "feature": "A `date` is shown at its authored precision (`2024`, `2024-05`, `2024-05-01`) and never moved by a timezone (ADR-0020)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/view/format.test.ts > formats a date at its authored precision: a year, a month, a day",
+        "packages/core/test/view/format.test.ts > formats a date as the same day on both sides of the date line (ADR-0020 verification)"
+      ]
+    },
+    {
+      "id": "presentation.decimal-scale",
+      "feature": "A `decimal` is shown at the scale it was written (`0.50`) (ADR-0020)",
+      "status": "partial",
+      "reason": "At the typed scale while the view holds the text; after a restore, a hydration or in a new view, at the number's own scale, since the engine stores a number (M5 plan D7, ADR-0020 amendment)",
+      "tests": [
+        "packages/core/test/view/drafts.test.ts > keeps a decimal’s typed scale while the draft lasts; a new view shows the number’s own (M5 plan D7)"
+      ]
+    },
+    {
+      "id": "presentation.help-text",
+      "feature": "Help text for a question (`display` item with `itemControl` `help`, or the description id)",
+      "status": "not supported",
+      "reason": "R4 carries help as a `display` item nested under a question, which INV-D-17 rejects; a node's `description` is always `null` in v1 (M5 plan D5)",
+      "tests": [
+        "packages/core/test/view/ids.test.ts > keeps help text empty in v1, since R4 carries it where the kit rejects items (M5 plan D5)"
       ]
     },
     {
@@ -1220,7 +1270,26 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > unit-options: a permitted unit is emitted with value, unit, system and code",
         "packages/core/test/conformance/fixtures.test.ts > unit-options: a value with no unit fails validation",
-        "packages/core/test/conformance/fixtures.test.ts > unit-options: a unit option on another type rejects a strict load"
+        "packages/core/test/conformance/fixtures.test.ts > unit-options: a unit option on another type rejects a strict load",
+        "packages/core/test/conformance/view.test.ts > unit-options: the permitted units, by display, in authored order"
+      ]
+    },
+    {
+      "id": "presentation.repeating-question",
+      "feature": "A non-group item with `repeats`: one entry per answer and an empty one while another is allowed (AC-03.3.1)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/view/drafts.test.ts > offers one entry per answer and an empty one to add the next"
+      ]
+    },
+    {
+      "id": "presentation.datetime-entry",
+      "feature": "A `dateTime` typed with a time of day (`2024-05-01T14:30`) (ADR-0020, M5 plan D4)",
+      "status": "partial",
+      "reason": "Read in the host's `timeZone`, or with its offset written; without either it is not a value, since the kit never assumes UTC. Dates are typed in FHIR's form, with no locale parsing (NFR-I-04)",
+      "tests": [
+        "packages/core/test/view/drafts.test.ts > reads a dateTime’s wall clock in the host zone, keeps a written offset, and assumes no zone (M5 plan D4)"
       ]
     }
   ]
