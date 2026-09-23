@@ -101,7 +101,7 @@ jobs:
       - name: Core coverage, 95 % line and 90 % branch
         run: pnpm test:coverage:core
 
-      - name: Bundle budgets, @fhirq/core and @fhirq/core/resume, and resume inputs
+      - name: Bundle budgets, @fhirq/core, @fhirq/core/view and @fhirq/core/resume, and resume inputs
         run: pnpm measure --check
 
       - name: API reports, @fhirq/core, @fhirq/core/view and @fhirq/core/resume
