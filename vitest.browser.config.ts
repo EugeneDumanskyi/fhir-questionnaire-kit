@@ -12,16 +12,16 @@ const workspaceSources = [
   { find: /^@fhirq\/react$/, replacement: here('./packages/react/src/index.ts') },
 ];
 
-/** A fresh object per project: Vitest names each instance in place. */
 /** Pre-bundled up front, so a late discovery cannot load a second React mid-run. */
 const REACT_DEPS = ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'react-dom/server.browser'];
 
+/** A fresh object per project: Vitest names each instance in place. */
 const chromium = () => ({ enabled: true, provider: 'playwright', headless: true, screenshotFailures: false, instances: [{ browser: 'chromium' as const }] });
 
 /**
  * The React adapter's client tests, in Chromium (M6 plan D4): effects, event
  * handlers, StrictMode and hydration only run in a browser, and NFR-Q-02's
- * 85 / 80 is measured here with v8 coverage (`pnpm test:react`). Kept out of
+ * 85 / 80 is measured here with v8 coverage (`pnpm test:coverage:react`). Kept out of
  * `vitest.config.ts` so `pnpm test` stays Node-only with no DOM shim: the
  * engine's claim to run in Node (NFR-C-04) and the adapter's to render on a
  * server (AC-08.3.1) are tested where nothing fakes a DOM.
@@ -38,6 +38,8 @@ export default defineConfig({
       exclude: ['**/*.d.ts'],
       reporter: ['text', 'json-summary', 'html'],
       reportsDirectory: './coverage/react',
+      // NFR-Q-02, blocking from M6 in CI's React gates job: both majors' runs together.
+      thresholds: { lines: 85, branches: 80 },
     },
     projects: [
       {

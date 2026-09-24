@@ -1,7 +1,7 @@
 {
-  "$comment": "NFR-S-02 and NFR-S-03, minified + gzipped, in bytes (1 kB = 1,000 bytes). Report-only in M1; the gate blocks per entry point from the milestone that builds it (06-roadmap.md §5). `gated` lists the entries `measure --check` fails on: core from M2, core/resume from M3 (ADR-0021, measured without the modules core's main entry bundles), core/view from M5. Core is 15,000 from M4, set from its measured reading (ADR-0022). The view is 8,200 from M5, set from its measured reading of 7.77 kB (ADR-0023). The resume-path inputs check blocks on every entry marked resumeFree, gated or not.",
+  "$comment": "NFR-S-02 and NFR-S-03, minified + gzipped, in bytes (1 kB = 1,000 bytes). Report-only in M1; the gate blocks per entry point from the milestone that builds it (06-roadmap.md §5). `gated` lists the entries `measure --check` fails on: core from M2, core/resume from M3 (ADR-0021, measured without the modules core's main entry bundles), core/view from M5. Core is 15,000 from M4, set from its measured reading (ADR-0022). The view is 8,200 from M5, set from its measured reading of 7.77 kB (ADR-0023). React from M6 at NFR-S-02's 6,000, measured in a production build without React or the core entries it imports (M6 plan D6); its stop-line of 5,500 did not fire. The resume-path inputs check blocks on every entry marked resumeFree, gated or not.",
   "unit": "bytes",
-  "gated": ["@fhirq/core", "@fhirq/core/view", "@fhirq/core/resume"],
+  "gated": ["@fhirq/core", "@fhirq/core/view", "@fhirq/core/resume", "@fhirq/react"],
   "entries": {
     "@fhirq/core": 15000,
     "@fhirq/core/view": 8200,
