@@ -2,7 +2,7 @@
 
 *The markup both renderers emit for each view-model concept (ADR-0007). `@fhirq/react` renders it in light DOM; `@fhirq/element` renders it inside its open shadow root (ADR-0014). `@fhirq/themes/base.css` styles it by class; hosts restyle it by `--fhirq-*` token, by class (React) or by `::part()` (element). One contract suite runs against both renderers: `tests/browser/contract.spec.ts`.*
 
-**Status:** complete for every control kind, 2026-09-23 (M5). §3.1 and §3.2 are the S1 rows, which both renderers build. React builds §3.3 onward, §3.9's tier-3 chrome included, from 2026-09-24 (M6); the element builds them in M7. The contract suite covers each row as its renderer lands (§4). Anything not written here is not part of the contract. Class names, `part` names and the roles and ARIA attributes below are covered by semver from 1.0.0.
+**Status:** complete for every control kind, 2026-09-23 (M5). §3.1 and §3.2 are the S1 rows, which both renderers build. React builds every row, §3.9's tier-3 chrome included, from 2026-09-24 (M6), checked row by row against the model by `tests/browser/contract-rows.ts`; the element builds §3.3 onward in M7, under the same check. One inconsistency is open: §1's shared stem and §2's summary (`fhirq-summary`, `part="error-summary"`), `06-roadmap.md` M6, "Still open". The contract suite covers each row as its renderer lands (§4). Anything not written here is not part of the contract. Class names, `part` names and the roles and ARIA attributes below are covered by semver from 1.0.0.
 
 ---
 

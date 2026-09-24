@@ -1,8 +1,8 @@
 # FHIR Questionnaire Kit — Public API
 
-*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M6's React adapter.*
+*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M7's custom element.*
 
-**Status, 2026-09-24.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is being built in M6 and is `@alpha` (§6). `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M7 and M8.
+**Status, 2026-09-24.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M7 and M8.
 
 ---
 
@@ -432,7 +432,7 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 `<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else, for all 18 control kinds, groups and repeating groups. Each item re-renders only when its view node is a new object. With a questionnaire it also takes `value`; with either source, `onChange`, `onComplete` and `onDiagnostic`, all as §6.1. A `session` with a `value` is a type error.
 
-**Completion is the host's to request** (`RequestCompletion`, §3): the default UI has no submit control. With a questionnaire, the component owns the session and gives the host no handle on it, so its `onComplete` cannot fire. A host that completes the form creates the session with `useQuestionnaire` and passes it, as the quickstart does (`examples/react-quickstart`, M6 AC-1). Open, for M6's close-out.
+**Completion is the host's to request** (`RequestCompletion`, §3): the default UI has no submit control. With a questionnaire, the component owns the session and gives the host no handle on it, so its `onComplete` cannot fire. A host that completes the form creates the session with `useQuestionnaire` and passes it, as the quickstart does (`examples/react-quickstart`, M6 AC-1). Open, for the maintainer (`06-roadmap.md` M6, "Still open"): a completion control in the view, dropping `onComplete` from this form, or leaving it documented.
 
 **`controls` (tier 3, ADR-0013).** A host's control per control kind, for any of the 13 answerable kinds: `controls={{ 'calendar-date': MyPicker }}`, where `MyPicker` takes `ControlProps<'calendar-date'>` (§5.3). Kinds left out render the default. The kit renders the item root, the label (`for` = `ids.control`), the required marker and the error container around the host's control (`08-dom-contract.md` §3.9). The map is compared by its entries, so one written inline re-renders nothing. In development, after each render of an overridden item, the kit checks that an element carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` (§3) once per item and missing attribute, through `onDiagnostic` and `console.warn`. A production build has no check. `useQuestionnaire` has no `controls`: a host rendering itself (tier 4) owns its markup.
 
@@ -441,5 +441,6 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
 - **M7–M8:** the custom element's attributes and events, its tier-3 `controls`, and the theme tokens.
+- **A completion control.** Neither the view nor the default UI offers one, so a `<Questionnaire questionnaire>` cannot be completed and the quickstart needs the hook and the host's own button: 13 lines against NFR-U-01's 10 (M6 close-out).
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
 - **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).

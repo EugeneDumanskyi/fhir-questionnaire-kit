@@ -276,7 +276,7 @@ C4Container
 |---|---|---|---|---|
 | Engine `@fhirq/core` | BC1–BC5 | ≤ 15 kB (ADR-0022) | none (NFR-X-01) | none (NFR-C-04) |
 | Presentation model `@fhirq/core/view` | BC6, DOM-free half | ≤ 8.2 kB (measured, ADR-0023) | none | none |
-| React adapter | BC6 markup | ≤ 6 kB excl. React, excl. core and view | none | via React |
+| React adapter | BC6 markup | ≤ 6 kB excl. React, core, view and resume (4.13 kB, gated from M6) | none | via React |
 | Web component | BC6 markup + default resolver | ≤ 24 kB incl. core, view, theme | default resolver only | yes |
 | Themes | — | ≤ 3 kB per preset; structural sheet ≤ 4 kB | none | — |
 | Script-tag IIFE | all of the element | ≤ 30 kB | default resolver only | yes |
@@ -353,7 +353,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 
 **What S1 did not settle.**
 - **R1 stays open.** The element's extrapolated band, 12.6–35.5 kB, straddles its 24 kB budget; the view's, 3.0–9.0 kB, straddles 5 kB. Architecture B is not what is at risk here — Architecture A would carry the same engine and theme, and a heavier BC6 in each renderer — but the published numbers may be.
-- **R2 is proven on two control kinds,** not fourteen. The drift ADR-0007 fears is gradual; the deny-list test that caught `code` in S1 carries into M5. **Settled for the view on 2026-09-23 (M5):** eighteen control kinds, a tree whose unchanged subtrees keep their identity, and a field list with no markup names. The deny-list test caught `position` (a CSS property) on the way; the field is now `number`. What stays open is whether M6 and M7 need a field the view lacks. That is the one way R2 can still fail, and ADR-0023's margin is sized for it.
+- **R2 is proven on two control kinds,** not fourteen. The drift ADR-0007 fears is gradual; the deny-list test that caught `code` in S1 carries into M5. **Settled for the view on 2026-09-23 (M5):** eighteen control kinds, a tree whose unchanged subtrees keep their identity, and a field list with no markup names. The deny-list test caught `position` (a CSS property) on the way; the field is now `number`. What stays open is whether M6 and M7 need a field the view lacks. That is the one way R2 can still fail, and ADR-0023's margin is sized for it. **M6 (2026-09-24) needed none;** repeating-question entries with no identity of their own are the one gap it recorded.
 - **Two accepted ADRs disagreed on a name; resolved 2026-09-17.** ADR-0020's `display` field is a CSS property under ADR-0007's review rule. It is allowed as a coincidence, like `label` and `clear`: it is ADR-0020's name and FHIR's own word for rendered text (`Coding.display`), and it means formatted text, not styling. M5 adds it to the allowed list when the field lands.
 - **Leaving an item is decided in both renderers** (focus containment), the one duplicated behaviour left. M5 decides whether the DOM contract states it or `view/` helps. **Decided 2026-09-23 (M5 plan D11):** the DOM contract states it (`08-dom-contract.md` §1, the leave rule). `leave()` fires on `focusout` from the item root when `relatedTarget` is outside it; a view helper would need the DOM.
 
@@ -362,7 +362,7 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 | Kept, as a starting point | What it becomes |
 |---|---|
 | `scripts/measure-bundles.mjs` and its test | The budget gate from M2 |
-| The `tests/browser/` harness and all five specs | The SSR (M6), CSP (M7) and accessibility (M8) gates |
+| The `tests/browser/` harness and all five specs | The SSR (M6), CSP (M7) and accessibility (M8) gates. **SSR done 2026-09-24:** `hydration.spec.ts` at full breadth, in the required `React gates` job |
 | `packages/core/test/deny-lists.ts` and `view-fields.test.ts` | The AC-3 check for M5 |
 | `view/ids.ts`, `view/format.ts` | Starting points for M5's view |
 | The element's inline-style lint bans and their must-fail tests | The CSP guard for M7 |
@@ -375,4 +375,4 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 | `view/view.ts` | Two control kinds; M5 writes the full field list |
 | `validation/required.ts` | One rule; M3 |
 | `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3 |
-| `packages/react/src/questionnaire.tsx` | M6's hook, tiers and controlled mode |
+| `packages/react/src/questionnaire.tsx` | M6's hook, tiers and controlled mode. **Done 2026-09-24:** `hook.ts` (`useQuestionnaire`), `ui/*.tsx` (the default UI and tier-3 chrome), `echo.ts` (the echo compare), `contract.ts` and `report.ts` (the development check and the diagnostic channel); `questionnaire.tsx` is the hook and `ui/form`. The quickstart is `examples/react-quickstart/`, a workspace package that consumes the published entry points, the pattern M8 and M10 reuse for compiled samples (M6 plan D7) |

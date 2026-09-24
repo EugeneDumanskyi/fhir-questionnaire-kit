@@ -66,7 +66,7 @@ What the reading shows:
 
 What it does not show:
 - **It is not a device reading.** The runner is not the reference hardware (§1: older tablets in clinics), and no device has been measured.
-- **Whether to re-state NFR-P-03** as what the kit controls (script time, or paint relative to the control) is open for M6's close-out.
+- **Whether to re-state NFR-P-03** as what the kit controls (script time, or paint relative to the control) is returned to the maintainer at M6's close-out (`06-roadmap.md` M6, "Still open"). The wording is unchanged until then.
 
 **Note on measurement.** Performance gates run as a benchmark suite with a fixed fixture set. Regressions > 20% fail the build even when still inside the absolute number, because a silent 19% drift per release is how budgets die. **Revised 2026-09-17 (`06-roadmap.md` M2 D7):** unchanged code measured up to 2.2× apart across hosted runner jobs and about 1 % apart within one, so a timing is compared with the pull request's merge base benchmarked in the same job, never with a committed figure. Retained heap does not vary by runner and is compared with `benchmarks/baseline.json`, whose timings are published reference figures. **What this gives up:** drift in steps each under 20 % is not caught per PR. The published figures are re-measured and compared by hand at each release.
 
@@ -118,6 +118,12 @@ The remaining-scope figure is a judgement, as S1's were. **Decided 2026-09-17 by
   Rebuilt instead from the element as it is built today (67.4 kB minified, 23.57 kB gzipped, a ratio of 0.35), with the spike renderer and theme replaced by S1's ranges, the centres are 27.8 kB (a) and 31.1 kB (b). S1's 0.22–0.31 ratio for bundles over 60 kB would give 21.1 kB (a) and 23.6 kB (b), but the element as built does not compress that well. **Every reading but that one is over 24 kB, so M7 builds table-driven patchers (rung 2).** Rung 2 saves 0.8–1.7 kB, which leaves the element's centre at about 26–31 kB. Rung 3, amending the element's figure by ADR at M7, is now the expected outcome (ADR-0023, Costs accepted).
 - **The element** measures 23.57 kB today, with the full view and the spike renderer and theme.
 
+**M6 reading, 2026-09-24: `@fhirq/react` 4.13 kB of 6 kB, gated.**
+- **Measured as NFR-S-02 words it** (M6 plan D6): a production build, with React, `@fhirq/core`, `@fhirq/core/view` and `@fhirq/core/resume` external. The development checks are stripped from it.
+- **Inside S1's band** of 1.9–8.3 kB. The plan's 5.5 kB stop-line did not fire, so 6 kB stands with no ADR. The gate blocks at 6,000 bytes from #68.
+- **By step:** the hook 1.66 kB, the default UI for 18 kinds 3.28 kB, controlled mode 3.78 kB, tier 3 4.10 kB, and the hydration tolerance for ICU skew 4.13 kB (ADR-0020 amendment note).
+- **Core** is unchanged at 14.68 kB: M6's two diagnostic codes and the `ControlProps` fix are types only.
+
 ---
 
 ## 3. Compatibility and portability
@@ -145,7 +151,7 @@ EVL reads the test suite. Coverage percentage alone is not the signal — the co
 | ID | Requirement | Number | Type |
 |---|---|---|---|
 | NFR-Q-01 | Line and branch coverage, `@fhirq/core` | ≥ 95% line, ≥ 90% branch | Gate |
-| NFR-Q-02 | Line coverage, adapters and element | ≥ 85% line, ≥ 80% branch | Gate |
+| NFR-Q-02 | Line coverage, adapters and element | ≥ 85% line, ≥ 80% branch. **`@fhirq/react`, gated from M6:** 98.4 % line, 96.3 % branch, measured in Chromium on React 18 and 19 (M6 plan D4) | Gate |
 | NFR-Q-03 | Mutation score, `@fhirq/core` engine modules (enablement, validation, emission) | ≥ 80% | Gate |
 | NFR-Q-04 | Conformance matrix rows marked `supported` with a linked passing test | 100% | Gate |
 | NFR-Q-05 | `enableWhen` operator × answer type coverage | every supported pair has a named test; 0 gaps | Gate |
@@ -205,9 +211,9 @@ The integration cost is what the primary user actually evaluates.
 
 | ID | Requirement | Number | Type |
 |---|---|---|---|
-| NFR-U-01 | Time from `npm install` to a rendered, working form following the quickstart | ≤ 5 minutes; ≤ 10 lines of consumer code | Published |
+| NFR-U-01 | Time from `npm install` to a rendered, working form following the quickstart | ≤ 5 minutes; ≤ 10 lines of consumer code. **Read 2026-09-24 (M6 AC-1): 13 lines, missed.** A form the host can complete needs the hook and the host's own submit button (`06-roadmap.md` M6, "Still open"). The 5 minutes is untimed until M10 | Published |
 | NFR-U-02 | Lines of code to match a host design system via tokens | ≤ 30 lines of CSS, 0 JavaScript | Published |
-| NFR-U-03 | Configuration options on the top-level component | ≤ 12, each documented with default and rationale | Target |
+| NFR-U-03 | Configuration options on the top-level component | ≤ 12, each documented with default and rationale. **`<Questionnaire>`, M6: 11** (M6 plan D9, `07-api.md` §6) | Target |
 | NFR-U-04 | STK time to comprehension on the playground | understands what the library does within 30 seconds, no scrolling required on a 375 px viewport | Published |
 | NFR-U-05 | Public API symbols exported across all packages | ≤ 60, tracked in a committed API report | Gate |
 | NFR-U-06 | Documentation reading time for the full integration guide | ≤ 20 minutes | Target |
