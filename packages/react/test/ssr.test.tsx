@@ -5,6 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AMOUNT, bool, SLICE, SMOKER } from '../../core/test/slice.js';
+import { KINDS, KINDS_OPTIONS } from './kinds.js';
 import { COLOURS, Probe } from './probe.js';
 
 /**
@@ -52,6 +53,19 @@ describe(`server rendering on React ${version}`, () => {
 
     expect(html).toContain('colour:pending');
     expect(resolver).not.toHaveBeenCalled();
+  });
+
+  it('renders every control kind with no DOM, no style and no console output (M6 step 5)', () => {
+    const console = [vi.spyOn(globalThis.console, 'error'), vi.spyOn(globalThis.console, 'warn')];
+
+    const html = renderToString(<Questionnaire questionnaire={KINDS} options={KINDS_OPTIONS} />);
+
+    for (const marker of ['<textarea', 'inputMode="numeric"', '<select class="fhirq-unit"', 'role="group"', 'multiple=""', '<output', 'fhirq-statement', 'fhirq-unsupported', 'fhirq-group', 'fhirq-repeat', '<h4']) {
+      expect(html).toContain(marker);
+    }
+    expect(html).toContain('<b>About</b> you');
+    expect(html).not.toMatch(/\sstyle=|<style/);
+    for (const spy of console) expect(spy).not.toHaveBeenCalled();
   });
 
   it('renders settled state from a host-owned session', () => {

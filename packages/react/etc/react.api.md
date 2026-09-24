@@ -6,7 +6,7 @@
 
 import { createSession } from '@fhirq/core';
 import { Questionnaire as Questionnaire_2 } from '@fhirq/core';
-import { ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import { Session } from '@fhirq/core';
 import { SessionOptions } from '@fhirq/core';
 import { ViewModel } from '@fhirq/core/view';

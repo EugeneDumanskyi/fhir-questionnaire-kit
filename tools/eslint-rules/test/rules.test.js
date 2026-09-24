@@ -18,16 +18,17 @@ const linter = new Linter({ configType: 'flat', cwd: root });
  */
 function lintFixture(relativePath, rule, options) {
   const code = readFileSync(`${root}/${relativePath}`, 'utf8');
+  const jsx = relativePath.endsWith('.tsx');
   return linter.verify(
     code,
     {
-      files: ['**/*.ts'],
+      files: [jsx ? '**/*.tsx' : '**/*.ts'],
       plugins: { fhirq: fhirqPlugin },
       languageOptions: {
         parser: tsParser,
         ecmaVersion: 2022,
         sourceType: 'module',
-        parserOptions: { ecmaFeatures: { jsx: false } },
+        parserOptions: { ecmaFeatures: { jsx } },
       },
       rules: { [`fhirq/${rule}`]: options === undefined ? 'error' : ['error', options] },
     },
@@ -120,6 +121,11 @@ describe('no-hardcoded-user-strings', () => {
 
   it('passes on codes, paths, keys, type literals and FHIR system URLs', () => {
     expect(lintFixture(`${fixtures}/${rule}/must-pass.ts`, rule, options)).toEqual([]);
+  });
+
+  it('passes on a structural attribute computed in braces, and fails on prose in any other', () => {
+    const messages = lintFixture(`${fixtures}/${rule}/jsx.tsx`, rule, options);
+    expect(messages.map((message) => message.line)).toEqual([6]);
   });
 
   it('passes inside the catalogue, and fails on the same file outside it', () => {

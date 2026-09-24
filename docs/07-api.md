@@ -414,7 +414,7 @@ A new `locale` or `timeZone`, or new `messages` content, builds a new view over 
 
 ### 6.2 `<Questionnaire>`
 
-`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else. The response-controlled mode, `onChange`, `onComplete`, `onDiagnostic` and tier-3 `controls` are M6 work still to land.
+`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else, for all 18 control kinds, groups and repeating groups. Each item re-renders only when its view node is a new object. The response-controlled mode, `onChange`, `onComplete`, `onDiagnostic` and tier-3 `controls` are M6 work still to land.
 
 ## 7. Not in the API yet
 
