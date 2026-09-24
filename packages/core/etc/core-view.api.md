@@ -35,10 +35,10 @@ export interface ControlProps<K extends ControlKind> {
     readonly leave: () => void;
     // (undocumented)
     readonly node: ControlView<K>;
-    // (undocumented)
-    readonly set: ControlView<K> extends {
+    readonly set: ControlView<K> extends infer N ? (N extends {
+        readonly control: infer C;
         readonly set: infer S;
-    } ? S : never;
+    } ? ([C] extends [never] ? never : S) : never) : never;
 }
 
 // @alpha
