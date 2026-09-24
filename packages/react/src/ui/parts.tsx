@@ -67,12 +67,23 @@ export function Legend({ node, ui }: Props): ReactElement {
   );
 }
 
+/**
+ * Spread on every element whose text holds a value the view formatted with
+ * `Intl`: a calculated value, an issue, a summary entry, an instance's name
+ * and the reason the add control is inert. A server's ICU data can word them
+ * differently from the browser's ("May 1, 2024, 11:30 PM" in Node, "… at
+ * 11:30 PM" in Safari). Hydration then neither warns nor discards the server
+ * markup: React 19 keeps the server's wording until the node next changes,
+ * React 18 puts in the browser's (ADR-0020 amendment note).
+ */
+export const FORMATTED = { suppressHydrationWarning: true } as const;
+
 /** The error container, every item root's last child (DOM contract §3). */
 export function Errors({ node }: { readonly node: ViewNode }): ReactElement {
   return (
     <div className="fhirq-error" part="error" id={node.ids.error} hidden={!node.invalid}>
       {node.issues.map((issue) => (
-        <p key={issue.rule} className="fhirq-error-message" part="error-message">
+        <p key={issue.rule} className="fhirq-error-message" part="error-message" {...FORMATTED}>
           {issue.message}
         </p>
       ))}

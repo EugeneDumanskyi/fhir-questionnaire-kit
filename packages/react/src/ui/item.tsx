@@ -3,7 +3,7 @@ import { memo, type ComponentType, type ReactElement } from 'react';
 
 import { Entry } from './entry.js';
 import { Choices, List } from './options.js';
-import { Errors, Label, Legend, leaving, Text, type Answerable, type Ui } from './parts.js';
+import { Errors, FORMATTED, Label, Legend, leaving, Text, type Answerable, type Ui } from './parts.js';
 import { Slot } from './slot.js';
 
 interface ItemProps {
@@ -74,7 +74,7 @@ function Body({ node, ui }: { readonly node: ViewNode; readonly ui: Ui }): React
       return (
         <>
           <Label node={node} ui={ui} />
-          <output className="fhirq-value" part="value" id={node.ids.control} aria-labelledby={node.ids.label}>
+          <output className="fhirq-value" part="value" id={node.ids.control} aria-labelledby={node.ids.label} {...FORMATTED}>
             {node.display}
           </output>
         </>
@@ -115,11 +115,11 @@ function Instances({ node, ui, level }: ItemProps & { readonly node: ControlView
     <>
       {node.instances.map((instance) => (
         <section key={instance.path} className="fhirq-instance" part="instance" data-path={instance.path} aria-labelledby={instance.ids.label}>
-          <Heading className="fhirq-instance-label" part="instance-label" id={instance.ids.label}>
+          <Heading className="fhirq-instance-label" part="instance-label" id={instance.ids.label} {...FORMATTED}>
             {instance.label}
           </Heading>
           <Nodes nodes={instance.children} ui={ui} level={level + 1} />
-          <button type="button" className="fhirq-remove" part="remove" id={instance.ids.control} onClick={instance.remove}>
+          <button type="button" className="fhirq-remove" part="remove" id={instance.ids.control} onClick={instance.remove} {...FORMATTED}>
             {instance.removeLabel}
           </button>
         </section>
@@ -136,7 +136,7 @@ function Instances({ node, ui, level }: ItemProps & { readonly node: ControlView
         {node.addLabel}
       </button>
       {node.reason !== null && (
-        <p className="fhirq-reason" part="reason" id={node.ids.description}>
+        <p className="fhirq-reason" part="reason" id={node.ids.description} {...FORMATTED}>
           {node.reason}
         </p>
       )}

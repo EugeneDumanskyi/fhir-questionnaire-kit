@@ -2,7 +2,7 @@ import type { ErrorSummary, ViewModel } from '@fhirq/core/view';
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from 'react';
 
 import { Nodes } from './item.js';
-import type { Controls, Ui } from './parts.js';
+import { FORMATTED, type Controls, type Ui } from './parts.js';
 
 /** Finds an id in the tree `from` is in: the document, or a host's shadow root (DOM contract §1). */
 const byId = (from: Node, id: string) => (from.getRootNode() as Document | ShadowRoot).getElementById(id);
@@ -60,11 +60,11 @@ function Summary({ summary }: { readonly summary: ErrorSummary }): ReactElement 
       </h2>
       <ul className="fhirq-summary-list" part="error-summary-list">
         {summary.entries.map((entry) => (
-          <li key={`${entry.path} ${entry.message}`} className="fhirq-summary-entry" part="error-summary-entry">
+          <li key={`${entry.path} ${entry.message}`} className="fhirq-summary-entry" part="error-summary-entry" {...FORMATTED}>
             {entry.focusId === null ? (
               entry.message
             ) : (
-              <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId ?? '')}>
+              <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId ?? '')} {...FORMATTED}>
                 {entry.message}
               </a>
             )}
