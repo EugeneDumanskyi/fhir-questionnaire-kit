@@ -30,7 +30,7 @@ The primary user is a clinical team; forms are long, devices are often old table
 |---|---|---|---|
 | NFR-P-01 | Session creation, including initial `enableWhen` evaluation, measured on **two** committed fixtures: 25 items (the observed median) and 500 items (the observed p90) | 25-item fixture ≤ 50 ms p95. 500-item fixture: **1.55 ms median, 6.9 ms p99**, measured 2026-09-17 on the CI runner and published in `benchmarks/baseline.json` (1.05–1.97 ms across runner models); held by the 20 % regression gate against the merge base | Gate |
 | NFR-P-02 | Re-evaluation after one answer change, cascade depth 5, on the same two fixtures | 25-item fixture ≤ 5 ms p95, ≤ 16 ms p99. 500-item fixture: **0.064 ms median, 0.10 ms p99**, measured and held the same way | Gate |
-| NFR-P-03 | Keystroke to painted character in a text item | ≤ 16 ms (one 60 fps frame) on reference hardware | Target |
+| NFR-P-03 | Keystroke to painted character in a text item | ≤ 16 ms (one 60 fps frame) on reference hardware. **Read 2026-09-24 on the CI runner** (M6 AC-10, report only): the React adapter's script per keystroke is **1.5 ms median, 3.0 ms p95** at 500 items, and no form paints later than a bare textarea, which itself paints at 24 ms there (below) | Target |
 | NFR-P-04 | Scale ceiling supported and tested | 1,000 items; 500 `enableWhen` conditions; 50 instances of a repeating group; 20 items per repeat instance — **confirmed 2026-09-16** against 300 surveyed instruments (`00-s0-instrument-survey.md`), except the 50-instance figure, which a `Questionnaire` cannot evidence | Gate + Published |
 | NFR-P-05 | Maximum supported nesting and cascade depth | group nesting 10; `enableWhen` dependency chain 10 — **confirmed 2026-09-16**; observed maxima are 10 and 5. **As enforced from M2** (INV-D-07, fixture `depth-ceilings`): a group may sit inside at most 9 other groups, so 10 nested groups load and 11 do not; a dependency path may have at most 10 condition edges, counted along the longest path through `enableWhen` references, so a chain of 11 items loads and one of 12 does not | Gate + Published |
 | NFR-P-06 | Playground load on mid-tier mobile over simulated 4G | LCP ≤ 2.5 s, TBT ≤ 200 ms, CLS ≤ 0.1, Lighthouse performance ≥ 90 | Gate |
@@ -43,6 +43,30 @@ The primary user is a clinical team; forms are long, devices are often old table
 What the survey did contradict is the *benchmark anchor*, not the ceiling. Real instrument sizes are bimodal: 209 of 300 are ≤ 50 items and 57 are ≥ 200, with only 34 in between. The old single 200-item anchor for NFR-P-01/02 sat in that trough, so both are now measured on two fixtures, 25 items and 500. The remaining `ASSUMPTION` in this section is the **50 repeat instances** of NFR-P-04, which a `Questionnaire` definition cannot evidence: it is a property of a response, and M2 checks it against `QuestionnaireResponse` data or records it as deliberate headroom in writing. **Recorded 2026-09-17 as deliberate headroom** (`06-roadmap.md` M2 D8): no PHI-free response corpus was sourced, so 50 is not evidenced, and the engine is tested and benchmarked at it (`fixtures/bench/ceiling.json`, `packages/core/test/property/ceiling.test.ts`).
 
 S0 carries one further consequence for M2's fixture design, outside these numbers: size and logic are anti-correlated in the real corpus. Not one of the 200 LOINC-derived panels sampled carries a single `enableWhen`, `repeats` or calculated expression, and the most conditional instrument found has 161 conditions over 697 items. A fixture that is simultaneously at every ceiling is a synthetic stress case and is labelled as one.
+
+**NFR-P-03, read 2026-09-24 (M6 AC-10, plan D10), report only.** The reading comes from `tests/browser/keystroke.spec.ts` (`pnpm test:keystroke`), run on the CI runner: ubuntu-24.04, headless Chromium 153, production builds of React 18 and 19, the spec alone on one worker. It types 50 characters into a text item, one every two frames, and Event Timing reads each keystroke twice:
+- **Paint** is the `keydown` entry's duration, from the key to the frame that painted it, rounded to 8 ms. Event Timing reports nothing under 16 ms, so paint figures cover only the keystrokes it reported; the rest painted within a frame.
+- **Script** runs from the first handler of the keystroke's events to the end of the last. React renders inside them.
+
+The two majors read within 0.1 ms of each other at the median. Each figure below is the higher of the two.
+
+| Page | Reported at ≥ 16 ms | Paint, median / max | Script, median / p95 / max |
+|---|---|---|---|
+| Bare textarea, no form (the control) | 49–50 of 50 | 24 / 24 ms | 0.4 / 0.6 / 0.9 ms |
+| Demo | 50 of 50 | 24 / 24 ms | 0.9 / 1.3 / 4.0 ms |
+| 500-item bench fixture | 45–47 of 50 | 16 / 24 ms | 1.5 / 2.9 / 5.7 ms |
+| The same, controlled by a host that clones every response | 48–50 of 50 | 16 / 24 ms | 1.5 / 3.0 / 6.1 ms |
+
+What the reading shows:
+- **No page meets 16 ms on this runner, the control included.** A textarea with nothing behind it paints at 24 ms, so the runner's frame pipeline, not the kit, sets that floor.
+- **The kit adds no paint latency:** every form's median and maximum is at or under the control's.
+- **The kit's share is script:** 3.0 ms at p95 with 500 items, under a fifth of a frame.
+- **Controlled by response:** a host that clones every response costs nothing measurable, so the semantic compare ADR-0015 runs on each keystroke is not a cost.
+- **No relief is needed.** D10's relief, skipping untouched subtrees in `view/`, is not taken and is not a follow-up.
+
+What it does not show:
+- **It is not a device reading.** The runner is not the reference hardware (§1: older tablets in clinics), and no device has been measured.
+- **Whether to re-state NFR-P-03** as what the kit controls (script time, or paint relative to the control) is open for M6's close-out.
 
 **Note on measurement.** Performance gates run as a benchmark suite with a fixed fixture set. Regressions > 20% fail the build even when still inside the absolute number, because a silent 19% drift per release is how budgets die. **Revised 2026-09-17 (`06-roadmap.md` M2 D7):** unchanged code measured up to 2.2× apart across hosted runner jobs and about 1 % apart within one, so a timing is compared with the pull request's merge base benchmarked in the same job, never with a committed figure. Retained heap does not vary by runner and is compared with `benchmarks/baseline.json`, whose timings are published reference figures. **What this gives up:** drift in steps each under 20 % is not caught per PR. The published figures are re-measured and compared by hand at each release.
 
