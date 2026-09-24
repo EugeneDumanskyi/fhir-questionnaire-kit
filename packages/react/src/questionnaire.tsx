@@ -1,8 +1,10 @@
 import type { Diagnostic, Questionnaire as QuestionnaireResource, QuestionnaireResponse, Session, SessionOptions } from '@fhirq/core';
-import type { ViewOptions } from '@fhirq/core/view';
-import type { ReactElement } from 'react';
+import type { ControlKind, ControlProps, ViewOptions } from '@fhirq/core/view';
+import { useEffect, useRef, useState, type ComponentType, type ReactElement } from 'react';
 
+import { contractCheck } from './contract.js';
 import { useQuestionnaire } from './hook.js';
+import { report } from './report.js';
 import { Form } from './ui/form.js';
 
 /**
@@ -35,6 +37,12 @@ export type QuestionnaireProps = (
   readonly onComplete?: (response: QuestionnaireResponse) => void;
   /** Each diagnostic the adapter raises itself. */
   readonly onDiagnostic?: (diagnostic: Diagnostic) => void;
+  /**
+   * Tier 3 (ADR-0013): a host's control for a control kind, in the kit's
+   * label, required marker and errors. It puts `ids.control` on its focusable
+   * element, sets `aria-invalid` and `aria-describedby` and calls `leave()`.
+   */
+  readonly controls?: { readonly [K in Exclude<ControlKind, 'calculated' | 'statement' | 'unsupported' | 'group' | 'repeating-group'>]?: ComponentType<ControlProps<K>> };
 };
 
 /**
@@ -47,5 +55,11 @@ export type QuestionnaireProps = (
 export function Questionnaire(props: QuestionnaireProps): ReactElement {
   // The props are the hook's options, by name; `questionnaire` and `session` are its source.
   const { view } = useQuestionnaire(props.session ?? props.questionnaire, props);
-  return <Form model={view} />;
+  // The tier-3 check reports to the latest `onDiagnostic`, and stays one function so items keep their memo.
+  const onDiagnostic = useRef(props.onDiagnostic);
+  useEffect(() => {
+    onDiagnostic.current = props.onDiagnostic;
+  });
+  const [check] = useState(() => contractCheck?.((diagnostic) => report(diagnostic, onDiagnostic.current)));
+  return <Form model={view} controls={props.controls} check={check} />;
 }

@@ -1,10 +1,23 @@
-import type { ViewModel, ViewNode } from '@fhirq/core/view';
-import type { FocusEvent, ReactElement, ReactNode } from 'react';
+import type { ControlKind, ControlProps, ViewModel, ViewNode } from '@fhirq/core/view';
+import type { ComponentType, FocusEvent, ReactElement, ReactNode } from 'react';
 
-/** What every item shares from the model: fixed text, one object for the view's life, so memoised items skip on it. */
+/** The kinds a host may replace (ADR-0013 amendment note): the 13 a respondent answers. */
+export type Answerable = Exclude<ControlKind, 'calculated' | 'statement' | 'unsupported' | 'group' | 'repeating-group'>;
+
+/** Tier-3 controls by kind (ADR-0013). */
+export type Controls = { readonly [K in Answerable]?: ComponentType<ControlProps<K>> };
+
+/**
+ * What every item shares: the model's fixed text, the host's controls and a
+ * development build's tier-3 check. One object while none of them changes,
+ * so memoised items skip on it.
+ */
 export interface Ui {
   readonly marker: string;
   readonly labels: ViewModel['labels'];
+  readonly controls: Controls;
+  /** Run after each render of a host's control: `undefined` in production. */
+  readonly check: ((node: ViewNode, root: HTMLElement) => void) | undefined;
 }
 
 export interface Props<N extends ViewNode = ViewNode> {

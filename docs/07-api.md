@@ -430,12 +430,14 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 ### 6.2 `<Questionnaire>`
 
-`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else, for all 18 control kinds, groups and repeating groups. Each item re-renders only when its view node is a new object. With a questionnaire it also takes `value`; with either source, `onChange`, `onComplete` and `onDiagnostic`, all as §6.1. A `session` with a `value` is a type error. Tier-3 `controls` are M6 work still to land.
+`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else, for all 18 control kinds, groups and repeating groups. Each item re-renders only when its view node is a new object. With a questionnaire it also takes `value`; with either source, `onChange`, `onComplete` and `onDiagnostic`, all as §6.1. A `session` with a `value` is a type error.
+
+**`controls` (tier 3, ADR-0013).** A host's control per control kind, for any of the 13 answerable kinds: `controls={{ 'calendar-date': MyPicker }}`, where `MyPicker` takes `ControlProps<'calendar-date'>` (§5.3). Kinds left out render the default. The kit renders the item root, the label (`for` = `ids.control`), the required marker and the error container around the host's control (`08-dom-contract.md` §3.9). The map is compared by its entries, so one written inline re-renders nothing. In development, after each render of an overridden item, the kit checks that an element carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` (§3) once per item and missing attribute, through `onDiagnostic` and `console.warn`. A production build has no check. `useQuestionnaire` has no `controls`: a host rendering itself (tier 4) owns its markup.
 
 ## 7. Not in the API yet
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M6–M8:** the React adapter's controlled mode and tier-3 `controls`, the custom element's attributes and events, and the theme tokens.
+- **M7–M8:** the custom element's attributes and events, its tier-3 `controls`, and the theme tokens.
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
 - **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).

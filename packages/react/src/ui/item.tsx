@@ -1,9 +1,10 @@
-import type { ControlKind, ControlView, ViewNode } from '@fhirq/core/view';
-import { memo, type ReactElement } from 'react';
+import type { ControlKind, ControlProps, ControlView, ViewNode } from '@fhirq/core/view';
+import { memo, type ComponentType, type ReactElement } from 'react';
 
 import { Entry } from './entry.js';
 import { Choices, List } from './options.js';
-import { Errors, Label, Legend, leaving, Text, type Ui } from './parts.js';
+import { Errors, Label, Legend, leaving, Text, type Answerable, type Ui } from './parts.js';
+import { Slot } from './slot.js';
 
 interface ItemProps {
   readonly node: ViewNode;
@@ -46,7 +47,10 @@ const Item = memo(function Item({ node, ui, level }: ItemProps): ReactElement {
     );
   }
   // Read-only kinds carry no requirement and are never left (DOM contract §3.6).
-  const answerable = node.control !== 'calculated' && node.control !== 'statement' && node.control !== 'unsupported';
+  const answerable = answers(node);
+  // A host's control for this kind (tier 3). The map pairs each kind with its props, which one lookup cannot show.
+  const Control = answerable ? (ui.controls[node.control] as ComponentType<ControlProps<Answerable>> | undefined) : undefined;
+  if (answerable && Control !== undefined) return <Slot node={node} ui={ui} Control={Control} />;
   return (
     <div className="fhirq-item" part="item" data-path={node.path} onBlur={answerable ? leaving(node) : undefined}>
       <Body node={node} ui={ui} />
@@ -54,6 +58,9 @@ const Item = memo(function Item({ node, ui, level }: ItemProps): ReactElement {
     </div>
   );
 });
+
+/** The kinds a respondent answers: all but the read-only ones, once groups are ruled out. */
+const answers = (node: ViewNode): node is ControlView<Answerable> => node.control !== 'calculated' && node.control !== 'statement' && node.control !== 'unsupported';
 
 /** Narrows to kinds the view's union declares together, which a `switch` cannot split. */
 const among = <K extends ControlKind>(node: ViewNode, kinds: readonly K[]): node is ControlView<K> => (kinds as readonly ControlKind[]).includes(node.control);

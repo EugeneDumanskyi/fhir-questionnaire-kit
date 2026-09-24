@@ -20,7 +20,7 @@ describe('the default UI reads only the public hook and the view types (M6 AC-2)
   const ui = readdirSync(new URL('ui/', src)).filter((file) => file.endsWith('.tsx'));
 
   it('finds the modules it restricts', () => {
-    expect(ui).toEqual(expect.arrayContaining(['form.tsx', 'item.tsx', 'entry.tsx', 'options.tsx', 'parts.tsx']));
+    expect(ui).toEqual(expect.arrayContaining(['form.tsx', 'item.tsx', 'entry.tsx', 'options.tsx', 'parts.tsx', 'slot.tsx']));
   });
 
   it.each(ui)('ui/%s imports React, view types and its siblings, nothing else', (file) => {
@@ -33,8 +33,10 @@ describe('the default UI reads only the public hook and the view types (M6 AC-2)
   });
 
   it('joins ui/ to the hook the package exports, with core types only for its props', () => {
+    // Besides the hook, only the development tier-3 check and the channel it reports on (ADR-0013, ADR-0015 note).
+    const tooling = ['./contract.js', './report.js'];
     for (const { from, typeOnly } of imports(read('questionnaire.tsx'))) {
-      const allowed = from === 'react' || from === './hook.js' || /^\.\/ui\/[a-z-]+\.js$/.test(from) || (from.startsWith('@fhirq/core') && typeOnly);
+      const allowed = from === 'react' || from === './hook.js' || tooling.includes(from) || /^\.\/ui\/[a-z-]+\.js$/.test(from) || (from.startsWith('@fhirq/core') && typeOnly);
       expect(allowed, `questionnaire.tsx imports ${typeOnly ? 'type ' : ''}${from}`).toBe(true);
     }
     expect(read('index.ts')).toMatch(/^export \{ useQuestionnaire \} from '\.\/hook\.js';$/m);

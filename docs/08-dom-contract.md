@@ -2,7 +2,7 @@
 
 *The markup both renderers emit for each view-model concept (ADR-0007). `@fhirq/react` renders it in light DOM; `@fhirq/element` renders it inside its open shadow root (ADR-0014). `@fhirq/themes/base.css` styles it by class; hosts restyle it by `--fhirq-*` token, by class (React) or by `::part()` (element). One contract suite runs against both renderers: `tests/browser/contract.spec.ts`.*
 
-**Status:** complete for every control kind, 2026-09-23 (M5). §3.1 and §3.2 are the S1 rows, which both renderers build. React builds §3.3 onward from 2026-09-24 (M6); the element builds them in M7. The contract suite covers each row as its renderer lands (§4). Anything not written here is not part of the contract. Class names, `part` names and the roles and ARIA attributes below are covered by semver from 1.0.0.
+**Status:** complete for every control kind, 2026-09-23 (M5). §3.1 and §3.2 are the S1 rows, which both renderers build. React builds §3.3 onward, §3.9's tier-3 chrome included, from 2026-09-24 (M6); the element builds them in M7. The contract suite covers each row as its renderer lands (§4). Anything not written here is not part of the contract. Class names, `part` names and the roles and ARIA attributes below are covered by semver from 1.0.0.
 
 ---
 
@@ -141,8 +141,23 @@ A group's own issues (`required` on a group) use the error container of §3, as 
 The add control stays focusable when inert (`aria-disabled`, not `disabled`), so the reason can be reached and read (INV-P-04); activating it calls `add()`, which the session refuses at `maxOccurs`. Instances are keyed by `instance.path`, never by position (T11).
 
 
+### 3.9 A host's control (tier 3)
+
+A host may replace the control of any of the 13 answerable kinds (ADR-0013, keyed by control kind per its 2026-09-24 note). The kit keeps the item's chrome and the host's control fills the middle:
+
+| View model | Element | Class | `part` | Attributes |
+|---|---|---|---|---|
+| the item root | `div` | `fhirq-item` | `item` | `data-path`; no `focusout` handler, since calling `leave()` is the host control's duty |
+| `label` | `label`, first child | `fhirq-label` | `label` | `id` = `ids.label`, `for` = `ids.control`; the required marker as §3 |
+| the control | whatever the host renders, between the label and the error container | the host's | the host's | receives `ControlProps`: `node`, `ids`, `set`, `clear`, `leave` |
+| `issues` | the error container, last child | as §3 | | |
+
+The host's control puts `id` = `ids.control` on its focusable element, sets `aria-invalid` to `"true"` or `"false"` from `node.invalid`, sets `aria-describedby` to include `ids.error` while `invalid`, and calls `leave()` when focus leaves it. The label names the control through `for` when the element with `ids.control` is labelable (`input`, `select`, `textarea`, `button`); a control built on another element sets `aria-labelledby` = `ids.label` itself. A summary link reaches it through `ids.control`, like a default control.
+
+In development, after each render of the item, the renderer checks the first three duties in its own tree (the document, or the element's shadow root; a control a host renders in a portal still counts) and raises `control-contract` once per item and missing attribute: `path` the item's, `detail` the kind, `expected` one of `id`, `aria-invalid` or `aria-describedby` (`docs/07-api.md` §3). A production build does not check.
+
 ## 4. What the contract suite asserts
 
 For each of the three slice states (initial, string item shown, errors surfaced), both renderers produce the same tree of elements, classes, `part` names, roles and attributes; every id reference resolves in the same root and is described by the element it reaches; the input's `.value` and `.checked` match; and Playwright's ARIA snapshot (roles, accessible names, states) is identical. Ids themselves are compared by what they resolve to, never by value, since the prefixes differ.
 
-Every row of §2 and §3, for all 18 control kinds, is also checked against the model a renderer drew: `tests/browser/contract-rows.ts` takes the view model and the `.fhirq-form` and returns each departure from this document. It checks tags, classes, `part` names, ids, ARIA state, text, values and selection, the heading level of repeat instances, and that no `style` is present. React runs it in Chromium on React 18 and 19, on first render and after each kind is used (`packages/react/test/browser/ui.test.tsx`). The element runs the same check in M7.
+Every row of §2 and §3, for all 18 control kinds, is also checked against the model a renderer drew: `tests/browser/contract-rows.ts` takes the view model and the `.fhirq-form` and returns each departure from this document. It checks tags, classes, `part` names, ids, ARIA state, text, values and selection, the heading level of repeat instances, and that no `style` is present. Given the kinds a host overrides, it checks §3.9's chrome for them instead. React runs it in Chromium on React 18 and 19, on first render and after each kind is used (`packages/react/test/browser/ui.test.tsx`). The element runs the same check in M7.

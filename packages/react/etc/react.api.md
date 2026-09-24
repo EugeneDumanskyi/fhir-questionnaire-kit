@@ -4,11 +4,14 @@
 
 ```ts
 
+import { ComponentType } from 'react';
+import type { ControlKind } from '@fhirq/core/view';
+import type { ControlProps } from '@fhirq/core/view';
 import { createSession } from '@fhirq/core';
 import { Diagnostic } from '@fhirq/core';
 import { Questionnaire as Questionnaire_2 } from '@fhirq/core';
 import { QuestionnaireResponse } from '@fhirq/core';
-import type { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import { Session } from '@fhirq/core';
 import { SessionOptions } from '@fhirq/core';
 import { ViewModel } from '@fhirq/core/view';
@@ -37,6 +40,9 @@ export type QuestionnaireProps = ({
     readonly onChange?: (response: QuestionnaireResponse) => void;
     readonly onComplete?: (response: QuestionnaireResponse) => void;
     readonly onDiagnostic?: (diagnostic: Diagnostic) => void;
+    readonly controls?: {
+        readonly [K in Exclude<ControlKind, 'calculated' | 'statement' | 'unsupported' | 'group' | 'repeating-group'>]?: ComponentType<ControlProps<K>>;
+    };
 };
 
 // @alpha
