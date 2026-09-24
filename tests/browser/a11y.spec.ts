@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+import { audit, TAGS } from './axe.js';
 import { open, reach } from './pages/serve.js';
 
 /**
@@ -8,7 +9,6 @@ import { open, reach } from './pages/serve.js';
  * 2.2 at A and AA, in both renderers × light and dark × 375 and 1280 px × the
  * three states. Chromium only in M1; the full matrix is M8.
  */
-const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'];
 
 for (const renderer of ['element', 'react-19'] as const) {
   for (const colorScheme of ['light', 'dark'] as const) {
@@ -21,12 +21,7 @@ for (const renderer of ['element', 'react-19'] as const) {
           await open(page, renderer);
           await reach(page, state);
 
-          const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-
-          expect(results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) }))).toEqual([]);
-          // Not vacuous: the form's own controls were in what axe checked.
-          const checked = results.passes.flatMap(({ nodes }) => nodes.map((node) => JSON.stringify(node.target)));
-          expect(checked.some((target) => target.includes('fhirq-'))).toBe(true);
+          expect(await audit(page)).toEqual([]);
         });
       }
     }

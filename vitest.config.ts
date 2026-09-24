@@ -14,6 +14,13 @@ const workspaceSources = [
   { find: /^@fhirq\/core\/view$/, replacement: here('./packages/core/src/view/index.ts') },
   { find: /^@fhirq\/core\/resume$/, replacement: here('./packages/core/src/resume.ts') },
   { find: /^@fhirq\/react$/, replacement: here('./packages/react/src/index.ts') },
+  { find: /^@fhirq\/themes\/(base|default)\.css$/, replacement: here('./packages/themes/src/$1.css') },
+];
+
+/** React 18 in place of 19, from its own workspace package, for a project's second-major run (NFR-C-03). */
+const react18 = [
+  { find: /^react-dom(\/.*)?$/, replacement: here('./tools/react-18/node_modules/react-dom$1') },
+  { find: /^react(\/.*)?$/, replacement: here('./tools/react-18/node_modules/react$1') },
 ];
 
 /**
@@ -67,19 +74,34 @@ export default defineConfig({
       {
         // The same suite on React 18 (NFR-C-03). React 18 lives in its own
         // workspace package so the two majors never share a node_modules.
-        resolve: {
-          alias: [
-            ...workspaceSources,
-            { find: /^react-dom(\/.*)?$/, replacement: here('./tools/react-18/node_modules/react-dom$1') },
-            { find: /^react(\/.*)?$/, replacement: here('./tools/react-18/node_modules/react$1') },
-          ],
-        },
+        resolve: { alias: [...workspaceSources, ...react18] },
         test: {
           name: 'react-18',
           root: './packages/react',
           environment: 'node',
           include: ['test/**/*.test.{ts,tsx}'],
           exclude: ['test/browser/**'],
+          env: { FHIRQ_REACT_MAJOR: '18' },
+        },
+      },
+      {
+        // M6 AC-1: the quickstart as a consumer writes it, rendered in Node on both majors.
+        resolve: { alias: workspaceSources },
+        test: {
+          name: 'quickstart',
+          root: './examples/react-quickstart',
+          environment: 'node',
+          include: ['test/**/*.test.tsx'],
+          env: { FHIRQ_REACT_MAJOR: '19' },
+        },
+      },
+      {
+        resolve: { alias: [...workspaceSources, ...react18] },
+        test: {
+          name: 'quickstart-18',
+          root: './examples/react-quickstart',
+          environment: 'node',
+          include: ['test/**/*.test.tsx'],
           env: { FHIRQ_REACT_MAJOR: '18' },
         },
       },

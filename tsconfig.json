@@ -18,6 +18,9 @@
       "path": "apps/playground"
     },
     {
+      "path": "examples/react-quickstart"
+    },
+    {
       "path": "./tsconfig.tests.json"
     }
   ]
