@@ -56,7 +56,7 @@ describe('the public API surface (NFR-U-05)', () => {
   it('counts a re-export only where it is declared (M6 plan D5)', () => {
     const listed = Object.fromEntries(ENTRY_POINTS.filter((entry) => entry.report !== undefined).map((entry) => [entry.name, reexports(text(entry.report))]));
     for (const [name, names] of Object.entries(listed)) for (const reexport of names) expect(reexport.from, `${name} re-exports ${reexport.name}`).not.toBeNull();
-    expect(listed['@fhirq/react']).toEqual([]);
+    expect(listed['@fhirq/react']).toEqual([{ name: 'createSession', from: '@fhirq/core' }]);
   });
 
   it('counts each entry point', () => {
@@ -64,7 +64,7 @@ describe('the public API surface (NFR-U-05)', () => {
       '@fhirq/core': 35,
       '@fhirq/core/view': 15,
       '@fhirq/core/resume': 3,
-      '@fhirq/react': 2,
+      '@fhirq/react': 3,
       '@fhirq/element': 2,
       '@fhirq/themes': 1,
     });

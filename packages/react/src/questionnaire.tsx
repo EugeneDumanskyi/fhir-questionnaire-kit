@@ -1,39 +1,52 @@
-import type { Session } from '@fhirq/core';
-import { createView, type ControlView, type ErrorSummary, type ViewNode } from '@fhirq/core/view';
-import {
-  memo,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-  type FocusEvent,
-  type MouseEvent,
-  type ReactElement,
-} from 'react';
+import type { Questionnaire as QuestionnaireResource, Session, SessionOptions } from '@fhirq/core';
+import type { ControlView, ErrorSummary, ViewNode, ViewOptions } from '@fhirq/core/view';
+import { memo, useEffect, useRef, type FocusEvent, type MouseEvent, type ReactElement } from 'react';
 
-/** The two control kinds the S1 slice renders; the rest are M6 (M5 plan D14). */
+import { useQuestionnaire } from './hook.js';
+
+/** The two control kinds the S1 slice renders; the rest are M6 step 5 (M5 plan D14). */
 type SliceNode = ControlView<'yes-no'> | ControlView<'short-text'>;
 const inSlice = (node: ViewNode): node is SliceNode => node.control === 'yes-no' || node.control === 'short-text';
 
-/** @alpha S1 spike surface: M6 replaces it. */
-export interface QuestionnaireProps {
-  /** A host-created session (ADR-0015). The S1 slice accepts nothing else. */
-  readonly session: Session;
-}
+/**
+ * A questionnaire, whose session the component creates and owns, or a
+ * session the host owns (ADR-0015). Never both.
+ *
+ * @alpha
+ */
+export type QuestionnaireProps = (
+  | {
+      readonly questionnaire: QuestionnaireResource;
+      readonly session?: never;
+      /** Options for the session the component creates, read once. */
+      readonly options?: SessionOptions;
+    }
+  | { readonly session: Session; readonly questionnaire?: never; readonly options?: never }
+) & {
+  /** A BCP 47 tag. Default `"en"`, never sniffed (ADR-0020). */
+  readonly locale?: string;
+  /** An IANA zone for `dateTime` answers. */
+  readonly timeZone?: string;
+  /** Catalogue overrides, key by key. */
+  readonly messages?: ViewOptions['messages'];
+};
 
 /**
- * The default UI, S1 slice. Maps view nodes to markup per
- * docs/08-dom-contract.md and computes nothing itself. No DOM access during
- * render: focus and announcements happen in effects (ADR-0015).
+ * The default UI (ADR-0013 tier 1), on the public hook alone. Maps view nodes
+ * to markup per docs/08-dom-contract.md and computes nothing itself. No DOM
+ * access during render: focus and announcements happen in effects
+ * (ADR-0015).
  *
- * @alpha S1 spike surface: M6 adds `useQuestionnaire`, `questionnaire`, controlled mode and tiers.
+ * @alpha
  */
-export function Questionnaire({ session }: QuestionnaireProps): ReactElement {
-  const idPrefix = useId();
-  // A fixed locale, never sniffed, so server and client agree (ADR-0020); the `locale` option is M6.
-  const view = useMemo(() => createView(session, { idPrefix, locale: 'en' }), [session, idPrefix]);
-  const model = useSyncExternalStore(view.subscribe, view.getSnapshot, view.getSnapshot);
+export function Questionnaire(props: QuestionnaireProps): ReactElement {
+  const { locale, timeZone, messages, options } = props;
+  const { view: model } = useQuestionnaire(props.session ?? props.questionnaire, {
+    ...(locale === undefined ? {} : { locale }),
+    ...(timeZone === undefined ? {} : { timeZone }),
+    ...(messages === undefined ? {} : { messages }),
+    ...(options === undefined ? {} : { options }),
+  });
   const form = useRef<HTMLDivElement>(null);
   const status = useRef<HTMLDivElement>(null);
 
