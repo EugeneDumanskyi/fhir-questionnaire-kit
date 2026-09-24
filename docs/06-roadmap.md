@@ -478,6 +478,22 @@ Spike S2 ran after step 6 (`00-s2-mutation-cost.md`).
 
 **Effort.** ASSUMPTION: 16 h.
 
+**Plan decisions, 2026-09-24.** Taken with the M6 plan, D1–D11 as recommended. D4's two dev dependencies were approved with it.
+
+| # | Decision | Resolution |
+|---|---|---|
+| D1 | How adapter diagnostics reach the host | `controlled-value-replaced` and `control-contract` join core's `DiagnosticCode` (types only). The adapter delivers them as core `Diagnostic`s through an `onDiagnostic` option; in development it also calls `console.warn` with the code and detail only (NFR-X-04). A tier-3 finding carries `detail` = the control kind and `expected` = the missing attribute. ADR-0015 note |
+| D2 | What `controls` is keyed on | The control kind (`'calendar-date': MyPicker`), not the FHIR item type, since one item type maps to several kinds and `ControlProps<K>` is typed by kind. Only the 13 answerable kinds can be overridden. AC-7's and AC-10.3.1's "item type" read as the control kind. ADR-0013 note |
+| D3 | When the resolver is first called | The adapter wraps the host's resolver in a gate that the mount effect opens, so the host's resolver never runs on the server or for a session StrictMode discards. No core change; ADR-0015's "resolution starts in an effect" holds as written. A host-created session is the host's business. ADR-0015 note |
+| D4 | How adapter coverage is measured | Vitest browser mode in Chromium for React client tests, with v8 coverage. New dev dependencies `@vitest/browser` 3.2.7 (MIT) and `playwright` 1.63.0 (Apache-2.0). The Node SSR projects stay DOM-free |
+| D5 | Public symbols | A re-export of core's own declaration is not a new symbol: `createSession` is listed, not counted. React adds `Questionnaire`, `QuestionnaireProps` and `useQuestionnaire`, 59 of 60; the hook's option and result types are written inline |
+| D6 | React byte stop-line | Measured with `NODE_ENV=production` and with `@fhirq/core/resume` external (NFR-S-02). Stop at 5.5 kB and trim; if trimming cannot hold 6 kB, an ADR sets the figure from the reading |
+| D7 | Where the quickstart lives | `examples/react-quickstart/`: typechecked, rendered in Node, hydrated in Chromium; M8 and M10 reuse the pattern |
+| D8 | Props that change after mount | A component-owned session reads `questionnaire` and the session options once (ADR-0001); a new questionnaire needs a remount by `key`. The view is rebuilt only when `locale` or `timeZone` change, or `messages` changes by content, and a rebuild drops typed drafts. Both documented |
+| D9 | Small choices | `onChange(response)` fires on cycles with `responseChanged`, emitted without `authored`. `onComplete(response)` fires on `completion: 'completed'`. An initial `value` hydrates on the first render with no diagnostic. `session` with `value` is a type error. Controlled-by-response lives in the hook's options, so the default UI uses only the public hook. Component options: `questionnaire`, `session`, `value`, `onChange`, `onComplete`, `onDiagnostic`, `controls`, `locale`, `timeZone`, `messages`, `options`: 11 of NFR-U-03's 12 |
+| D10 | Keystroke-to-paint | Chromium Event Timing (`PerformanceEventTiming.duration`, keydown to next paint) over 50 keystrokes on the demo and the 500-item bench fixture, on the CI runner, report-only, recorded in `03-nfr.md`. Over 16 ms, the relief is M5's subtree skip in `view/`, recorded as a follow-up |
+| D11 | Accessibility in M6 | Axe at 0 violations on the quickstart and the demo, on React 18 and 19, in the blocking React job. The full matrix stays in M8 |
+
 ---
 
 ### M7 — Element and script-tag embed

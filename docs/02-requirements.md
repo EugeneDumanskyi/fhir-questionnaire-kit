@@ -694,7 +694,7 @@
 - **AC-10.3.1 — Per-type override**
   **Given** INT supplies a replacement component for one item type
   **When** the form renders
-  **Then** that type uses the replacement, all other types use defaults, and the replacement receives value, change handler, validation state, and the accessibility identifiers it must apply (`id`, `aria-describedby`, `aria-invalid`).
+  **Then** that type uses the replacement, all other types use defaults, and the replacement receives value, change handler, validation state, and the accessibility identifiers it must apply (`id`, `aria-describedby`, `aria-invalid`). The override is keyed by control kind, which refines item type: `choice` alone has five (ADR-0013 amendment note, 2026-09-24).
 
 #### US-10.4 — Tier 4: headless
 **As** INT, **I want** the engine with no UI at all, **so that** I can render in React Native or a bespoke design system.
