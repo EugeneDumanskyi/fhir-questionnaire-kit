@@ -13,9 +13,10 @@
 export type Severity = 'error' | 'warning' | 'info';
 
 /**
- * Load findings, one code per invariant, plus the runtime ones. A finding that
- * rejects the load in `strict` mode is `error` in both modes, so a lenient
- * host can tell a degraded item from a mere remark; the rest are `warning`.
+ * Load findings, one code per invariant, plus the runtime ones and the two a
+ * renderer raises. A finding that rejects the load in `strict` mode is `error`
+ * in both modes, so a lenient host can tell a degraded item from a mere
+ * remark; the rest are `warning`.
  *
  * @beta
  */
@@ -59,7 +60,10 @@ export type DiagnosticCode =
   | 'version-drift'
   | 'orphan-answer'
   | 'quarantined-answer'
-  | 'hydrated-answer-disabled';
+  | 'hydrated-answer-disabled'
+  /* Raised by a renderer, never by the engine (ADR-0015 note, M6 plan D1) */
+  | 'controlled-value-replaced'
+  | 'control-contract';
 
 /**
  * A finding about the questionnaire, or a runtime one such as a listener that
@@ -85,8 +89,10 @@ export interface Diagnostic {
    */
   readonly detail: string | null;
   /**
-   * Hydration and restore only (INV-E-09): what the questionnaire expects — an
-   * answer kind, a canonical, an answer count. Never a stored value.
+   * What was expected, in the rule's own terms. Hydration and restore
+   * (INV-E-09): an answer kind, a canonical, an answer count, never a stored
+   * value. `control-contract` (ADR-0013): the attribute a tier-3 control left
+   * off.
    */
   readonly expected?: string;
   /** What the stored response or snapshot has instead, in the same terms. Never a stored value. */

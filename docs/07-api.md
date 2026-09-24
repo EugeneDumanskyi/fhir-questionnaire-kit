@@ -191,6 +191,10 @@ An `ItemPath` addresses one node. Its segments are `linkId`s joined by `/`, and 
 
 There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`, the collaborators' six (§3.9), and hydration's four (§4.3). A hydration diagnostic may also carry `expected` and `found`: two answer kinds, two canonicals or two answer counts, never a value (INV-E-09).
 
+**Raised by a renderer.** Two codes never come from the engine and never appear in `session.diagnostics`. A renderer raises them and hands them to the host (`@fhirq/react`'s `onDiagnostic`, ADR-0015 note):
+- `controlled-value-replaced` (`warning`, `path` `null`): a response-controlled form was given a response that is not an echo of the last one it emitted, and resumed a new session from it (AC-08.1.4). Retained answers and error display state start again.
+- `control-contract` (`warning`): in development, a tier-3 control did not apply an id or attribute it was given (ADR-0013). `path` is the item's, `detail` the control kind and `expected` the missing attribute: `id`, `aria-describedby` or `aria-invalid`.
+
 ### 3.7 Validation
 
 `SessionState.issues` is the validation result (AC-04.4.1): every current issue, surfaced or not, in document order and repeat position, form-level issues first. Each `NodeState.issues` holds that node's share. An `Issue` is:
