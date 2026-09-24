@@ -2,6 +2,7 @@ packages:
   - packages/*
   - apps/*
   - tools/*
+  - examples/*
 
 # Lifecycle scripts are blocked by default. Anything set to true here has been
 # looked at: esbuild's postinstall fetches its platform binary, and esbuild is

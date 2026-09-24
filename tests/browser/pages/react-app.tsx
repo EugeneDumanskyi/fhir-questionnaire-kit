@@ -1,7 +1,8 @@
-import type { OptionResolver, Questionnaire as Form, Session } from '@fhirq/core';
+import type { OptionResolver, Questionnaire as Form, QuestionnaireResponse, Session } from '@fhirq/core';
 import { Questionnaire, useQuestionnaire } from '@fhirq/react';
 import { StrictMode, useEffect, useState, version, type ReactElement } from 'react';
 
+import { Intake } from '../../../examples/react-quickstart/src/app.js';
 import DEMO from '../../../fixtures/demo/questionnaire.json';
 import VALUE_SET from '../../../fixtures/option-resolution/questionnaire.json';
 import { SLICE } from '../../../packages/core/test/slice.js';
@@ -33,7 +34,7 @@ const resolver: OptionResolver = (valueSet) => {
  * host's own session, completion already refused, so its first render shows
  * issues that name formatted limits.
  */
-const FORMS: Readonly<Record<Page, { readonly source: () => Form | Session; readonly options?: Parameters<typeof useQuestionnaire>[1]; readonly expose?: object }>> = {
+const FORMS: Readonly<Record<Exclude<Page, 'quickstart'>, { readonly source: () => Form | Session; readonly options?: Parameters<typeof useQuestionnaire>[1]; readonly expose?: object }>> = {
   slice: { source: () => SLICE },
   demo: { source: () => DEMO as Form },
   'value-set': { source: () => VALUE_SET as Form, options: { options: { resolver } }, expose: { calls, release } },
@@ -41,7 +42,7 @@ const FORMS: Readonly<Record<Page, { readonly source: () => Form | Session; read
 };
 
 /** Renders nothing on server and client alike; marks hydration as committed. */
-function Ready({ session, expose }: { readonly session: Session; readonly expose: object | undefined }): null {
+function Ready({ session, expose }: { readonly session?: Session; readonly expose: object | undefined }): null {
   useEffect(() => {
     Object.assign(window, { fhirq: { ...expose, session, ready: true, react: version } });
   }, [session, expose]);
@@ -53,7 +54,7 @@ function Ready({ session, expose }: { readonly session: Session; readonly expose
  * the server and again on the client (ADR-0015). It is handed to the default
  * UI and, from an effect, to the proofs that drive it.
  */
-function Body({ page }: { readonly page: Page }): ReactElement {
+function Body({ page }: { readonly page: Exclude<Page, 'quickstart'> }): ReactElement {
   const { source, options, expose } = FORMS[page];
   const [made] = useState(source);
   const { session } = useQuestionnaire(made, options);
@@ -61,6 +62,22 @@ function Body({ page }: { readonly page: Page }): ReactElement {
     <>
       <Questionnaire session={session} />
       <Ready session={session} expose={expose} />
+    </>
+  );
+}
+
+/** Each response the quickstart's host was handed on completion. */
+const completed: QuestionnaireResponse[] = [];
+
+/**
+ * The quickstart as a host mounts it (M6 AC-1): its session is its own, so
+ * the proof reaches only what the host's `onComplete` was handed.
+ */
+function Quickstart(): ReactElement {
+  return (
+    <>
+      <Intake onComplete={(response) => completed.push(response)} />
+      <Ready expose={{ completed }} />
     </>
   );
 }
@@ -74,7 +91,7 @@ function Body({ page }: { readonly page: Page }): ReactElement {
 export function App({ page }: { readonly page: Page }): ReactElement {
   return (
     <StrictMode>
-      <Body page={page} />
+      {page === 'quickstart' ? <Quickstart /> : <Body page={page} />}
     </StrictMode>
   );
 }

@@ -155,7 +155,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/coverage/**',
       '**/*.tsbuildinfo',
-      '.tsbuild/**',
+      '**/.tsbuild/**',
       '.stryker-tmp/**',
       // Deliberate violations, linted only by the rules' own tests.
       'tools/eslint-rules/test/fixtures/**',
@@ -170,8 +170,9 @@ export default tseslint.config(
     // seconds more in the fast lane, well inside NFR-M-07's 3 minutes. They need
     // the project graph, so they cover the TypeScript the tsconfig projects
     // include, plus the root config files through the default project. The
-    // playground is an app with its own dependencies and joins in M9.
-    files: ['packages/**/*.{ts,tsx}', 'tests/**/*.ts', '*.config.ts'],
+    // playground is an app with its own dependencies and joins in M9; the
+    // examples, consumer code with a project of their own, join in M6.
+    files: ['packages/**/*.{ts,tsx}', 'examples/**/*.{ts,tsx}', 'tests/**/*.ts', '*.config.ts'],
     // Lint tests lint virtual files that no project includes.
     ignores: ['**/__lint-fixture__.ts'],
     extends: [tseslint.configs.recommendedTypeCheckedOnly],

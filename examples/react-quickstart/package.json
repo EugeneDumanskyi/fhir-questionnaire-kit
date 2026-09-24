@@ -1,0 +1,21 @@
+{
+  "name": "@fhirq/example-react-quickstart",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The React quickstart as a consumer writes it: typechecked, rendered in Node and hydrated in browsers in CI (M6 AC-1, NFR-Q-08). Never published.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --build --force"
+  },
+  "dependencies": {
+    "@fhirq/react": "workspace:0.0.0",
+    "@fhirq/themes": "workspace:0.0.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  }
+}
