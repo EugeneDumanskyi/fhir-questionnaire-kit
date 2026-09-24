@@ -104,7 +104,7 @@ jobs:
       - name: Bundle budgets, @fhirq/core, @fhirq/core/view and @fhirq/core/resume, and resume inputs
         run: pnpm measure --check
 
-      - name: API reports, @fhirq/core, @fhirq/core/view and @fhirq/core/resume
+      - name: API reports, @fhirq/core, @fhirq/core/view, @fhirq/core/resume and @fhirq/react
         run: pnpm api:check
 
       - name: Upload the coverage summary and the bundle report
@@ -284,7 +284,9 @@ jobs:
   # M1's spike proofs (S1, decision D5): the DOM contract, axe, hydration on
   # React 18 and 19, caret and CSP in Chromium and WebKit, and the bundle
   # report. Deliberately not a required check: SSR blocks from M6, CSP from M7,
-  # accessibility from M8 and budgets from M2 (06-roadmap.md §5).
+  # accessibility from M8 and budgets from M2 (06-roadmap.md §5). The React
+  # adapter's client tests run here, with coverage, until M6's React gates job
+  # takes them and makes them blocking.
   spike-proofs:
     name: Spike proofs (non-blocking)
     runs-on: ubuntu-latest
@@ -324,6 +326,9 @@ jobs:
       - name: Browser proofs
         run: pnpm test:browser
 
+      - name: React client tests in Chromium, React 18 and 19, with coverage
+        run: pnpm test:coverage:react
+
       - name: Upload the bundle report and the browser report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -332,4 +337,5 @@ jobs:
           path: |
             reports/
             playwright-report/
+            coverage/react/coverage-summary.json
           retention-days: 30

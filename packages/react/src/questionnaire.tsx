@@ -16,6 +16,7 @@ import {
 type SliceNode = ControlView<'yes-no'> | ControlView<'short-text'>;
 const inSlice = (node: ViewNode): node is SliceNode => node.control === 'yes-no' || node.control === 'short-text';
 
+/** @alpha S1 spike surface: M6 replaces it. */
 export interface QuestionnaireProps {
   /** A host-created session (ADR-0015). The S1 slice accepts nothing else. */
   readonly session: Session;

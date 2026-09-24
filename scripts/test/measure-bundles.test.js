@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib';
 
 import { describe, expect, it } from 'vitest';
 
-import { compare, ENTRIES, failures, gzipSize, measure, modules, nodeModulesInputs, renderMarkdown, RESUME_ONLY, resumeInputs, SOURCES } from '../measure-bundles.mjs';
+import { compare, ENTRIES, failures, gzipSize, measure, modules, nodeModulesInputs, PRODUCTION, renderMarkdown, RESUME_ONLY, resumeInputs, SOURCES } from '../measure-bundles.mjs';
 
 describe('measure-bundles', () => {
   it('gzips at maximum compression, never larger than the default level', () => {
@@ -133,5 +133,19 @@ describe('measure-bundles', () => {
       expect.arrayContaining(['packages/core/src/session/session.ts', 'packages/core/src/view/view.ts', 'packages/themes/src/base.css']),
     );
     expect(element.nodeModules).toEqual([]);
+  });
+
+  it('measures React without the resume entry and without its development-only code (M6 plan D6)', async () => {
+    const react = ENTRIES.find((entry) => entry.name === '@fhirq/react');
+    expect(react.external).toEqual(expect.arrayContaining(['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume', 'react']));
+    expect(react.define).toEqual(PRODUCTION);
+
+    const fixture = { name: 'dev-only', entry: 'scripts/test/fixtures/bundle-inputs/dev-only.ts', external: [] };
+    // esbuild defines production itself when it minifies for the browser; the
+    // entry says so explicitly, and a development build is the contrast.
+    const development = await measure({ ...fixture, define: { 'process.env.NODE_ENV': '"development"' } });
+    const production = await measure({ ...fixture, define: PRODUCTION });
+    expect(development.modules[0]?.bytes).toBeGreaterThan(100);
+    expect(production.modules[0]?.bytes).toBeLessThan(50);
   });
 });

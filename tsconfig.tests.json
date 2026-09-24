@@ -12,6 +12,8 @@
     "jsx": "react-jsx"
   },
   "include": ["packages/*/test/**/*.ts", "packages/*/test/**/*.tsx", "packages/*/bench/**/*.ts"],
+  /* Client tests that run in Chromium have their own project, with the DOM. */
+  "exclude": ["packages/*/test/browser/**"],
   "references": [
     { "path": "packages/core" },
     { "path": "packages/react" },

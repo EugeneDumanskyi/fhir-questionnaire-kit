@@ -647,7 +647,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 |---|---|---|
 | Branch protection on the default branch: 0 direct pushes, PR required, PR links a story or ADR | M0 (from the end of the milestone) | NFR-M-08 |
 | Typecheck, lint, core unit tests (fast lane) | M0 | NFR-M-07 |
-| Architectural lint rules: no DOM in core, no network anywhere, no hard-coded strings, no deep imports | M0 (rules), tightened M2/M4/M5 as modules land | NFR-M-06 |
+| Architectural lint rules: no DOM in core, no network anywhere, no hard-coded strings, no deep imports | M0 (rules), tightened M2/M4/M5 as modules land · M6 no DOM in a React render, and ADR-0020's pair on the React adapter | NFR-M-06 |
 | Cyclomatic complexity ≤ 15 per function, named exceptions carrying an inline justification | M0 (rule), real bite from M2 | NFR-M-02 |
 | Core coverage ≥ 95 / 90 | M2 | NFR-Q-01 |
 | Mutation ≥ 80 on engine modules, incremental on PRs | M2 | NFR-Q-03, A6 |
