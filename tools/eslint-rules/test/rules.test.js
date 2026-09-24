@@ -55,6 +55,35 @@ describe('no-dom-in-core', () => {
   });
 });
 
+describe('no-dom-in-render (ADR-0015, M6)', () => {
+  const rule = 'no-dom-in-render';
+  const lintTsx = (file) =>
+    linter.verify(
+      readFileSync(`${root}/${fixtures}/${rule}/${file}`, 'utf8'),
+      {
+        files: ['**/*.tsx'],
+        plugins: { fhirq: fhirqPlugin },
+        languageOptions: { parser: tsParser, ecmaVersion: 2022, sourceType: 'module', parserOptions: { ecmaFeatures: { jsx: true } } },
+        rules: { [`fhirq/${rule}`]: 'error' },
+      },
+      `${root}/${fixtures}/${rule}/${file}`,
+    );
+
+  it('fails on module scope, render bodies and the callbacks React calls during render', () => {
+    const messages = lintTsx('must-fail.tsx');
+    const marked = readFileSync(`${root}/${fixtures}/${rule}/must-fail.tsx`, 'utf8')
+      .split('\n')
+      .flatMap((line, index) => (/\/\/ \d+:/.test(line) ? [index + 1] : []));
+    expect(marked).toHaveLength(8);
+    expect(messages.every((message) => message.ruleId === `fhirq/${rule}`)).toBe(true);
+    expect(messages.map((message) => message.line)).toEqual(marked);
+  });
+
+  it('passes on effects, handlers, subscriptions, types and a local named document', () => {
+    expect(lintTsx('must-pass.tsx')).toEqual([]);
+  });
+});
+
 describe('no-network', () => {
   const rule = 'no-network';
   const options = { allow: [`${fixtures}/no-network/allowed.ts`] };
@@ -364,6 +393,16 @@ describe("ADR-0020's locale lint pair (NFR-M-06, NFR-I-04)", () => {
       [3, 'no-restricted-globals'],
       [5, 'no-restricted-properties'],
       [7, 'no-restricted-properties'],
+      [9, 'no-restricted-properties'],
+      [11, 'no-restricted-globals'],
+      [11, 'no-restricted-properties'],
+    ]);
+  });
+
+  it('holds the React adapter to the same reads, leaving it process.env for a development build (M6)', () => {
+    expect(lintWith('must-fail.ts', LOCALE_RULES.renderer).map((message) => [message.line, message.ruleId])).toEqual([
+      [3, 'no-restricted-globals'],
+      [5, 'no-restricted-properties'],
       [9, 'no-restricted-properties'],
       [11, 'no-restricted-globals'],
       [11, 'no-restricted-properties'],

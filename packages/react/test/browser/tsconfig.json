@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../../../tsconfig.base.json",
+  "compilerOptions": {
+    /* The adapter's client tests run in Chromium (vitest.browser.config.ts),
+       so they see the DOM; the Node tests beside them do not
+       (tsconfig.tests.json). Checked with `tsc -p`, emitting nothing, as
+       tests/browser is. */
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "jsx": "react-jsx",
+    "paths": {
+      "@fhirq/core": ["../../../core/src/index.ts"],
+      "@fhirq/core/view": ["../../../core/src/view/index.ts"],
+      "@fhirq/core/resume": ["../../../core/src/resume.ts"],
+      "@fhirq/react": ["../../src/index.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

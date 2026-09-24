@@ -111,20 +111,31 @@ export const ABORT_ALLOWED = {
  * locale or zone — `toLocale*String`, `resolvedOptions`, `process.env`
  * (`navigator` is `no-dom-in-core`'s already).
  */
+const AMBIENT_LOCALE = [
+  ...['toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'].map((property) => ({
+    property,
+    message: 'Reads the environment\'s locale (ADR-0020). Format through view/format with the locale the host passed.',
+  })),
+  { property: 'resolvedOptions', message: 'Reads the environment\'s locale or zone (ADR-0020); the host passes both.' },
+];
+
 export const LOCALE_RULES = {
   everywhere: {
     'no-restricted-properties': [
       'error',
-      ...['toLocaleString', 'toLocaleDateString', 'toLocaleTimeString'].map((property) => ({
-        property,
-        message: 'Reads the environment\'s locale (ADR-0020). Format through view/format with the locale the host passed.',
-      })),
-      { property: 'resolvedOptions', message: 'Reads the environment\'s locale or zone (ADR-0020); the host passes both.' },
+      ...AMBIENT_LOCALE,
       { object: 'process', property: 'env', message: 'Core reads nothing from its environment (ADR-0020, NFR-C-04).' },
     ],
   },
   outsideFormat: {
     'no-restricted-globals': ['error', { name: 'Intl', message: 'Intl is used in view/format only (ADR-0020, NFR-I-04).' }],
+  },
+  /* The React adapter renders the view's `display` strings and formats
+     nothing (M6). It may read `process.env.NODE_ENV`, which a bundler
+     replaces, for ADR-0013's development-only check. */
+  renderer: {
+    'no-restricted-properties': ['error', ...AMBIENT_LOCALE],
+    'no-restricted-globals': ['error', { name: 'Intl', message: 'A renderer formats nothing: it renders the view\'s display strings (ADR-0020, NFR-I-04).' }],
   },
 };
 export const FORMAT_FILE = 'packages/core/src/view/format.ts';
@@ -239,6 +250,14 @@ export default tseslint.config(
   {
     files: ['packages/element/src/**/*.ts'],
     rules: { 'no-restricted-syntax': ['error', NO_DEFAULT_EXPORT, ...NO_INLINE_STYLE] },
+  },
+
+  {
+    /* ADR-0015: the React adapter renders on a server and hydrates without a
+       warning, so it reads the DOM only in effects and handlers, and formats
+       nothing itself (ADR-0020). */
+    files: ['packages/react/src/**/*.{ts,tsx}'],
+    rules: { 'fhirq/no-dom-in-render': 'error', ...LOCALE_RULES.renderer },
   },
 
   {

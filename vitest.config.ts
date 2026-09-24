@@ -20,7 +20,9 @@ const workspaceSources = [
  * One Vitest run over the workspace. Every project here is `environment: node`
  * with no DOM shim, on purpose: NFR-C-04 says the engine runs in Node, and a
  * jsdom default is how that claim quietly stops being tested. Renderers are
- * exercised in real browsers by Playwright (`pnpm test:browser`), not here.
+ * exercised in real browsers: page-level proofs by Playwright (`pnpm
+ * test:browser`), the React adapter's client tests by Vitest in Chromium
+ * (`vitest.browser.config.ts`, `pnpm test:react`), not here.
  */
 export default defineConfig({
   test: {
@@ -58,6 +60,7 @@ export default defineConfig({
           root: './packages/react',
           environment: 'node',
           include: ['test/**/*.test.{ts,tsx}'],
+          exclude: ['test/browser/**'],
           env: { FHIRQ_REACT_MAJOR: '19' },
         },
       },
@@ -76,6 +79,7 @@ export default defineConfig({
           root: './packages/react',
           environment: 'node',
           include: ['test/**/*.test.{ts,tsx}'],
+          exclude: ['test/browser/**'],
           env: { FHIRQ_REACT_MAJOR: '18' },
         },
       },

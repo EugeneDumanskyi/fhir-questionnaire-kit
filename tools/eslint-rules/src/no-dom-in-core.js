@@ -12,7 +12,7 @@
  */
 
 /** Browser globals. A value here is reported wherever it resolves to a global. */
-const FORBIDDEN_GLOBALS = new Set([
+export const FORBIDDEN_GLOBALS = new Set([
   'window', 'document', 'navigator', 'location', 'history', 'screen', 'frames',
   'parent', 'top', 'self', 'customElements', 'getComputedStyle', 'matchMedia',
   'alert', 'confirm', 'prompt', 'localStorage', 'sessionStorage', 'indexedDB',

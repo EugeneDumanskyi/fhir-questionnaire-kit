@@ -37,6 +37,13 @@ export const SOURCES = {
 const REACT = ['react', 'react-dom', 'react/jsx-runtime', 'react-dom/client'];
 
 /**
+ * What a consumer's bundler sets for a production build (ADR-0013's
+ * development-only check). esbuild sets the same itself when it minifies for
+ * the browser; the React entry states it so the figure does not rest on that.
+ */
+export const PRODUCTION = { 'process.env.NODE_ENV': '"production"' };
+
+/**
  * ADR-0021: the resume path. No input under these may appear in an entry
  * marked `resumeFree` — core, view, the element and its IIFE — whatever the
  * budget says, so one import added to `createSession`'s path fails a named
@@ -66,7 +73,17 @@ export const ENTRIES = [
     excludeInputsOf: '@fhirq/core',
     note: 'what resuming adds: modules the main entry point bundles are excluded',
   },
-  { name: '@fhirq/react', entry: '@fhirq/react', external: [...REACT, '@fhirq/core', '@fhirq/core/view'] },
+  {
+    name: '@fhirq/react',
+    entry: '@fhirq/react',
+    // NFR-S-02 counts neither React, core, the view nor the resume entry, which
+    // controlled mode imports (ADR-0021). Measured as a production build, so the
+    // development-only checks a consumer's bundler strips are not counted
+    // (M6 plan D6, ADR-0013).
+    external: [...REACT, '@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume'],
+    define: PRODUCTION,
+    note: 'production build: React, core, view and resume external',
+  },
   {
     name: '@fhirq/element',
     // The S1 element takes a host-created session (decision D2), so its own
@@ -214,6 +231,7 @@ export async function measure(entry, excluded = new Set()) {
     globalName: entry.format === 'iife' ? 'fhirq' : undefined,
     platform: 'browser',
     external: entry.external,
+    define: entry.define ?? {},
     loader: { '.css': entry.css === true ? 'css' : 'text' },
     plugins: [workspacePlugin(entry.external, SOURCES, root, excluded)],
     legalComments: 'none',
