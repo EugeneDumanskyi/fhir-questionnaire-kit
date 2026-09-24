@@ -7,3 +7,13 @@
  */
 export const PAGES = ['slice', 'demo', 'value-set', 'formats', 'quickstart'] as const;
 export type Page = (typeof PAGES)[number];
+
+/**
+ * The keystroke pages (M6 step 10): client-rendered production builds, as a
+ * host ships them. A bare textarea is the control, giving the wait for the
+ * next frame that no code can shorten; then the demo, the 500-item bench
+ * fixture, and that fixture controlled by a host that stores a clone of
+ * every response.
+ */
+export const TYPED = ['control', 'demo', 'large-500', 'large-500-cloned'] as const;
+export type Typed = (typeof TYPED)[number];

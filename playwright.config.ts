@@ -14,7 +14,10 @@ export default defineConfig({
   reporter: process.env['CI'] !== undefined ? [['github'], ['list'], ['html', { open: 'never' }]] : 'list',
   use: { trace: 'retain-on-failure' },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: 'keystroke.spec.ts' },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: 'keystroke.spec.ts' },
+    // Timings, report-only (M6 AC-10): run by `pnpm test:keystroke` on one
+    // worker, since a proof running beside them would be in the reading.
+    { name: 'keystroke', use: { ...devices['Desktop Chrome'] }, testMatch: 'keystroke.spec.ts' },
   ],
 });
