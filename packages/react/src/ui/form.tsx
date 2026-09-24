@@ -1,8 +1,8 @@
 import type { ErrorSummary, ViewModel } from '@fhirq/core/view';
-import { useEffect, useMemo, useRef, type MouseEvent, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from 'react';
 
 import { Nodes } from './item.js';
-import type { Ui } from './parts.js';
+import type { Controls, Ui } from './parts.js';
 
 /** Finds an id in the tree `from` is in: the document, or a host's shadow root (DOM contract §1). */
 const byId = (from: Node, id: string) => (from.getRootNode() as Document | ShadowRoot).getElementById(id);
@@ -13,11 +13,15 @@ const byId = (from: Node, id: string) => (from.getRootNode() as Document | Shado
  * effects and handlers: focus moves and announcements are written after the
  * render that produced them (ADR-0015).
  */
-export function Form({ model }: { readonly model: ViewModel }): ReactElement {
+export function Form({ model, controls = NONE, check }: { readonly model: ViewModel; readonly controls?: Controls | undefined; readonly check?: Ui['check'] }): ReactElement {
   const form = useRef<HTMLDivElement>(null);
   const status = useRef<HTMLDivElement>(null);
   const { announcement, focusTarget, requiredMarker, labels } = model;
-  const ui = useMemo<Ui>(() => ({ marker: requiredMarker, labels }), [requiredMarker, labels]);
+  // The controls a host writes inline are a new object each render; the same entries keep `ui`, and so every item.
+  const [kept] = useState({ controls });
+  if (!same(kept.controls, controls)) kept.controls = controls;
+  const stable = kept.controls;
+  const ui = useMemo<Ui>(() => ({ marker: requiredMarker, labels, controls: stable, check }), [requiredMarker, labels, stable, check]);
 
   useEffect(() => {
     // Assigned even when the text repeats, so a second identical message is announced.
@@ -36,6 +40,13 @@ export function Form({ model }: { readonly model: ViewModel }): ReactElement {
     </div>
   );
 }
+
+const NONE: Controls = {};
+
+const same = (a: Controls, b: Controls) => {
+  const keys = Object.keys(a) as (keyof Controls)[];
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+};
 
 function Summary({ summary }: { readonly summary: ErrorSummary }): ReactElement {
   const onClick = (event: MouseEvent<HTMLAnchorElement>, focusId: string) => {

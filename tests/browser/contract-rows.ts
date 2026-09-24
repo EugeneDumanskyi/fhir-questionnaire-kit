@@ -6,9 +6,10 @@ import type { ControlKind, ControlView, InstanceView, ViewModel, ViewNode } from
  * it returns every way the markup departs from the contract. Runs in the
  * page, against React's light DOM (M6) and the element's shadow root (M7).
  * Ids are compared with the model's, so the model must be the renderer's
- * own, or one built with the same id prefix.
+ * own, or one built with the same id prefix. For kinds in `overridden`, a
+ * host's tier-3 control, only the chrome of §3.9 is the kit's to check.
  */
-export function contractViolations(model: ViewModel, form: Element): string[] {
+export function contractViolations(model: ViewModel, form: Element, overridden: readonly ControlKind[] = []): string[] {
   const found: string[] = [];
   const tree = form.getRootNode() as Document | ShadowRoot;
   const byId = (id: string) => tree.getElementById(id);
@@ -180,12 +181,22 @@ export function contractViolations(model: ViewModel, form: Element): string[] {
     optionParts(ok, node, element);
   };
 
+  /** §3.9: the kit's label first, the host's control between it and the errors, holding `ids.control`. */
+  const slot = (ok: ReturnType<typeof check>, node: ViewNode, element: Element) => {
+    const own = element.firstElementChild;
+    ok(is(own, 'label', 'label') && own.id === node.ids.label && own.getAttribute('for') === node.ids.control, 'label for the control');
+    label(ok, own, node, true);
+    const control = byId(node.ids.control);
+    ok(control !== null && element.contains(control) && !own?.contains(control) && control !== element.lastElementChild && !element.lastElementChild?.contains(control), 'host control between label and errors');
+  };
+
   const item = (node: ViewNode, element: Element | undefined, level: number): void => {
     const ok = check(node.path);
     const group = among(node, ['group', 'repeating-group']);
     if (!is(element, group ? 'fieldset' : 'div', 'item') || element.getAttribute('data-path') !== node.path) return ok(false, 'item root');
     errorsOf(ok, node, element);
-    if (among(node, ['group', 'repeating-group'])) groupOf(ok, node, element, level);
+    if (overridden.includes(node.control)) slot(ok, node, element);
+    else if (among(node, ['group', 'repeating-group'])) groupOf(ok, node, element, level);
     else if (among(node, ['calculated', 'statement', 'unsupported'])) readOnly(ok, node, element);
     else answerable(ok, node, element);
   };
