@@ -107,7 +107,7 @@ export interface Diagnostic {
 }
 
 // @beta
-export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw' | 'scorer-threw' | 'evaluator-threw' | 'unresolved-options' | 'resolver-failed' | 'no-sanitizer' | 'sanitizer-threw' | 'version-drift' | 'orphan-answer' | 'quarantined-answer' | 'hydrated-answer-disabled';
+export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw' | 'scorer-threw' | 'evaluator-threw' | 'unresolved-options' | 'resolver-failed' | 'no-sanitizer' | 'sanitizer-threw' | 'version-drift' | 'orphan-answer' | 'quarantined-answer' | 'hydrated-answer-disabled' | 'controlled-value-replaced' | 'control-contract';
 
 // @beta
 export function emitResponse(session: Session, options?: {
