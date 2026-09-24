@@ -286,7 +286,8 @@ jobs:
   # report. Deliberately not a required check: SSR blocks from M6, CSP from M7,
   # accessibility from M8 and budgets from M2 (06-roadmap.md §5). The React
   # adapter's client tests run here, with coverage, until M6's React gates job
-  # takes them and makes them blocking.
+  # takes them and makes them blocking. Keystroke to paint is read here too,
+  # report only, after the proofs so none runs beside it (NFR-P-03).
   spike-proofs:
     name: Spike proofs (non-blocking)
     runs-on: ubuntu-latest
@@ -325,6 +326,9 @@ jobs:
 
       - name: Browser proofs
         run: pnpm test:browser
+
+      - name: Keystroke to paint, report only, React 18 and 19 in Chromium
+        run: pnpm test:keystroke
 
       - name: React client tests in Chromium, React 18 and 19, with coverage
         run: pnpm test:coverage:react

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import type { Page as BrowserPage } from '@playwright/test';
 import { build, transform, type Plugin } from 'esbuild';
 
-import { PAGES, type Page } from './names.js';
+import { PAGES, TYPED, type Page, type Typed } from './names.js';
 
 /**
  * Test pages for the S1 browser proofs, built in memory with esbuild and served
@@ -62,7 +62,7 @@ function resolver(major: 18 | 19 | null): Plugin {
   };
 }
 
-async function bundle(entry: string, major: 18 | 19 | null): Promise<string> {
+async function bundle(entry: string, major: 18 | 19 | null, mode: 'development' | 'production' = 'development'): Promise<string> {
   const result = await build({
     entryPoints: [at(entry)],
     bundle: true,
@@ -70,8 +70,9 @@ async function bundle(entry: string, major: 18 | 19 | null): Promise<string> {
     format: 'esm',
     target: 'es2022',
     platform: 'browser',
-    // Development builds: they are the ones that print hydration warnings.
-    define: { 'process.env.NODE_ENV': '"development"' },
+    // Development builds, the ones that print hydration warnings, except
+    // where a proof times what a host ships.
+    define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
     plugins: [resolver(major)],
     logLevel: 'silent',
   });
@@ -130,10 +131,12 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
   const js = (body: string): Asset => ({ body, type: 'text/javascript' });
   const page = (body: string): Asset => ({ body, type: 'text/html' });
   const css = (path: string): Asset => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
-  const [element, react19, react18, ssr19, ssr18] = await Promise.all([
+  const [element, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
     bundle('tests/browser/pages/react-client.tsx', 19),
     bundle('tests/browser/pages/react-client.tsx', 18),
+    bundle('tests/browser/pages/keystroke-page.tsx', 19, 'production'),
+    bundle('tests/browser/pages/keystroke-page.tsx', 18, 'production'),
     rendered(19),
     rendered(18),
   ]);
@@ -149,6 +152,18 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
         ),
       ),
     ]);
+  const typedPages = (major: 18 | 19) =>
+    TYPED.map((name): [string, Asset] => [
+      `/keystroke-${major}-${name}.html`,
+      page(
+        html(
+          `fhirq keystroke React ${major}`,
+          '<link rel="stylesheet" href="/default.css"><link rel="stylesheet" href="/base.css">' +
+            `<script type="module" src="/keystroke-${major}.js"></script>`,
+          `<div id="root" data-page="${name}"></div>`,
+        ),
+      ),
+    ]);
   return new Map<string, Asset>([
     ['/element.html', page(html('fhirq element', '<script type="module" src="/element.js"></script>', '<fhir-questionnaire></fhir-questionnaire>'))],
     ['/element.js', js(element)],
@@ -156,6 +171,10 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
     ['/react-19.js', js(react19)],
     ...reactPages(18, ssr18),
     ['/react-18.js', js(react18)],
+    ...typedPages(19),
+    ['/keystroke-19.js', js(typed19)],
+    ...typedPages(18),
+    ['/keystroke-18.js', js(typed18)],
     ['/base.css', css('packages/themes/src/base.css')],
     ['/default.css', css('packages/themes/src/default.css')],
   ]);
@@ -196,6 +215,13 @@ export async function serve(page: BrowserPage): Promise<void> {
 export async function open(page: BrowserPage, renderer: Renderer, form: Page = 'slice'): Promise<void> {
   await serve(page);
   await page.goto(`${ORIGIN}/${address(renderer, form)}.html`);
+  await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
+}
+
+/** Opens a keystroke page, a production build rendered on the client only, and waits for its first commit. */
+export async function openTyped(page: BrowserPage, major: 18 | 19, form: Typed): Promise<void> {
+  await serve(page);
+  await page.goto(`${ORIGIN}/keystroke-${major}-${form}.html`);
   await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
 }
 
