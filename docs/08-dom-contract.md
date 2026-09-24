@@ -2,7 +2,7 @@
 
 *The markup both renderers emit for each view-model concept (ADR-0007). `@fhirq/react` renders it in light DOM; `@fhirq/element` renders it inside its open shadow root (ADR-0014). `@fhirq/themes/base.css` styles it by class; hosts restyle it by `--fhirq-*` token, by class (React) or by `::part()` (element). One contract suite runs against both renderers: `tests/browser/contract.spec.ts`.*
 
-**Status:** complete for every control kind, 2026-09-23 (M5). §3.1 and §3.2 are the S1 rows, which both renderers build today; §3.3 onward are what M6 and M7 build, and the contract suite covers each row as its renderer lands. Anything not written here is not part of the contract. Class names, `part` names and the roles and ARIA attributes below are covered by semver from 1.0.0.
+**Status:** complete for every control kind, 2026-09-23 (M5). §3.1 and §3.2 are the S1 rows, which both renderers build. React builds §3.3 onward from 2026-09-24 (M6); the element builds them in M7. The contract suite covers each row as its renderer lands (§4). Anything not written here is not part of the contract. Class names, `part` names and the roles and ARIA attributes below are covered by semver from 1.0.0.
 
 ---
 
@@ -16,7 +16,7 @@
 - **No `style` attribute, no `<style>` element, no `el.style` write** anywhere, in either renderer (NFR-C-07, ADR-0014).
 - **Visual-only marks are hidden from assistive technology.** The required marker carries `aria-hidden="true"`; the requirement itself is `aria-required`.
 - **Text comes from the view model.** A renderer writes no user-facing string of its own (NFR-I-01): labels, options, issue text, the summary, add and remove labels, and the fixed `labels.*` strings all arrive formatted.
-- **Rich text only as given.** Where `richLabel` is not `null`, it is rendered as markup in place of `label`'s text; it is already the host sanitizer's output (INV-X-06). Otherwise `label` is set as text, never as markup.
+- **Rich text only as given.** Where `richLabel` is not `null`, it is rendered as markup in place of `label`'s text; it is already the host sanitizer's output (INV-X-06). Otherwise `label` is set as text, never as markup. In a label or legend the markup sits in a `span` with no class, so the required marker can still follow it as the last child; a statement's `p` holds it directly.
 - **Keys are values.** A radio's, checkbox's or option's `value` attribute is the option's `key`, and a change calls `set` or `toggle` with it as read; a renderer never maps keys to answers.
 - **The leave rule (M5 plan D11).** `leave()` is called on `focusout` from the item root when `relatedTarget` is outside that root, including `null`. Focus moving between parts of one item (two radios, an entry and its unit) is not leaving it. This is the one behaviour both renderers implement rather than read from the view: it needs the DOM.
 
@@ -96,7 +96,7 @@ Every option kind shows `optionMessage` while it is not `null`, in a `p.fhirq-op
 | Kind | Group | Each option | Changes |
 |---|---|---|---|
 | `single-choice` | `div.fhirq-choices`, `role="radiogroup"` (as §3.2) | `label.fhirq-choice` > `input type="radio"` `.fhirq-radio` + `span.fhirq-choice-label` | `change` calls `set(key)` |
-| `single-list` | `select.fhirq-control` with `size` = the lesser of the option count and 8 | `option` | `change` calls `set(value)` |
+| `single-list` | `select.fhirq-control` with `size` = the lesser of the option count and 8 | `option`; none selected while no option is | `change` calls `set(value)` |
 | `single-menu` | `select.fhirq-control` | a first `option` with `value=""` and text `labels.choose`, then one `option` each | `change` calls `set(value)`, or `clear()` for the empty option |
 | `multi-choice` | `div.fhirq-choices`, `role="group"` | `label.fhirq-choice` > `input type="checkbox"` `.fhirq-checkbox` + `span.fhirq-choice-label` | `change` calls `toggle(key)` |
 | `multi-list` | `select.fhirq-control` with `multiple` and `size` as `single-list` | `option` | `change` calls `set([...selected values])` |
@@ -123,7 +123,7 @@ None of these carries `aria-required` or calls `leave`.
 | its label | `legend` | `fhirq-label` | `label` | `id` = `ids.label`, `tabindex="-1"` (a summary link may target it) |
 | `children` | item roots, in order, inside the fieldset | | | |
 
-A group's own issues (`required` on a group) use the error container of §3, as the fieldset's last child.
+A group's own issues (`required` on a group) use the error container of §3, as the fieldset's last child. The fieldset is an item root, so the leave rule (§1) applies to it: `leave()` is called when focus leaves the group, not when it moves between the group's own items.
 
 ### 3.8 Repeating groups
 
@@ -144,3 +144,5 @@ The add control stays focusable when inert (`aria-disabled`, not `disabled`), so
 ## 4. What the contract suite asserts
 
 For each of the three slice states (initial, string item shown, errors surfaced), both renderers produce the same tree of elements, classes, `part` names, roles and attributes; every id reference resolves in the same root and is described by the element it reaches; the input's `.value` and `.checked` match; and Playwright's ARIA snapshot (roles, accessible names, states) is identical. Ids themselves are compared by what they resolve to, never by value, since the prefixes differ.
+
+Every row of §2 and §3, for all 18 control kinds, is also checked against the model a renderer drew: `tests/browser/contract-rows.ts` takes the view model and the `.fhirq-form` and returns each departure from this document. It checks tags, classes, `part` names, ids, ARIA state, text, values and selection, the heading level of repeat instances, and that no `style` is present. React runs it in Chromium on React 18 and 19, on first render and after each kind is used (`packages/react/test/browser/ui.test.tsx`). The element runs the same check in M7.

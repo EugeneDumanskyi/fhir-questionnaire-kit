@@ -13,6 +13,9 @@ const workspaceSources = [
 ];
 
 /** A fresh object per project: Vitest names each instance in place. */
+/** Pre-bundled up front, so a late discovery cannot load a second React mid-run. */
+const REACT_DEPS = ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'react-dom/server.browser'];
+
 const chromium = () => ({ enabled: true, provider: 'playwright', headless: true, screenshotFailures: false, instances: [{ browser: 'chromium' as const }] });
 
 /**
@@ -39,6 +42,7 @@ export default defineConfig({
     projects: [
       {
         resolve: { alias: workspaceSources },
+        optimizeDeps: { include: REACT_DEPS },
         test: {
           name: 'react-browser',
           root: './packages/react',
@@ -55,7 +59,7 @@ export default defineConfig({
             { find: /^react(\/.*)?$/, replacement: here('./tools/react-18/node_modules/react$1') },
           ],
         },
-        optimizeDeps: { include: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client'] },
+        optimizeDeps: { include: REACT_DEPS },
         test: {
           name: 'react-18-browser',
           root: './packages/react',

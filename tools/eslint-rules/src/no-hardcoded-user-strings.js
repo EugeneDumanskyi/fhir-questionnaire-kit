@@ -152,7 +152,13 @@ export const noHardcodedUserStrings = {
       const parent = ancestors[ancestors.length - 1];
       if (parent === undefined) return true;
 
-      return isStructuralPosition(node, parent) || isComparedOrStructuralAttribute(node, parent);
+      // `part={`item ${stem}`}`: the whole value of a structural attribute, written in braces.
+      const attribute = parent.type === 'JSXExpressionContainer' ? ancestors[ancestors.length - 2] : undefined;
+      return (
+        isStructuralPosition(node, parent) ||
+        isComparedOrStructuralAttribute(node, parent) ||
+        (attribute !== undefined && isComparedOrStructuralAttribute(parent, attribute))
+      );
     };
 
     return {
