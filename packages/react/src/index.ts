@@ -1,7 +1,7 @@
 /**
- * `@fhirq/react` — hooks and the default UI over the presentation model.
- *
- * **S1 spike surface (M1).** One component over a host-created session; the
- * full adapter is M6.
+ * `@fhirq/react` — the React adapter (ADR-0015): a headless hook over the
+ * presentation model, and the default UI built on it alone.
  */
+export { createSession } from '@fhirq/core';
+export { useQuestionnaire } from './hook.js';
 export { Questionnaire, type QuestionnaireProps } from './questionnaire.js';

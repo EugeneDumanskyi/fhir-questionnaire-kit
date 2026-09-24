@@ -7,7 +7,8 @@ import { open, reach } from './pages/serve.js';
  * M1 AC-6, R5's thin proof: the server-rendered slice hydrates with 0 console
  * warnings or errors on React 18 and React 19, in development builds (the
  * builds that print hydration warnings), and hydration adopts the server
- * markup rather than replacing it.
+ * markup rather than replacing it. From M6 the page's session is created by
+ * `useQuestionnaire` during render on both sides, under StrictMode.
  */
 for (const major of [18, 19] as const) {
   test(`React ${major} hydrates the server markup with 0 warnings`, async ({ page, browserName }) => {

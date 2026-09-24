@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M6's React adapter.*
 
-**Status, 2026-09-23.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react`, `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M6–M8.
+**Status, 2026-09-24.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is being built in M6 and is `@alpha` (§6). `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M7 and M8.
 
 ---
 
@@ -29,10 +29,10 @@
 | `@fhirq/core` | 35 | `packages/core/etc/core.api.md` |
 | `@fhirq/core/resume` | 3 | `packages/core/etc/core-resume.api.md` |
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
-| `@fhirq/react` | 2 | from M6 |
+| `@fhirq/react` | 3, plus `createSession` re-exported | `packages/react/etc/react.api.md` |
 | `@fhirq/element` | 2 | from M7 |
 | `@fhirq/themes` | 1 | from M8 |
-| **Total** | **58 of 60** | |
+| **Total** | **59 of 60** | |
 
 **Allocation (`06-roadmap.md` M3 D3).** M3 had at most 5 symbols and used 5: `emitResponse` and `QuestionnaireResponse` in `@fhirq/core`, and `snapshot`, `restoreSession` and `hydrateSession` in `@fhirq/core/resume`. It paid for the rest in shapes rather than names: cross-field rules are an inline field of `SessionOptions`, the resume functions reuse `SessionOptions`, and a snapshot is typed as JSON. Five symbols remain, for M4's ports and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types; if M4 needs more than five, that is an NFR-U-05 decision, not a quiet overrun.
 
@@ -385,10 +385,41 @@ const model = view.getSnapshot();
 
 **What the report leaves unexported.** The view's report names four types it reaches from `@fhirq/core`: `Session`, `IssueCode`, `Answer` and `Quantity`. API Extractor does not follow a package's own entry points into each other, and the resume report shows the same for its types. A host imports them from `@fhirq/core`. No internal type is left unexported.
 
-## 6. Not in the API yet
+**M6 (`06-roadmap.md` M6 D5)** counts a re-export of another `@fhirq/*` package's declaration once, where it is declared: `@fhirq/react`'s `createSession` is core's, listed in React's report and not counted again. React adds `Questionnaire`, `QuestionnaireProps` and `useQuestionnaire`, with the hook's option and result types written inline, and replaces the spike's two. **One remains** for M7 and M8.
+
+## 6. `@fhirq/react` (`@alpha`)
+
+The React adapter (ADR-0015): a headless hook over the view, and the default UI built on the hook alone. `createSession` is re-exported from `@fhirq/core` for hosts that own their sessions.
+
+### 6.1 `useQuestionnaire(source, options?)`
+
+Returns `{ session, view }`: the session and the view model of §5.2, read through `useSyncExternalStore` with the same snapshot on the server and the client. Ids are prefixed by React's `useId`.
+
+**The source.**
+- **A questionnaire:** the hook creates the session during render and owns it. `source` and `options.options` are read once (ADR-0001), so another questionnaire needs another component, by `key` (M6 plan D8). The session is disposed a microtask after the component unmounts, so StrictMode's unmount and remount keep it.
+- **A session:** the host's. The hook renders it and never disposes it.
+
+**The resolver of a session the hook owns** is not called while rendering. Core gets a wrapper that waits until the component has mounted, so the host's resolver never runs on the server, runs once under StrictMode, and never runs for a session aborted first (ADR-0015 amendment note). Until then every value set is `pending`, on the server and in the first client render alike. A session the host creates calls its resolver when the host creates it.
+
+**Options.**
+
+| Option | Default | Notes |
+|---|---|---|
+| `locale` | `"en"` | A BCP 47 tag, passed to the view. Never read from the environment, so the server and the client agree (ADR-0020) |
+| `timeZone` | none | An IANA zone for `dateTime` answers (§5.1) |
+| `messages` | none | Catalogue overrides (§5.4), compared by content, so an object written inline keeps the view |
+| `options` | `{}` | `SessionOptions` for a session the hook creates; ignored with a session |
+
+A new `locale` or `timeZone`, or new `messages` content, builds a new view over the same session. The session is untouched (INV-P-01); text being typed that is not yet a value is dropped.
+
+### 6.2 `<Questionnaire>`
+
+`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else. The response-controlled mode, `onChange`, `onComplete`, `onDiagnostic` and tier-3 `controls` are M6 work still to land.
+
+## 7. Not in the API yet
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M6–M8:** the React hook and default UI, the custom element's attributes and events, and the theme tokens.
+- **M6–M8:** the React adapter's controlled mode and tier-3 `controls`, the custom element's attributes and events, and the theme tokens.
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
 - **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).

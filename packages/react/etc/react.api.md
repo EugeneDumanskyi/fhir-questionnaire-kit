@@ -4,16 +4,44 @@
 
 ```ts
 
+import { createSession } from '@fhirq/core';
+import { Questionnaire as Questionnaire_2 } from '@fhirq/core';
 import { ReactElement } from 'react';
-import type { Session } from '@fhirq/core';
+import { Session } from '@fhirq/core';
+import { SessionOptions } from '@fhirq/core';
+import { ViewModel } from '@fhirq/core/view';
+import { ViewOptions } from '@fhirq/core/view';
+
+export { createSession }
 
 // @alpha
-export function Questionnaire(input: QuestionnaireProps): ReactElement;
+export function Questionnaire(props: QuestionnaireProps): ReactElement;
 
 // @alpha
-export interface QuestionnaireProps {
+export type QuestionnaireProps = ({
+    readonly questionnaire: Questionnaire_2;
+    readonly session?: never;
+    readonly options?: SessionOptions;
+} | {
     readonly session: Session;
-}
+    readonly questionnaire?: never;
+    readonly options?: never;
+}) & {
+    readonly locale?: string;
+    readonly timeZone?: string;
+    readonly messages?: ViewOptions['messages'];
+};
+
+// @alpha
+export function useQuestionnaire(source: Questionnaire_2 | Session, options?: {
+    readonly locale?: string;
+    readonly timeZone?: string;
+    readonly messages?: ViewOptions['messages'];
+    readonly options?: SessionOptions;
+}): {
+    readonly session: Session;
+    readonly view: ViewModel;
+};
 
 // (No @packageDocumentation comment for this package)
 

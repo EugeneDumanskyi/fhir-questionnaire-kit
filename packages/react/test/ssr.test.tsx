@@ -5,6 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AMOUNT, bool, SLICE, SMOKER } from '../../core/test/slice.js';
+import { COLOURS, Probe } from './probe.js';
 
 /**
  * AC-6's Node half (M1): server rendering needs no DOM. This file runs twice,
@@ -34,6 +35,23 @@ describe(`server rendering on React ${version}`, () => {
     expect(html).not.toContain(`data-path="${AMOUNT}"`);
     expect(html).not.toMatch(/\sstyle=|<style/);
     for (const spy of console) expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('renders from a questionnaire, creating the session during render (ADR-0015)', () => {
+    const html = renderToString(<Questionnaire questionnaire={SLICE} />);
+
+    expect(html).toContain(`data-path="${SMOKER}"`);
+    expect(html).not.toContain(`data-path="${AMOUNT}"`);
+  });
+
+  it('never calls the resolver on the server, and renders its options pending (M6 plan D3)', async () => {
+    const resolver = vi.fn(() => Promise.resolve([{ code: 'red', display: 'Red' }]));
+
+    const html = renderToString(<Probe source={COLOURS} options={{ options: { resolver } }} />);
+    await new Promise((settled) => setImmediate(settled));
+
+    expect(html).toContain('colour:pending');
+    expect(resolver).not.toHaveBeenCalled();
   });
 
   it('renders settled state from a host-owned session', () => {
