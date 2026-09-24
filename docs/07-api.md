@@ -379,6 +379,8 @@ const model = view.getSnapshot();
 
 `ControlView<K>` is the node of one kind. `ControlProps<K>` is what a host's replacement control receives: `node`, `ids`, `set`, `clear` and `leave`. The replacement renders the control only. It puts `ids.control` on its focusable element, `aria-describedby` on `ids.description` and `ids.error` while they hold text, and `aria-invalid` from `node.invalid`, and it calls `leave()` when focus leaves. The kit renders the label, help, error text and required marker around it.
 
+`set` is the kind's own: `ControlProps<'calendar-date'>['set']` takes text, `ControlProps<'single-choice'>['set']` one key and `ControlProps<'multi-list'>['set']` a list of keys. A read-only kind's is `never`. Until 2026-09-24 the type read `never` for every kind, so an override could not call it without a cast (M6 step 7).
+
 ### 5.4 Messages
 
 **Messages (M4, US-07.4, ADR-0020).** `options.messages` overrides the built-in `en` catalogue key by key. A key the host leaves out, or gives as blank text or in the wrong shape (a plural needs both `one` and `other`), falls back to the default, so no string is ever empty or a raw key (INV-X-08). An issue's own message key is looked up first. For a built-in rule that key is its code, so `'max-length': 'At most {limit}'` rewords one rule. For a cross-field rule it is the rule's key; a key with no text falls back to the generic message. The catalogue has 38 keys of NFR-I-02's 45, each documented with its context in `view/messages/en.ts`.

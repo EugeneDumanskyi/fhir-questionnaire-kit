@@ -251,7 +251,12 @@ export type ControlView<K extends ControlKind> = ViewNode & { readonly control: 
 export interface ControlProps<K extends ControlKind> {
   readonly node: ControlView<K>;
   readonly ids: NodeIds;
-  readonly set: ControlView<K> extends { readonly set: infer S } ? S : never;
+  /**
+   * The kind's own `set`. Read member by member: `ViewNode` joins kinds in
+   * one member, and a member whose `control` cannot be `K` is dropped, which
+   * a check on the whole union would not do.
+   */
+  readonly set: ControlView<K> extends infer N ? (N extends { readonly control: infer C; readonly set: infer S } ? ([C] extends [never] ? never : S) : never) : never;
   readonly clear: () => void;
   readonly leave: () => void;
 }
