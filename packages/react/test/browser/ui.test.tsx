@@ -9,33 +9,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { contractViolations } from '../../../../tests/browser/contract-rows.js';
 import { Form } from '../../src/ui/form.js';
 import { KINDS, KINDS_OPTIONS, KINDS_VS } from '../kinds.js';
+import { choose, focus, press, type } from './dom.js';
 
 /** The default UI over a view the test holds, so the contract check reads the same model the form drew. */
 function Harness({ view }: { readonly view: View }): ReactElement {
   const model = useSyncExternalStore(view.subscribe, view.getSnapshot, view.getSnapshot);
   return <Form model={model} />;
 }
-
-/** Types into a controlled field as a keyboard would: the native setter, then `input`. */
-function type(element: Element | null, text: string): void {
-  const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-  act(() => {
-    Object.getOwnPropertyDescriptor(prototype, 'value')?.set?.call(element, text);
-    element?.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-}
-
-/** Chooses these option values in a select, then `change`. */
-function choose(element: Element | null, ...values: string[]): void {
-  if (!(element instanceof HTMLSelectElement)) throw new Error('not a select');
-  act(() => {
-    for (const option of element.options) option.selected = values.includes(option.value);
-    element.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-}
-
-const press = (element: Element | null) => act(() => (element as HTMLElement | null)?.click());
-const focus = (element: Element | null) => act(() => (element as HTMLElement | null)?.focus());
 
 describe(`the default UI on React ${version} (docs/08-dom-contract.md §3)`, () => {
   let host: HTMLElement;

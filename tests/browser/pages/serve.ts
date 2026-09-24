@@ -23,6 +23,7 @@ const at = (path: string) => join(root, path);
 const SOURCES: Readonly<Record<string, string>> = {
   '@fhirq/core': at('packages/core/src/index.ts'),
   '@fhirq/core/view': at('packages/core/src/view/index.ts'),
+  '@fhirq/core/resume': at('packages/core/src/resume.ts'),
   '@fhirq/react': at('packages/react/src/index.ts'),
   '@fhirq/element': at('packages/element/src/index.ts'),
   '@fhirq/themes/base.css': at('packages/themes/src/base.css'),

@@ -409,12 +409,26 @@ Returns `{ session, view }`: the session and the view model of §5.2, read throu
 | `timeZone` | none | An IANA zone for `dateTime` answers (§5.1) |
 | `messages` | none | Catalogue overrides (§5.4), compared by content, so an object written inline keeps the view |
 | `options` | `{}` | `SessionOptions` for a session the hook creates; ignored with a session |
+| `value` | none | A `QuestionnaireResponse` the form shows, for a session the hook creates; ignored with a session. See below |
+| `onChange` | none | `(response)`, after each cycle that changed the response (`responseChanged`), with a session of either kind |
+| `onComplete` | none | `(response)`, once a `RequestCompletion` completes the session |
+| `onDiagnostic` | none | `(diagnostic)`, for each diagnostic the adapter raises itself (§3): a core `Diagnostic`, delivered from an effect |
 
 A new `locale` or `timeZone`, or new `messages` content, builds a new view over the same session. The session is untouched (INV-P-01); text being typed that is not yet a value is dropped.
 
+**The response handed out** is `emitResponse`'s without `authored`: the host stamps it when it stores or sends the response. It is emitted only when `onChange` or `onComplete` is given.
+
+**Controlled by response (ADR-0015, AC-08.1.2–4).**
+- The first `value` is hydrated into the session (`@fhirq/core/resume`). That raises no `controlled-value-replaced`; hydration's own diagnostics are in `session.diagnostics`.
+- Each new `value` (a new reference) is compared once with the response last emitted, or the one hydrated. It is an **echo** when it is that object, or equal to it in every field emission writes (`questionnaire`, `identifier`, `subject`, `encounter`, `author`, `item`), ignoring `status` and `authored`. A structured clone, a JSON round trip, or a copy the host gave an `id` or `meta` is an echo. An echo leaves the session as it is.
+- **Anything else replaces the session**: a new one is hydrated from `value`, the old one is disposed, and `onDiagnostic` gets `controlled-value-replaced`. Retained answers, error display state and typed drafts start again. A host that edits the response outside the form should pass a `session` instead.
+- The same `value` passed again, or no `value`, changes nothing. A host whose store lags the form by more than one change passes back an older response, which is not an echo and replaces the session.
+
+In development, a diagnostic the adapter raises is also written to `console.warn` as its code and detail, never a value (NFR-X-04). The check reads `process.env.NODE_ENV` whole, so a bundler's define removes it from a production build; without a bundler or Node there is no warning.
+
 ### 6.2 `<Questionnaire>`
 
-`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else, for all 18 control kinds, groups and repeating groups. Each item re-renders only when its view node is a new object. The response-controlled mode, `onChange`, `onComplete`, `onDiagnostic` and tier-3 `controls` are M6 work still to land.
+`<Questionnaire questionnaire={q} />` or `<Questionnaire session={s} />`, never both (a type error), with `locale`, `timeZone`, `messages` and, with a questionnaire, `options`, all as §6.1. It renders the default UI of `08-dom-contract.md` from `useQuestionnaire` and nothing else, for all 18 control kinds, groups and repeating groups. Each item re-renders only when its view node is a new object. With a questionnaire it also takes `value`; with either source, `onChange`, `onComplete` and `onDiagnostic`, all as §6.1. A `session` with a `value` is a type error. Tier-3 `controls` are M6 work still to land.
 
 ## 7. Not in the API yet
 
