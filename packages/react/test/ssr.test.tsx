@@ -45,6 +45,18 @@ describe(`server rendering on React ${version}`, () => {
     expect(html).not.toContain(`data-path="${AMOUNT}"`);
   });
 
+  it('renders a controlling value hydrated, with no diagnostic and no change reported (AC-08.1.2, M6 plan D9)', () => {
+    const console = [vi.spyOn(globalThis.console, 'error'), vi.spyOn(globalThis.console, 'warn')];
+    const onChange = vi.fn();
+    const onDiagnostic = vi.fn();
+    const value = { resourceType: 'QuestionnaireResponse', status: 'in-progress', item: [{ linkId: 'smoker', answer: [{ valueBoolean: true }] }, { linkId: 'amount', answer: [{ valueString: 'five' }] }] } as const;
+
+    const html = renderToString(<Questionnaire questionnaire={SLICE} value={value} onChange={onChange} onDiagnostic={onDiagnostic} />);
+
+    expect(html).toMatch(new RegExp(`data-path="${AMOUNT}".*value="five"`));
+    for (const spy of [onChange, onDiagnostic, ...console]) expect(spy).not.toHaveBeenCalled();
+  });
+
   it('never calls the resolver on the server, and renders its options pending (M6 plan D3)', async () => {
     const resolver = vi.fn(() => Promise.resolve([{ code: 'red', display: 'Red' }]));
 

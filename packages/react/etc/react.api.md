@@ -5,7 +5,9 @@
 ```ts
 
 import { createSession } from '@fhirq/core';
+import { Diagnostic } from '@fhirq/core';
 import { Questionnaire as Questionnaire_2 } from '@fhirq/core';
+import { QuestionnaireResponse } from '@fhirq/core';
 import type { ReactElement } from 'react';
 import { Session } from '@fhirq/core';
 import { SessionOptions } from '@fhirq/core';
@@ -22,22 +24,31 @@ export type QuestionnaireProps = ({
     readonly questionnaire: Questionnaire_2;
     readonly session?: never;
     readonly options?: SessionOptions;
+    readonly value?: QuestionnaireResponse;
 } | {
     readonly session: Session;
     readonly questionnaire?: never;
     readonly options?: never;
+    readonly value?: never;
 }) & {
     readonly locale?: string;
     readonly timeZone?: string;
     readonly messages?: ViewOptions['messages'];
+    readonly onChange?: (response: QuestionnaireResponse) => void;
+    readonly onComplete?: (response: QuestionnaireResponse) => void;
+    readonly onDiagnostic?: (diagnostic: Diagnostic) => void;
 };
 
 // @alpha
 export function useQuestionnaire(source: Questionnaire_2 | Session, options?: {
-    readonly locale?: string;
-    readonly timeZone?: string;
-    readonly messages?: ViewOptions['messages'];
-    readonly options?: SessionOptions;
+    readonly locale?: string | undefined;
+    readonly timeZone?: string | undefined;
+    readonly messages?: ViewOptions['messages'] | undefined;
+    readonly options?: SessionOptions | undefined;
+    readonly value?: QuestionnaireResponse | undefined;
+    readonly onChange?: ((response: QuestionnaireResponse) => void) | undefined;
+    readonly onComplete?: ((response: QuestionnaireResponse) => void) | undefined;
+    readonly onDiagnostic?: ((diagnostic: Diagnostic) => void) | undefined;
 }): {
     readonly session: Session;
     readonly view: ViewModel;
