@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createSession, emitResponse, itemPath, type Answer, type ExpressionEvaluator, type OptionResolver, type Questionnaire, type QuestionnaireResponse } from '../../src/index.js';
 import { hydrateSession, restoreSession, snapshot } from '../../src/resume.js';
 import { createView } from '../../src/view/index.js';
+import { lock, type Doors } from './doors.js';
 
 /**
  * AC-14.6.1, NFR-X-01, NFR-X-02 (M4 AC-8): no network, no storage, no
@@ -13,33 +14,18 @@ import { createView } from '../../src/view/index.js';
  * touched. A collaborator that settles and one that fails are both in-memory:
  * whatever a host's resolver does is the host's, and core never reaches out.
  *
- * `@fhirq/react` and `@fhirq/themes` join this test in M6 and M8, and the
- * element's default-resolver variant in M7.
+ * The doors are `./doors.ts`, shared with `@fhirq/react`'s and
+ * `@fhirq/themes`' own tests (M6); the element's default-resolver variant
+ * joins in M7.
  */
 
-const touched: string[] = [];
+let locked: Doors;
 const restore: (() => void)[] = [];
 
-/** Replaces `name` on `target` with a getter and setter that record the touch and throw. */
-function trap(target: object, name: string, label = name): void {
-  const before = Object.getOwnPropertyDescriptor(target, name);
-  const refuse = (): never => {
-    touched.push(label);
-    throw new Error(`${label} is off limits to @fhirq/core`);
-  };
-  Object.defineProperty(target, name, { configurable: true, get: refuse, set: refuse });
-  restore.push(() => {
-    if (before === undefined) Reflect.deleteProperty(target, name);
-    else Object.defineProperty(target, name, before);
-  });
-}
-
 beforeAll(() => {
-  for (const name of ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'localStorage', 'sessionStorage', 'indexedDB']) trap(globalThis, name);
+  // Node has no `document` and no `sendBeacon`: stand-ins carry the doors instead.
   const navigator = {};
-  trap(navigator, 'sendBeacon', 'navigator.sendBeacon');
   const document = {};
-  trap(document, 'cookie', 'document.cookie');
   for (const [name, value] of [
     ['navigator', navigator],
     ['document', document],
@@ -51,9 +37,11 @@ beforeAll(() => {
       else Object.defineProperty(globalThis, name, before);
     });
   }
+  locked = lock(globalThis, navigator, document);
 });
 
 afterAll(() => {
+  locked.unlock();
   for (const undo of restore.reverse()) undo();
 });
 
@@ -90,8 +78,8 @@ describe('no network, no storage, no telemetry (AC-14.6.1, NFR-X-01, NFR-X-02)',
       () => ((globalThis as Record<string, unknown>)['document'] as Record<string, unknown>)['cookie'],
     ];
     for (const door of doors) expect(door).toThrow('off limits');
-    expect(touched).toEqual(['fetch', 'localStorage', 'navigator.sendBeacon', 'document.cookie']);
-    touched.length = 0;
+    expect(locked.touched).toEqual(['fetch', 'localStorage', 'navigator.sendBeacon', 'document.cookie']);
+    locked.touched.length = 0;
   });
 
   it('runs a full @fhirq/core lifecycle, every collaborator included, and touches none', async () => {
@@ -152,6 +140,6 @@ describe('no network, no storage, no telemetry (AC-14.6.1, NFR-X-01, NFR-X-02)',
     for (const done of [session, restored, hydrated]) done.dispose();
 
     expect(errors).toHaveLength(1);
-    expect(touched).toEqual([]);
+    expect(locked.touched).toEqual([]);
   });
 });
