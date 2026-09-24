@@ -650,6 +650,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Architectural lint rules: no DOM in core, no network anywhere, no hard-coded strings, no deep imports | M0 (rules), tightened M2/M4/M5 as modules land · M6 no DOM in a React render, and ADR-0020's pair on the React adapter | NFR-M-06 |
 | Cyclomatic complexity ≤ 15 per function, named exceptions carrying an inline justification | M0 (rule), real bite from M2 | NFR-M-02 |
 | Core coverage ≥ 95 / 90 | M2 | NFR-Q-01 |
+| Adapter coverage ≥ 85 / 80, measured in browsers | M6 react · M7 element | NFR-Q-02 |
 | Mutation ≥ 80 on engine modules, incremental on PRs | M2 | NFR-Q-03, A6 |
 | Bundle budgets per entry point | M2 core · M3 `core/resume` and the resume bundle-inputs check (ADR-0021) · M5 view · M6 react · M7 element and IIFE · M8 themes | NFR-S-02/03 |
 | Benchmarks: timings against the merge base in the same job, heap against the committed baseline, > 20 % regression fails | M2 (D7 as revised) | `03-nfr.md` §1 |

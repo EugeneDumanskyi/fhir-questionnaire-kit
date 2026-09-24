@@ -37,8 +37,9 @@ export default defineConfig({
      * `pnpm test:coverage`. Core is gated at 95 % line / 90 % branch from M2
      * (NFR-Q-01), measured by its own Node suite alone (`pnpm
      * test:coverage:core`, the engine-gates job), so another package's tests
-     * cannot lift it. Adapters follow at 85 / 80 in M6 and M7 (NFR-Q-02); the
-     * renderers are proven in browsers, so their Node coverage understates them.
+     * cannot lift it. Adapters are held at 85 / 80 (NFR-Q-02) where they are
+     * proven, in browsers: React from M6 by `vitest.browser.config.ts`, the
+     * element from M7. Their Node coverage here understates them.
      */
     coverage: {
       provider: 'v8',

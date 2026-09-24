@@ -62,12 +62,13 @@ jobs:
         run: pnpm test
 
   # The engine's gates, required: core coverage at 95 % line / 90 % branch
-  # from its own Node suite (NFR-Q-01), the @fhirq/core and, from M3,
-  # @fhirq/core/resume bundle budgets with the resume bundle-inputs check
-  # (NFR-S-02, ADR-0021), and the API reports (NFR-M-04): a public surface that
-  # differs from packages/core/etc/*.api.md fails until the PR commits the new report.
-  # The other entry points are measured and reported, and are gated from the
-  # milestone that builds each (scripts/budgets.json `gated`).
+  # from its own Node suite (NFR-Q-01), the bundle budgets of @fhirq/core, and
+  # from M3 @fhirq/core/resume with the resume bundle-inputs check (NFR-S-02,
+  # ADR-0021), from M5 the view and from M6 @fhirq/react, and the API reports
+  # (NFR-M-04): a public surface that differs from packages/*/etc/*.api.md
+  # fails until the PR commits the new report. The other entry points are
+  # measured and reported, and are gated from the milestone that builds each
+  # (scripts/budgets.json `gated`).
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest
@@ -101,7 +102,7 @@ jobs:
       - name: Core coverage, 95 % line and 90 % branch
         run: pnpm test:coverage:core
 
-      - name: Bundle budgets, @fhirq/core, @fhirq/core/view and @fhirq/core/resume, and resume inputs
+      - name: Bundle budgets, @fhirq/core, @fhirq/core/view, @fhirq/core/resume and @fhirq/react, and resume inputs
         run: pnpm measure --check
 
       - name: API reports, @fhirq/core, @fhirq/core/view, @fhirq/core/resume and @fhirq/react
@@ -281,13 +282,68 @@ jobs:
             reports/bench/reference.json
           retention-days: 30
 
-  # M1's spike proofs (S1, decision D5): the DOM contract, axe, hydration on
-  # React 18 and 19, caret and CSP in Chromium and WebKit, and the bundle
-  # report. Deliberately not a required check: SSR blocks from M6, CSP from M7,
-  # accessibility from M8 and budgets from M2 (06-roadmap.md §5). The React
-  # adapter's client tests run here, with coverage, until M6's React gates job
-  # takes them and makes them blocking. Keystroke to paint is read here too,
-  # report only, after the proofs so none runs beside it (NFR-P-03).
+  # The React adapter's gates, required from M6 (06-roadmap.md §5): its client
+  # tests in Chromium on React 18 and 19 with coverage at 85 % line / 80 %
+  # branch (NFR-Q-02), among them controlled mode and tier-3 controls; SSR
+  # hydration with 0 warnings on both majors in Chromium and WebKit
+  # (NFR-C-08); and the quickstart, hydrated, completed and 0 axe violations
+  # with the demo (M6 AC-1, plan D11). Its bundle budget and API report are in
+  # the engine's gates, its lint rules and Node render in the fast lane.
+  react-gates:
+    name: React gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium webkit
+
+      - name: Client tests in Chromium, React 18 and 19, coverage 85 % line and 80 % branch
+        run: pnpm test:coverage:react
+
+      - name: Hydration, the quickstart and axe, React 18 and 19, Chromium and WebKit
+        run: pnpm test:browser:react
+
+      - name: Upload the coverage summary and the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-gates
+          path: |
+            coverage/react/coverage-summary.json
+            playwright-report/
+          retention-days: 30
+
+  # M1's spike proofs (S1, decision D5): the DOM contract, axe on the slice,
+  # caret and CSP in Chromium and WebKit, and the bundle report. Deliberately
+  # not a required check: CSP blocks from M7 and accessibility from M8
+  # (06-roadmap.md §5); M6 moved hydration to the React gates. Keystroke to
+  # paint is read here too, report only, after the proofs so none runs beside
+  # it (NFR-P-03).
   spike-proofs:
     name: Spike proofs (non-blocking)
     runs-on: ubuntu-latest
@@ -325,13 +381,10 @@ jobs:
         run: pnpm measure
 
       - name: Browser proofs
-        run: pnpm test:browser
+        run: pnpm test:browser:proofs
 
       - name: Keystroke to paint, report only, React 18 and 19 in Chromium
         run: pnpm test:keystroke
-
-      - name: React client tests in Chromium, React 18 and 19, with coverage
-        run: pnpm test:coverage:react
 
       - name: Upload the bundle report and the browser report
         if: ${{ !cancelled() }}
@@ -341,5 +394,4 @@ jobs:
           path: |
             reports/
             playwright-report/
-            coverage/react/coverage-summary.json
           retention-days: 30
