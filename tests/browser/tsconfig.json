@@ -14,6 +14,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
     "jsx": "react-jsx",
+    "resolveJsonModule": true,
     "paths": {
       "@fhirq/core": ["../../packages/core/src/index.ts"],
       "@fhirq/core/view": ["../../packages/core/src/view/index.ts"],

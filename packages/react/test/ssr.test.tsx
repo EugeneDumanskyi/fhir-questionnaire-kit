@@ -1,10 +1,13 @@
-import { createSession } from '@fhirq/core';
+import { readFileSync } from 'node:fs';
+
+import { createSession, type Questionnaire as Form } from '@fhirq/core';
 import { Questionnaire } from '@fhirq/react';
 import { version } from 'react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AMOUNT, bool, SLICE, SMOKER } from '../../core/test/slice.js';
+import { FORMATS, FORMATS_OPTIONS, FORMATS_VALUE, refused } from './formats.js';
 import { KINDS, KINDS_OPTIONS } from './kinds.js';
 import { COLOURS, Probe } from './probe.js';
 
@@ -14,6 +17,28 @@ import { COLOURS, Probe } from './probe.js';
  * package, `react-18` resolves React 18 from tools/react-18 (vitest.config.ts).
  * Hydration without warnings is the browser half (tests/browser/hydration).
  */
+const DEMO = JSON.parse(readFileSync(new URL('../../../fixtures/demo/questionnaire.json', import.meta.url), 'utf8')) as Form;
+
+/** ADR-0020's pair: 26 hours apart, so a date that passed through either zone would land on another day. */
+const ZONES = ['Pacific/Kiritimati', 'Etc/GMT+12'] as const;
+
+/** Renders `render()` with the process in each zone in turn; Node applies a new `TZ` at once. */
+function inEachZone(render: () => string): { readonly offsets: readonly number[]; readonly html: readonly string[] } {
+  const before = process.env['TZ'];
+  try {
+    return ZONES.reduce<{ offsets: number[]; html: string[] }>(
+      (seen, zone) => {
+        process.env['TZ'] = zone;
+        return { offsets: [...seen.offsets, new Date(Date.UTC(2024, 4, 1)).getTimezoneOffset()], html: [...seen.html, render()] };
+      },
+      { offsets: [], html: [] },
+    );
+  } finally {
+    if (before === undefined) delete process.env['TZ'];
+    else process.env['TZ'] = before;
+  }
+}
+
 describe(`server rendering on React ${version}`, () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -78,6 +103,34 @@ describe(`server rendering on React ${version}`, () => {
     expect(html).toContain('<b>About</b> you');
     expect(html).not.toMatch(/\sstyle=|<style/);
     for (const spy of console) expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('renders dates, decimals and quantities the same in any timezone (ADR-0020, AC-08.3.2)', () => {
+    const console = [vi.spyOn(globalThis.console, 'error'), vi.spyOn(globalThis.console, 'warn')];
+
+    const { offsets, html } = inEachZone(() => renderToString(<Questionnaire questionnaire={FORMATS} value={FORMATS_VALUE} options={FORMATS_OPTIONS} />));
+
+    expect(offsets).toEqual([-840, 720]);
+    expect(html[1]).toBe(html[0]);
+    const shown = [...(html[0] ?? '').matchAll(/<output[^>]*>([^<]*)<\/output>/g)].map(([, text]) => text);
+    expect(shown).toEqual(['May 1, 2024', 'May 2024', '2024', 'May 1, 2024, 11:30 PM', '1,234.5', '1.5 mg']);
+    expect(html[0]).toContain('value="2024-05-01"');
+    expect(html[0]).toContain('value="2024-05-01T00:30:00+14:00"');
+    for (const spy of console) expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('renders an issue naming a formatted limit the same in any timezone (ADR-0020)', () => {
+    const { html } = inEachZone(() => renderToString(<Questionnaire session={refused()} />));
+
+    expect(html[1]).toBe(html[0]);
+    expect(html[0]).toContain('Seen: Enter Apr 30, 2024, 12:00 AM or less. You entered May 1, 2024, 12:30 AM.');
+  });
+
+  it('renders the demo the same in any timezone', () => {
+    const { html } = inEachZone(() => renderToString(<Questionnaire questionnaire={DEMO} />));
+
+    expect(html[1]).toBe(html[0]);
+    expect(html[0]).toContain('data-path="visit/visit-date"');
   });
 
   it('renders settled state from a host-owned session', () => {
