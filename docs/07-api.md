@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` is `@alpha` and being built through M7 (§7): its inputs, lifecycle, events and value-set resolution are in, and `controls` is to come. `@fhirq/themes` is still M1's spike surface, rewritten in M8.
+**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` is `@alpha` and being built through M7 (§7): its inputs, lifecycle, events, value-set resolution and tier-3 `controls` are in. `@fhirq/themes` is still M1's spike surface, rewritten in M8.
 
 ---
 
@@ -192,7 +192,7 @@ An `ItemPath` addresses one node. Its segments are `linkId`s joined by `/`, and 
 
 There is one `DiagnosticCode` per invariant of `04-domain.md` §5.1, plus the runtime `listener-threw` and `rule-threw`, the collaborators' six (§3.9), and hydration's four (§4.3). A hydration diagnostic may also carry `expected` and `found`: two answer kinds, two canonicals or two answer counts, never a value (INV-E-09).
 
-**Raised by a renderer.** Two codes never come from the engine and never appear in `session.diagnostics`. A renderer raises them and hands them to the host (`@fhirq/react`'s `onDiagnostic`, ADR-0015 note):
+**Raised by a renderer.** Two codes never come from the engine and never appear in `session.diagnostics`. A renderer raises them and hands them to the host (`@fhirq/react`'s `onDiagnostic`, the element's `fhirq-diagnostic`, ADR-0015 and ADR-0014 notes):
 - `controlled-value-replaced` (`warning`, `path` `null`): a response-controlled form was given a response that is not an echo of the last one it emitted, and resumed a new session from it (AC-08.1.4). Retained answers and error display state start again.
 - `control-contract` (`warning`): in development, a tier-3 control did not apply an id or attribute it was given (ADR-0013). `path` is the item's, `detail` the control kind and `expected` the missing attribute: `id`, `aria-describedby` or `aria-invalid`.
 
@@ -474,14 +474,18 @@ The core calls the resolver once per distinct canonical per session, and again o
 | `fhirq-change` | After each cycle that changed the response | The `QuestionnaireResponse` (§3.8) without `authored`, which the host stamps when it stores or sends it: plain JSON data |
 | `fhirq-complete` | Once the form is completed | The same, with `status: "completed"` |
 | `fhirq-error` | The questionnaire could not be loaded or opened | `{ error }`, the error verbatim. A plain object around it, since an error is not plain data |
+| `fhirq-diagnostic` | The element raised a diagnostic itself: in development, `control-contract` (§3, below). As React's `onDiagnostic`, it carries none of the session's own, which stay in `session.diagnostics` | The core `Diagnostic` |
 
 **`requestCompletion()`** asks the session to complete (M7 plan D2). The element renders no submit control; the host's own button calls it. `fhirq-complete` follows, or the error summary shows and takes focus.
+
+**`controls` (tier 3, ADR-0013, ADR-0014).** A property, since it needs script: a custom element tag the host has defined, per control kind, for any of the 13 answerable kinds: `el.controls = { 'calendar-date': 'my-date-picker' }`. Kinds left out, and the five that are not answerable, render the default. The element makes the host's element inside its shadow root, between the kit's label (`for` = `ids.control`) with its required marker and the error container (`08-dom-contract.md` §3.9), and sets its `props` property to `ControlProps` (§5.3) each time the item renders. The control answers by calling `props.set`, `props.clear` and `props.leave`, or by dispatching `fhirq-set` (its `detail` what `set` takes), `fhirq-clear` and `fhirq-leave` on itself; they need not bubble. A kind's other commands, such as `toggle` or `setUnit`, are called on `props.node`. The host defines the tag before the item renders. A new map draws every item again, over the same view, so drafts stay; setting the same map does nothing, and `null` restores the defaults. In development, in a microtask after each render of an overridden item, so a control that draws in a microtask of its own is seen drawn, the element checks that an element in its shadow root carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` once per item and missing attribute, through `fhirq-diagnostic` and `console.warn` (code and kind only). A production build, the script-tag bundle among them, has no check.
 
 ## 8. Not in the API yet
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M7–M8:** the element's tier-3 `controls` and `fhirq-diagnostic` (§7), and the theme tokens. Until `fhirq-diagnostic`, a rejection from the element's resolver reaches the host only as the session's `resolver-failed` diagnostic, since the element passes no `onCollaboratorError`.
+- **M8:** the theme tokens.
+- **A resolver rejection on the element.** It reaches the host only as the session's `resolver-failed` diagnostic, since the element passes no `onCollaboratorError`; `fhirq-diagnostic` carries only what the element raises itself, as React's `onDiagnostic` does.
 - **A completion control.** Neither the view nor the default UI offers one, so a `<Questionnaire questionnaire>` cannot be completed and the quickstart needs the hook and the host's own button: 13 lines against NFR-U-01's 10 (M6 close-out).
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
 - **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).

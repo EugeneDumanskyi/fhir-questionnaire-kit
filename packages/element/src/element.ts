@@ -1,8 +1,9 @@
-import { createSession, emitResponse, type OptionResolver, type Questionnaire, type QuestionnaireResponse, type Session, type SessionChange } from '@fhirq/core';
-import { createView, type View, type ViewModel, type ViewNode, type ViewOptions } from '@fhirq/core/view';
+import { createSession, emitResponse, type Diagnostic, type OptionResolver, type Questionnaire, type QuestionnaireResponse, type Session, type SessionChange } from '@fhirq/core';
+import { createView, type ControlKind, type View, type ViewModel, type ViewNode, type ViewOptions } from '@fhirq/core/view';
 import base from '@fhirq/themes/base.css';
 import preset from '@fhirq/themes/default.css';
 
+import { contractCheck, type Check } from './contract.js';
 import { loadQuestionnaire, valueSetResolver } from './default-resolver.js';
 import { dispatch, el, type EventName } from './dom.js';
 import { ITEMS, type Cx } from './kinds.js';
@@ -23,13 +24,17 @@ declare global {
     'fhirq-complete': CustomEvent<QuestionnaireResponse>;
     /** The questionnaire could not be loaded or opened: what was thrown, verbatim. The form stays empty. */
     'fhirq-error': CustomEvent<{ readonly error: unknown }>;
+    /** A diagnostic the element raises itself: in development, `control-contract` for a host's control (ADR-0013). Codes and paths only. */
+    'fhirq-diagnostic': CustomEvent<Diagnostic>;
   }
 }
+
+type Fired = 'fhirq-change' | 'fhirq-complete' | 'fhirq-error' | 'fhirq-diagnostic';
 
 const EVENTS: readonly EventName[] = ['input', 'change', 'click', 'focusout'];
 
 /** The properties a host can set before the element is defined, which the upgrade would otherwise leave shadowing the class's own. */
-const PROPERTIES = ['questionnaire', 'session', 'resolver', 'locale', 'timeZone', 'messages'] as const;
+const PROPERTIES = ['questionnaire', 'session', 'resolver', 'locale', 'timeZone', 'messages', 'controls'] as const;
 
 /** What the element makes its next session from: a box per value, so a load for a value since replaced is known. */
 type Source = { readonly questionnaire: Questionnaire } | { readonly src: string };
@@ -64,7 +69,11 @@ function adopt(root: ShadowRoot): void {
  * (ADR-0012). Either is read when the element makes a session, as session
  * options are, and a session keeps the one it was made with.
  *
- * @alpha M7 builds it step by step: `controls` is still to come.
+ * A host's custom element can take the place of the kit's control for any
+ * answerable kind (`controls`, ADR-0013 tier 3), inside the kit's label and
+ * errors.
+ *
+ * @alpha Until M7 closes.
  */
 export class FhirQuestionnaireElement extends HTMLElement {
   static readonly observedAttributes = ['src', 'lang'];
@@ -85,6 +94,9 @@ export class FhirQuestionnaireElement extends HTMLElement {
   #locale: string | null = null;
   #timeZone: string | null = null;
   #messages: NonNullable<ViewOptions['messages']> | null = null;
+  #controls: NonNullable<FhirQuestionnaireElement['controls']> = {};
+  /** The tier-3 check, in development only. */
+  readonly #check: Check | undefined;
   #view: View | null = null;
   /** What `#view` was built from: its session, locale, time zone and messages. */
   #built: readonly unknown[] = [];
@@ -106,6 +118,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#status = el('div', 'fhirq-status', 'status', this.#form);
     this.#status.setAttribute('role', 'status');
     this.#summary = summaryPart(this.#form);
+    this.#check = contractCheck?.((diagnostic) => this.#fire('fhirq-diagnostic', diagnostic), this.#root);
   }
 
   /** A FHIR R4 `Questionnaire` for the element to make its session from. */
@@ -173,6 +186,32 @@ export class FhirQuestionnaireElement extends HTMLElement {
   set messages(messages: NonNullable<ViewOptions['messages']> | null) {
     this.#messages = messages;
     this.#look();
+  }
+
+  /**
+   * Tier 3 (ADR-0013, DOM contract §3.9): a custom element tag, which the host
+   * has defined, per answerable control kind, such as
+   * `{ 'calendar-date': 'my-date-picker' }`. The element makes one inside its
+   * shadow root in place of the kit's control, between the kit's label and
+   * errors, and sets its `props` to `ControlProps` on each render of the
+   * item. The control puts `ids.control` on its focusable element, keeps
+   * `aria-invalid` and `aria-describedby` in line, and answers through
+   * `props` or by dispatching `fhirq-set` (its `detail` what `set` takes),
+   * `fhirq-clear` and `fhirq-leave` on itself. A development build checks the
+   * first three and raises `fhirq-diagnostic`. A new map draws every item
+   * again, over the same view.
+   */
+  get controls(): { readonly [K in Exclude<ControlKind, 'calculated' | 'statement' | 'unsupported' | 'group' | 'repeating-group'>]?: string } {
+    return this.#controls;
+  }
+
+  set controls(controls: FhirQuestionnaireElement['controls'] | null) {
+    const next = controls ?? {};
+    if (next === this.#controls) return;
+    this.#controls = next;
+    for (const record of this.#records.values()) record.root.remove();
+    this.#records = new Map();
+    if (this.#rendered !== null) this.#patch(this.#rendered);
   }
 
   /** Asks the session to complete (ADR-0014 note, M7 plan D2): `fhirq-complete` follows, or the error summary shows why not. */
@@ -275,7 +314,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#fire('fhirq-error', { error });
   }
 
-  #fire<K extends 'fhirq-change' | 'fhirq-complete' | 'fhirq-error'>(type: K, detail: HTMLElementEventMap[K]['detail']): void {
+  #fire<K extends Fired>(type: K, detail: HTMLElementEventMap[K]['detail']): void {
     this.dispatchEvent(new CustomEvent(type, { bubbles: true, detail }));
   }
 
@@ -363,20 +402,24 @@ export class FhirQuestionnaireElement extends HTMLElement {
     const previous = this.#rendered;
     if (model === previous) return;
     this.#rendered = model;
-    this.#patching = true;
-    try {
-      this.#summary(model);
-      // Between the summary and the status, which stays the form's last child (DOM contract §2).
-      const cx = { marker: model.requiredMarker, labels: model.labels, level: 3 };
-      this.#records = patch(this.#form, this.#records, model.nodes, ITEMS, cx, this.#status);
-    } finally {
-      this.#patching = false;
-    }
-
+    this.#patch(model);
     const { announcement, focusTarget } = model;
     // Assigned even when the text repeats, so a second identical message is announced.
     if (announcement !== null && announcement !== previous?.announcement) this.#status.textContent = announcement.text;
     if (focusTarget !== null && focusTarget !== previous?.focusTarget) this.#root.getElementById(focusTarget.id)?.focus();
+  }
+
+  /** Brings the summary and the items in line with `model`, ignoring the events that sets off. */
+  #patch(model: ViewModel): void {
+    this.#patching = true;
+    try {
+      this.#summary(model);
+      // Between the summary and the status, which stays the form's last child (DOM contract §2).
+      const cx = { marker: model.requiredMarker, labels: model.labels, level: 3, controls: this.#controls, check: this.#check };
+      this.#records = patch(this.#form, this.#records, model.nodes, ITEMS, cx, this.#status);
+    } finally {
+      this.#patching = false;
+    }
   }
 }
 

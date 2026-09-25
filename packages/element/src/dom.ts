@@ -51,7 +51,8 @@ const handlers = new WeakMap<EventTarget, Handlers>();
 /**
  * Gives `node` its handlers. A part never adds a listener: the element's
  * shadow root listens once per event, for as long as it is connected, and
- * `dispatch` finds the handlers from there. A handler reads the view its part
+ * `dispatch` finds the handlers from there. A host's control is the one
+ * exception, and says why (`kinds.ts`). A handler reads the view its part
  * last rendered, so it is set once, when the part is built.
  */
 export function on(node: EventTarget, table: Handlers): void {

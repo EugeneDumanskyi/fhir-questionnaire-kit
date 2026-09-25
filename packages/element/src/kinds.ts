@@ -1,5 +1,6 @@
 import type { ChoiceView, ControlKind, ControlView, InstanceView, ViewIssue, ViewModel, ViewNode } from '@fhirq/core/view';
 
+import type { Check } from './contract.js';
 import { attr, el, on, show, text, textIn } from './dom.js';
 import { patch, type List, type Part, type Records } from './patch.js';
 
@@ -14,11 +15,17 @@ import { patch, type List, type Part, type Records } from './patch.js';
  * events are handled through `on`, reading the view it last rendered.
  */
 
-/** What every item shares for a view's life: its fixed text, and the heading level a repeat instance's name takes (DOM contract §3.8). */
+/**
+ * What every item shares for a view's life: its fixed text, the heading level
+ * a repeat instance's name takes (DOM contract §3.8), the host's controls by
+ * kind (§3.9), and in development the check they are held to.
+ */
 export interface Cx {
   readonly marker: string;
   readonly labels: ViewModel['labels'];
   readonly level: number;
+  readonly controls: { readonly [K in ControlKind]?: string };
+  readonly check: Check | undefined;
 }
 
 type EntryKind = 'short-text' | 'long-text' | 'integer' | 'decimal' | 'calendar-date' | 'date-time' | 'quantity';
@@ -42,7 +49,7 @@ interface Kind<N extends ViewNode> {
    * controls or a value.
    */
   readonly label?: 'for' | 'none';
-  /** A read-only kind holds no focus stop, so it is never left (§3.6). */
+  /** A read-only kind holds no focus stop, so it is never left (§3.6); a host's control calls `leave()` itself (§3.9). */
   readonly still?: true;
   readonly body: Body<N>;
 }
@@ -463,6 +470,39 @@ const unsupported: Control<ControlView<'unsupported'>> = (node) => {
   };
 };
 
+/** What a host's control is given to set its node: each kind's own `set`, which the view's union cannot name for any kind. */
+type Settable = ViewNode & { readonly set: (value: unknown) => void; readonly clear: () => void };
+
+/**
+ * A host's control (§3.9, ADR-0014): its custom element, made inside the
+ * shadow root between the label and the error container, given `props`
+ * (ADR-0013's `ControlProps`) on each render of its node, and heard through
+ * the `fhirq-set`, `fhirq-clear` and `fhirq-leave` events it dispatches on
+ * itself. A kind's other commands (`toggle`, `setAt`, `setUnit`, `setOther`)
+ * are on `props.node`. What the control writes into its own element is the
+ * host's: the kit never writes it back.
+ *
+ * The one part that listens for itself, not through the shadow root: a
+ * control may answer the `props` of its first render, before its item is in
+ * the root, or during a patch, when the root ignores what the patch sets off.
+ * Either is a command, as a call on `props` would be. The listeners go with
+ * the control, and a reconnection adds none.
+ */
+const slot =
+  (tag: string): Body<ViewNode> =>
+  (item, end, node, cx) => {
+    const control = item.insertBefore(document.createElement(tag), end);
+    let current = node as Settable;
+    control.addEventListener('fhirq-set', (event) => current.set((event as CustomEvent<unknown>).detail));
+    control.addEventListener('fhirq-clear', () => current.clear());
+    control.addEventListener('fhirq-leave', () => current.leave());
+    return (next) => {
+      current = next as Settable;
+      Reflect.set(control, 'props', { node: next, ids: next.ids, set: current.set, clear: current.clear, leave: next.leave });
+      cx.check?.(next, item);
+    };
+  };
+
 /** The table: each kind's root, label and body. */
 const KINDS: { readonly [K in ControlKind]: Kind<ControlView<K>> } = {
   'yes-no': { body: alone(choices) },
@@ -489,9 +529,14 @@ const KINDS: { readonly [K in ControlKind]: Kind<ControlView<K>> } = {
  * A list of item roots: the form's, a group's or an instance's. Keyed by item
  * path, which each root carries as `data-path`, and by kind: a value set that
  * resolves can turn a node's radios into a list (`controlKind`), which is a
- * new root, not the old one changed in place.
+ * new root, not the old one changed in place. A kind that is neither a group
+ * nor read-only is answerable, and a host's control can take its place (§3.9).
  */
 export const ITEMS: List<ViewNode, Cx> = {
   key: (node) => `${node.control}:${node.path}`,
-  create: (node, cx) => item(KINDS[node.control] as Kind<ViewNode>, node, cx),
+  create(node, cx) {
+    const kind = KINDS[node.control] as Kind<ViewNode>;
+    const tag = kind.stem !== undefined || kind.still ? undefined : cx.controls[node.control];
+    return item(tag === undefined ? kind : { label: 'for', still: true, body: slot(tag) }, node, cx);
+  },
 };
