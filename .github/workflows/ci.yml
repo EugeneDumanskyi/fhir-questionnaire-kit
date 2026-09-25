@@ -64,11 +64,11 @@ jobs:
   # The engine's gates, required: core coverage at 95 % line / 90 % branch
   # from its own Node suite (NFR-Q-01), the bundle budgets of @fhirq/core, and
   # from M3 @fhirq/core/resume with the resume bundle-inputs check (NFR-S-02,
-  # ADR-0021), from M5 the view and from M6 @fhirq/react, and the API reports
-  # (NFR-M-04): a public surface that differs from packages/*/etc/*.api.md
-  # fails until the PR commits the new report. The other entry points are
-  # measured and reported, and are gated from the milestone that builds each
-  # (scripts/budgets.json `gated`).
+  # ADR-0021), from M5 the view, from M6 @fhirq/react and from M7 the element
+  # and its IIFE (ADR-0024), and the API reports (NFR-M-04): a public surface
+  # that differs from packages/*/etc/*.api.md fails until the PR commits the
+  # new report. The theme stylesheets are measured and reported, and are gated
+  # from M8 (scripts/budgets.json `gated`).
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest
@@ -102,7 +102,7 @@ jobs:
       - name: Core coverage, 95 % line and 90 % branch
         run: pnpm test:coverage:core
 
-      - name: Bundle budgets, @fhirq/core, @fhirq/core/view, @fhirq/core/resume and @fhirq/react, and resume inputs
+      - name: Bundle budgets, @fhirq/core, @fhirq/core/view, @fhirq/core/resume, @fhirq/react, the element and its IIFE, and resume inputs
         run: pnpm measure --check
 
       - name: API reports, @fhirq/core, @fhirq/core/view, @fhirq/core/resume, @fhirq/react and @fhirq/element
@@ -338,18 +338,20 @@ jobs:
             playwright-report/
           retention-days: 30
 
-  # M1's spike proofs (S1, decision D5): the DOM contract and axe on the
-  # slice, and the bundle report. Deliberately not a required check:
-  # accessibility blocks from M8 (06-roadmap.md §5); M6 moved hydration to the
-  # React gates. The element's browser specs run here in Chromium,
-  # Firefox and WebKit, with its client tests in Chromium, until M7's Element
-  # gates job takes them and makes them blocking (M7 plan D8). Keystroke to
-  # paint is read here too, report only, after the proofs so none runs beside
-  # it (NFR-P-03).
-  spike-proofs:
-    name: Spike proofs (non-blocking)
+  # The element's gates, required from M7 (06-roadmap.md §5, M7 plan D8): its
+  # client tests in Chromium with coverage at 85 % line / 80 % branch
+  # (NFR-Q-02), among them the throwing-stub test that holds the network to
+  # the default resolver (AC-14.6.1); then its browser specs in Chromium,
+  # Firefox and WebKit: caret and focus, CSP with 0 style routes (NFR-C-07),
+  # the default resolver, the script-tag embed, hostile-CSS isolation, tokens
+  # and parts, reconnection, two elements, and axe at 0 on the demo and the
+  # embed; and the DOM contract on the demo across both renderers (ADR-0007).
+  # Its bundle budgets and API report are in the engine's gates, its lint
+  # rules in the fast lane.
+  element-gates:
+    name: Element gates
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -379,27 +381,74 @@ jobs:
       - name: Install browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
-      - name: Bundle report
-        run: pnpm measure
+      - name: Client tests in Chromium, coverage 85 % line and 80 % branch
+        run: pnpm test:coverage:element
 
-      - name: Browser proofs
-        run: pnpm test:browser:proofs
-
-      - name: The element's browser specs, Chromium, Firefox and WebKit
+      - name: Browser specs, Chromium, Firefox and WebKit, and the DOM contract on the demo
         run: pnpm test:browser:element
 
-      - name: The element's client tests in Chromium
-        run: pnpm test:element
-
-      - name: Keystroke to paint, report only, React 18 and 19 and the element in Chromium
-        run: pnpm test:keystroke
-
-      - name: Upload the bundle report and the browser report
+      - name: Upload the coverage summary and the browser report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: spike-proofs
+          name: element-gates
           path: |
-            reports/
+            coverage/element/coverage-summary.json
             playwright-report/
+          retention-days: 30
+
+  # Keystroke to paint (NFR-P-03), report only: React 18 and 19 and the
+  # element in Chromium, on one worker in a job of its own, so no other spec
+  # runs beside the reading. Before it, axe on M1's slice (light and dark, 375
+  # and 1280 px, three states), which stays non-blocking until M8's matrix
+  # replaces it (accessibility blocks from M8). Every other spec of the
+  # retired spike-proofs job now runs in a required job.
+  keystroke:
+    name: Keystroke to paint (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The proofs' Firefox and WebKit projects skip every test, so Chromium's
+      # is the only one run.
+      - name: Axe on M1's slice, Chromium, non-blocking until M8
+        run: pnpm exec playwright test --project chromium
+
+      - name: Keystroke to paint, report only, React 18 and 19 and the element in Chromium
+        if: ${{ !cancelled() }}
+        run: pnpm test:keystroke
+
+      - name: Upload the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: keystroke
+          path: playwright-report/
           retention-days: 30

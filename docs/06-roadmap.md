@@ -720,6 +720,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | `Intl`-only formatting: 0 hand-rolled date, number or unit formatting | M4 catalogue · M5 `view/` formats · M6/M7 supply the locale | NFR-I-04, ADR-0020 |
 | SSR hydration, 0 warnings, React 18 and 19 | M6 | NFR-C-08 |
 | CSP render, no inline styles, 0 `eval`/`new Function` | M7 (M1 proves it) | NFR-C-07 |
+| One DOM contract across both renderers, on the demo | M7, in `Element gates` (M1 proves it on the slice) | ADR-0007, `08-dom-contract.md` |
 | Automated accessibility across tiers, themes, viewports, renderers | M8 (M1 proves it on a slice) | NFR-A-01 |
 | Contrast, focus, target size, reflow, RTL | M8 | NFR-A-03…06, NFR-I-05 |
 | Lighthouse on the playground | M9 | NFR-P-06 |

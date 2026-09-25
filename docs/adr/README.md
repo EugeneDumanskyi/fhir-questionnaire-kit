@@ -31,6 +31,7 @@ Numbers are assigned in order of writing and never reused. A superseded ADR stay
 | [0021](0021-resume-entry-point-and-staged-element-budget.md) | Resume code ships as its own core entry point, and the element budget is held by ranked, measured reductions | Accepted 2026-09-17 | `03-nfr.md` §2 tripwire; NFR-S-02 |
 | [0022](0022-core-budget-set-from-its-measured-reading.md) | Core's budget is set from its measured reading once its scope is built | Accepted 2026-09-19 | `03-nfr.md` §2 M4 reading; NFR-S-02 |
 | [0023](0023-view-budget-set-from-its-measured-reading.md) | The view's budget is set from its measured reading once its scope is built | Accepted 2026-09-23 | `06-roadmap.md` M5 plan D9; `03-nfr.md` §2 M5 reading; NFR-S-02 |
+| [0024](0024-element-budget-set-from-its-measured-reading.md) | The element's and the IIFE's budgets are set from M7's measured reading, with the theme M8 still grows | Proposed | `06-roadmap.md` M7 plan D3; ADR-0021 rung 3; NFR-S-02, NFR-S-03 |
 
 ## NFR-M-05 coverage
 
