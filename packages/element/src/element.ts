@@ -1,10 +1,10 @@
 import type { Session } from '@fhirq/core';
-import { createView, type ControlView, type View, type ViewModel } from '@fhirq/core/view';
+import { createView, type View, type ViewModel, type ViewNode } from '@fhirq/core/view';
 import base from '@fhirq/themes/base.css';
 import preset from '@fhirq/themes/default.css';
 
 import { dispatch, el, type EventName } from './dom.js';
-import { covered, ITEMS, type Covered, type Cx } from './kinds.js';
+import { ITEMS, type Cx } from './kinds.js';
 import { patch, type Records } from './patch.js';
 import { summaryPart } from './summary.js';
 
@@ -35,7 +35,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
   readonly #form: HTMLDivElement;
   readonly #status: HTMLDivElement;
   readonly #summary: (model: ViewModel) => void;
-  #records: Records<ControlView<Covered>, Cx> = new Map();
+  #records: Records<ViewNode, Cx> = new Map();
   #session: Session | null = null;
   #view: View | null = null;
   #connection: AbortController | null = null;
@@ -135,7 +135,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
       this.#summary(model);
       // Between the summary and the status, which stays the form's last child (DOM contract §2).
       const cx = { marker: model.requiredMarker, labels: model.labels, level: 3 };
-      this.#records = patch(this.#form, this.#records, model.nodes.filter(covered), ITEMS, cx, this.#status);
+      this.#records = patch(this.#form, this.#records, model.nodes, ITEMS, cx, this.#status);
     } finally {
       this.#patching = false;
     }

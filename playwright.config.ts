@@ -19,9 +19,9 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   caret and CSP specs, in every engine NFR-C-07 names (M7 plan D8, `pnpm
  *   test:browser:element`). Firefox is a browser binary Playwright installs,
  *   not a dependency. Not yet a required check: M7's `Element gates` job.
- * - `chromium`, `firefox`, `webkit`: S1's proofs, the DOM contract and axe
- *   on the slice (M1 decision D5). Not a required check: the contract moves
- *   to the demo in M7 and accessibility blocks from M8 (`pnpm
+ * - `chromium`, `firefox`, `webkit`: S1's proofs, the DOM contract on the
+ *   demo (M7 plan step 4), and axe on the slice (M1 decision D5). Not a
+ *   required check: accessibility blocks from M8 (`pnpm
  *   test:browser:proofs`).
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
