@@ -1,3 +1,8 @@
+interface TestSession {
+  dispatch(command: { type: string }): unknown;
+  getSnapshot(): { cycle: number; nodes: { path: string; answers: readonly { value: unknown }[] }[] };
+}
+
 /** What the test pages put on `window` (tests/browser/pages). */
 export interface TestWindow {
   fhirq: {
@@ -8,9 +13,8 @@ export interface TestWindow {
     release?: () => void;
     /** The quickstart's page: each response its host was handed on completion. */
     completed?: readonly { status: string; item?: readonly { linkId: string; answer?: readonly Record<string, unknown>[] }[] }[];
-    session: {
-      dispatch(command: { type: string }): unknown;
-      getSnapshot(): { cycle: number; nodes: { path: string; answers: readonly { value: unknown }[] }[] };
-    };
+    session: TestSession;
+    /** The element pages: each element's session, in document order. */
+    sessions?: readonly TestSession[];
   };
 }
