@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import type { Page as BrowserPage } from '@playwright/test';
 import { build, transform, type Plugin } from 'esbuild';
 
-import { PAGES, TYPED, type Page, type Typed } from './names.js';
+import { ELEMENT_PAGES, PAGES, TYPED, type ElementPage, type Page, type Typed } from './names.js';
 
 /**
  * Test pages for the S1 browser proofs, built in memory with esbuild and served
@@ -165,7 +165,10 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       ),
     ]);
   return new Map<string, Asset>([
-    ['/element.html', page(html('fhirq element', '<script type="module" src="/element.js"></script>', '<fhir-questionnaire></fhir-questionnaire>'))],
+    ...ELEMENT_PAGES.map((name): [string, Asset] => [
+      `/${address('element', name)}.html`,
+      page(html('fhirq element', '<script type="module" src="/element.js"></script>', `<fhir-questionnaire data-page="${name}"></fhir-questionnaire>`)),
+    ]),
     ['/element.js', js(element)],
     ...reactPages(19, ssr19),
     ['/react-19.js', js(react19)],
@@ -181,7 +184,7 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
 }
 
 /** A page's path: the renderer's own for the slice, suffixed by the form otherwise. */
-const address = (renderer: Renderer, form: Page) => (form === 'slice' ? renderer : `${renderer}-${form}`);
+const address = (renderer: Renderer, form: Page | ElementPage) => (form === 'slice' ? renderer : `${renderer}-${form}`);
 
 const renders = new Map<18 | 19, Promise<Rendered>>();
 
@@ -211,8 +214,8 @@ export async function serve(page: BrowserPage): Promise<void> {
   });
 }
 
-/** Opens a renderer's page, the slice unless a React form is named, and waits until it is interactive. */
-export async function open(page: BrowserPage, renderer: Renderer, form: Page = 'slice'): Promise<void> {
+/** Opens a renderer's page, the slice unless another form is named, and waits until it is interactive. */
+export async function open(page: BrowserPage, renderer: Renderer, form: Page | ElementPage = 'slice'): Promise<void> {
   await serve(page);
   await page.goto(`${ORIGIN}/${address(renderer, form)}.html`);
   await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);

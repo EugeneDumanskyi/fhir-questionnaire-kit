@@ -1,8 +1,9 @@
 /**
  * The element's one keyed reconciler (ADR-0007, M7 plan step 3a). Every list
  * of children it renders goes through `patch`: the form's items, the error
- * summary's entries and an item's issues, and the kind descriptors' lists
- * after them (step 3b).
+ * summary's entries, and in each kind (`kinds.ts`) an item's issues, a
+ * group's items, a repeating group's instances, a field per entry, and the
+ * choices and units offered.
  *
  * - **Keyed.** A child keeps its record, and so its DOM, while its key stays
  *   in the list: an item path, an instance path, an option key or a position.

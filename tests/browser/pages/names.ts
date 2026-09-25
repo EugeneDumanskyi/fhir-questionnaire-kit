@@ -17,3 +17,10 @@ export type Page = (typeof PAGES)[number];
  */
 export const TYPED = ['control', 'demo', 'large-500', 'large-500-cloned'] as const;
 export type Typed = (typeof TYPED)[number];
+
+/**
+ * The element's pages (M7): the S1 slice, and a form of every kind it builds
+ * (`packages/element/test/kinds.ts`). Client-rendered, one bundle for both.
+ */
+export const ELEMENT_PAGES = ['slice', 'kinds'] as const;
+export type ElementPage = (typeof ELEMENT_PAGES)[number];
