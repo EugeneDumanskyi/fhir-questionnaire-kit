@@ -1,0 +1,60 @@
+/* Aggressive global CSS of the kind an old host page carries (AC-09.2.1,
+   ADR-0014's verification): a reset, content-box sizing forced on
+   everything, and bare element rules, most of them !important, some naming
+   the kit's own classes. Nothing here is inherited or propagated into the
+   element: those values are `inherited.css`'s. */
+* {
+  box-sizing: content-box !important;
+  margin: 0;
+  padding: 0;
+}
+
+input,
+select,
+textarea,
+button {
+  display: block !important;
+  inline-size: 100% !important;
+  block-size: 60px !important;
+  margin: 12px !important;
+  padding: 9px !important;
+  border: 5px dashed rgb(255, 0, 0) !important;
+  border-radius: 0 !important;
+  background: rgb(255, 255, 0) !important;
+  font-size: 30px !important;
+  appearance: none !important;
+}
+
+label,
+legend {
+  display: block !important;
+  float: inline-start !important;
+  font-weight: 100 !important;
+  color: rgb(0, 128, 0) !important;
+}
+
+fieldset,
+section,
+div,
+p,
+span,
+h2,
+h3,
+ul,
+li,
+a,
+output {
+  border: 3px solid rgb(0, 0, 255) !important;
+  margin: 10px !important;
+  padding: 10px !important;
+  color: rgb(255, 0, 255) !important;
+}
+
+.fhirq-form,
+.fhirq-item,
+.fhirq-control,
+.fhirq-label,
+[part],
+[data-path] {
+  display: none !important;
+}

@@ -1,13 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
 
-import { open, reach } from './pages/serve.js';
+import type { TestWindow } from './fhirq.js';
+import { EMBED, open, ORIGIN, reach, serve } from './pages/serve.js';
 
 /**
  * M1 AC-8, ADR-0014: the element renders under
  * `default-src 'self'; script-src 'self'; style-src 'self'` with no `<style>`,
  * no `style` attribute and no `el.style` write, and its token-derived styles
  * are applied. Chromium, Firefox and WebKit (M7 plan D8); WebKit exercises
- * `adoptedStyleSheets`.
+ * `adoptedStyleSheets`. On the S1 slice, and from M7 step 8 on the demo,
+ * every kind it holds, and on `examples/element-embed`, the script-tag build
+ * with no script of the page's own.
  */
 
 interface Csp {
@@ -71,6 +74,46 @@ async function instrument(page: Page): Promise<void> {
 
 const readCsp = (page: Page) => page.evaluate(() => (window as unknown as { fhirqCsp: Csp }).fhirqCsp);
 
+/** The routes to an inline style counted in the element's own tree and the page's, and what its stylesheets apply. */
+const inside = (page: Page) =>
+  page.evaluate(() => {
+    const shadow = document.querySelector('fhir-questionnaire')?.shadowRoot;
+    if (shadow === null || shadow === undefined) return null;
+    const count = (selector: string) => document.querySelectorAll(selector).length + shadow.querySelectorAll(selector).length;
+    const control = shadow.querySelector('.fhirq-control');
+    return {
+      styleElements: count('style'),
+      styleAttributes: count('[style]'),
+      adoptedSheets: shadow.adoptedStyleSheets.length,
+      minBlockSize: control === null ? null : getComputedStyle(control).minHeight,
+    };
+  });
+
+/** Every item of the demo that shows only once answered, answered, and then completion refused. */
+async function useDemo(page: Page, refuse: () => Promise<void>): Promise<void> {
+  const item = (path: string) => page.locator(`[data-path="${path}"]`);
+  await item('pain/pain-now').getByRole('radio', { name: 'Yes' }).check();
+  await item('pain/pain-score').getByRole('textbox').fill('8');
+  await item('pain/pain-onset').getByRole('textbox').fill('2024-05-01T14:30+02:00');
+  await item('pain/pain-tell-reception').waitFor();
+  await item('body/weight').locator('.fhirq-control').fill('70');
+  await item('body/weight').locator('.fhirq-unit').fill('kg');
+  await item('smoking/smoking-status').getByRole('radio', { name: 'I smoke now' }).check();
+  await item('smoking/smoking-per-day').getByRole('textbox').fill('10');
+  await item('smoking/smoking-support').getByRole('radio', { name: 'No' }).check();
+  await item('medicine[0]/medicine-name').getByRole('textbox').fill('Paracetamol');
+  await item('medicine[0]/medicine-as-needed').getByRole('radio', { name: 'No' }).check();
+  await item('medicine[0]/medicine-how-often').locator('.fhirq-other-text').fill('With food');
+  await item('medicine').locator(':scope > .fhirq-add').click();
+  await item('medicine[1]').waitFor();
+  await item('allergies/allergies-any').getByRole('radio', { name: 'Yes' }).check();
+  await item('allergies/allergies-detail').getByRole('textbox').fill('Pollen');
+  await item('wellbeing/wellbeing-sleep').getByRole('radio', { name: 'On most days' }).check();
+  await item('arrival-note').waitFor();
+  await refuse();
+  await page.getByRole('region', { name: 'There is a problem' }).waitFor();
+}
+
 test.describe('the element under a strict CSP (M1 AC-8, NFR-C-07)', () => {
   test('renders every state with no inline style of any kind, and its stylesheets applied', async ({ page }) => {
     const errors: string[] = [];
@@ -113,6 +156,37 @@ test.describe('the element under a strict CSP (M1 AC-8, NFR-C-07)', () => {
       borderColor: 'rgb(92, 95, 102)',
       labelWeight: '600',
     });
+  });
+
+  test('the demo: every kind it holds, used and refused, with no inline style of any kind', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text());
+    });
+    await instrument(page);
+    await open(page, 'element', 'demo');
+    await useDemo(page, () => page.evaluate(() => void (window as unknown as TestWindow).fhirq.session.dispatch({ type: 'RequestCompletion' })));
+
+    expect(await readCsp(page)).toEqual({ instrumented: true, violations: [], writes: [] });
+    expect(errors).toEqual([]);
+    expect(await inside(page)).toEqual({ styleElements: 0, styleAttributes: 0, adoptedSheets: 2, minBlockSize: '44px' });
+  });
+
+  test('the embed: one script tag, used and refused, with no inline style of any kind', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text());
+    });
+    await instrument(page);
+    await serve(page);
+    await page.goto(`${ORIGIN}${EMBED}`);
+    await useDemo(page, () =>
+      page.evaluate(() => document.querySelector<HTMLElement & { requestCompletion(): void }>('fhir-questionnaire')?.requestCompletion()),
+    );
+
+    expect(await readCsp(page)).toEqual({ instrumented: true, violations: [], writes: [] });
+    expect(errors).toEqual([]);
+    expect(await inside(page)).toEqual({ styleElements: 0, styleAttributes: 0, adoptedSheets: 2, minBlockSize: '44px' });
   });
 
   test('control: the policy is enforced and the instrumentation counts', async ({ page }) => {

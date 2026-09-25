@@ -21,3 +21,6 @@ playwright-report/
 .env
 .env.*
 !.env.example
+
+# The element-embed example's copy of the built IIFE (examples/element-embed/README.md)
+examples/element-embed/fhirq-element.js

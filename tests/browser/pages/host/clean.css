@@ -1,0 +1,11 @@
+/* The host page's own layout, on every isolation page. The element is
+   placed at one point with one width, so no host rule that moves the page
+   can move or resize the form: every difference a comparison finds is the
+   form's own, and two screenshots of it can be compared byte for byte
+   (Chromium's anti-aliasing depends on where a box sits). */
+fhir-questionnaire {
+  position: absolute;
+  inset-block-start: 400px;
+  inset-inline-start: 40px;
+  inline-size: 640px;
+}

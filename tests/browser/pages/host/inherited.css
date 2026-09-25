@@ -1,0 +1,25 @@
+/* Values an old host page sets on its root, body or everything, that reach
+   the element itself and, from it, whatever inside the form does not set its
+   own: inherited properties, a text decoration (propagated to in-flow boxes,
+   not inherited: set on the element by `*`, since `clean.css` takes it out
+   of the body's flow), and the root font size every rem is read against. The font family is left
+   out: the form takes the host's by design (ADR-0014,
+   `--fhirq-font-family: inherit`). */
+html {
+  font-size: 10px;
+}
+
+body {
+  color: rgb(255, 0, 255);
+  line-height: 3;
+}
+
+* {
+  letter-spacing: 0.2em;
+  word-spacing: 1em;
+  text-transform: uppercase;
+  text-align: center;
+  font-style: italic;
+  cursor: crosshair;
+  text-decoration: line-through;
+}
