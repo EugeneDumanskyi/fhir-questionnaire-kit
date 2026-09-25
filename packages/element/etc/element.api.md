@@ -4,7 +4,9 @@
 
 ```ts
 
-import type { Session } from '@fhirq/core';
+import { Questionnaire } from '@fhirq/core';
+import { Session } from '@fhirq/core';
+import { ViewOptions } from '@fhirq/core/view';
 
 // @alpha
 export function defineQuestionnaireElement(name?: string): void;
@@ -13,12 +15,24 @@ export function defineQuestionnaireElement(name?: string): void;
 export class FhirQuestionnaireElement extends HTMLElement {
     constructor();
     // (undocumented)
+    attributeChangedCallback(name: string, old: string | null, value: string | null): void;
+    // (undocumented)
     connectedCallback(): void;
     // (undocumented)
     disconnectedCallback(): void;
+    get locale(): string | null;
+    set locale(locale: string | null);
+    get messages(): NonNullable<ViewOptions['messages']> | null;
+    set messages(messages: NonNullable<ViewOptions['messages']> | null);
     // (undocumented)
+    static readonly observedAttributes: string[];
+    get questionnaire(): Questionnaire | null;
+    set questionnaire(questionnaire: Questionnaire | null);
+    requestCompletion(): void;
     get session(): Session | null;
     set session(session: Session | null);
+    get timeZone(): string | null;
+    set timeZone(timeZone: string | null);
 }
 
 // (No @packageDocumentation comment for this package)

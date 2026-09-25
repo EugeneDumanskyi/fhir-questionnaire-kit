@@ -128,7 +128,9 @@ export interface ExpressionEvaluator {
 
 // @beta
 export class FhirqError extends Error {
-    constructor(code: FhirqErrorCode, findings?: readonly Diagnostic[]);
+    constructor(code: FhirqErrorCode, findings?: readonly Diagnostic[], options?: {
+        readonly cause?: unknown;
+    });
     // (undocumented)
     readonly code: FhirqErrorCode;
     // (undocumented)
@@ -136,7 +138,7 @@ export class FhirqError extends Error {
 }
 
 // @beta
-export type FhirqErrorCode = 'definition-rejected' | 'response-rejected' | 'snapshot-mismatch' | 'snapshot-format' | 'unknown-session' | 'invalid-path' | 'invalid-options';
+export type FhirqErrorCode = 'definition-rejected' | 'response-rejected' | 'snapshot-mismatch' | 'snapshot-format' | 'unknown-session' | 'invalid-path' | 'invalid-options' | 'request-failed';
 
 // @beta
 export interface HostIdentity {

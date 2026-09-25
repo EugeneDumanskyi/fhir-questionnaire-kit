@@ -30,7 +30,11 @@ const ENTRIES: List<SummaryEntry, null> = {
   },
 };
 
-/** The error summary. Its section, heading and list are kept while it shows, so focus on any of them survives a cycle. */
+/**
+ * The error summary. Its section, heading and list are kept while it shows,
+ * so focus on any of them survives a cycle. With no model, as when the
+ * element's view is replaced, it is taken out.
+ */
 export function summaryPart(form: HTMLElement) {
   const section = el('section', 'fhirq-summary', 'summary');
   section.tabIndex = -1;
@@ -38,8 +42,8 @@ export function summaryPart(form: HTMLElement) {
   const title = textIn(heading);
   const list = el('ul', 'fhirq-summary-list', 'summary-list', section);
   let entries: Records<SummaryEntry, null> = new Map();
-  return (model: ViewModel) => {
-    const summary = model.errorSummary;
+  return (model: ViewModel | null) => {
+    const summary = model?.errorSummary ?? null;
     if (summary === null) {
       section.remove();
       return;

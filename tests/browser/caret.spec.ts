@@ -107,7 +107,7 @@ const ENTRY_KINDS = [
   { path: 'age', kind: 'integer', typed: '42', insert: '7' },
   { path: 'height', kind: 'decimal', typed: '1.8', insert: '7' },
   { path: 'born', kind: 'calendar-date', typed: '2024-05', insert: '0' },
-  // With its offset: the element has no time zone to read a wall clock in until M7 plan step 5.
+  // With its offset: this page's element has no time zone. A wall clock in one has its own test below.
   { path: 'seen', kind: 'date-time', typed: '2024-05-01T14:30+02:00', insert: '0' },
   { path: 'weight', kind: 'quantity with a unit list', typed: '70', insert: '5' },
   { path: 'dose', kind: 'quantity with a typed unit', typed: '5', insert: '2' },
@@ -156,6 +156,19 @@ test.describe('the element keeps focus and caret in every entry kind (M7 AC-5, p
       expect(await focused(page, path)).toEqual({ sameNode: true, value: `${typed.slice(0, 1)}${insert}${typed.slice(1)}`, selectionStart: 2 });
     });
   }
+
+  test('date-time with timeZone: a wall clock with no offset makes an answer, focus and caret kept (M7 plan step 5)', async ({ page }) => {
+    await page.evaluate(() => {
+      const element = document.querySelector('fhir-questionnaire');
+      if (element !== null) Object.assign(element, { timeZone: 'Europe/Berlin' });
+    });
+    await page.locator('[data-path="seen"] .fhirq-control').focus();
+    await mark(page, 'seen');
+
+    await page.keyboard.type('2024-05-01T14:30');
+    expect(await focused(page, 'seen')).toEqual({ sameNode: true, value: '2024-05-01T14:30', selectionStart: 16 });
+    expect(await answers(page, 'seen')).toEqual(['2024-05-01T14:30:00+02:00']);
+  });
 
   test('a repeating question: each entry keeps focus and caret, and clearing a middle one leaves every field in place', async ({ page }) => {
     const fields = page.locator('[data-path="aliases"] .fhirq-entries > .fhirq-control');

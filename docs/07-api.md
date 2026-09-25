@@ -1,8 +1,8 @@
 # FHIR Questionnaire Kit — Public API
 
-*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means. Next: M7's custom element.*
+*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-24.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` and `@fhirq/themes` are still M1's `@alpha` spike surface, rewritten in M7 and M8.
+**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` is `@alpha` and being built through M7 (§7): its inputs, lifecycle and events are in, and `resolver`, `value-set-base` and `controls` are to come. `@fhirq/themes` is still M1's spike surface, rewritten in M8.
 
 ---
 
@@ -79,6 +79,7 @@ session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind
 | `response-rejected` | `hydrateSession` was given something that is not an R4 `QuestionnaireResponse` | Every finding |
 | `snapshot-mismatch` | `restoreSession` was given a snapshot taken against another canonical or version, or one holding paths this questionnaire does not have | A `version-drift` finding naming both canonicals, or the path |
 | `snapshot-format` | `restoreSession` was given something that is not a snapshot of this format | empty |
+| `request-failed` | Never thrown by core. The element's network file (ADR-0012) rejects with it when a request brings back no JSON: a network error, a response that is not a success, or a body that is not JSON. `cause` is what failed, verbatim: the platform's error or the `Response` | empty |
 
 Authoring problems a lenient load degrades are `session.diagnostics`, not errors.
 
@@ -436,11 +437,41 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 **`controls` (tier 3, ADR-0013).** A host's control per control kind, for any of the 13 answerable kinds: `controls={{ 'calendar-date': MyPicker }}`, where `MyPicker` takes `ControlProps<'calendar-date'>` (§5.3). Kinds left out render the default. The kit renders the item root, the label (`for` = `ids.control`), the required marker and the error container around the host's control (`08-dom-contract.md` §3.9). The map is compared by its entries, so one written inline re-renders nothing. In development, after each render of an overridden item, the kit checks that an element carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` (§3) once per item and missing attribute, through `onDiagnostic` and `console.warn`. A production build has no check. `useQuestionnaire` has no `controls`: a host rendering itself (tier 4) owns its markup.
 
-## 7. Not in the API yet
+## 7. `@fhirq/element` (`@alpha`)
+
+`<fhir-questionnaire>`, registered by `defineQuestionnaireElement()` or by importing `@fhirq/element/define`; the script-tag bundle registers it as it loads. The class, `FhirQuestionnaireElement`, and that function are the entry point's two symbols (M7 plan D4). Everything below is a class member or an attribute, and the events are typed by an `HTMLElementEventMap` augmentation, which ships in the package's declarations but, as a global, is not in the API report. Built through M7 (plan steps 5–7); ADR-0014 and its M7 note are the decision.
+
+**Where the form comes from.** Whichever of these was set last (M7 plan D6):
+
+| Input | What it is |
+|---|---|
+| `questionnaire` property | A FHIR R4 `Questionnaire` (§3.1). The element makes a session from it with no options |
+| `src` attribute | A URL, resolved against the document's base URL. The element `GET`s it once with `Accept: application/fhir+json` and `credentials: "same-origin"`, and makes a session from the JSON (ADR-0012 M7 note) |
+| `session` property | A session the host made, for a form that needs session options: rules, scorers, a sanitizer, `hostIdentity`, a restore. The script-tag bundle exposes `fhirq.createSession` for it |
+
+- **Lazily, and once.** The element makes its session the first time it is connected, or at once when it already is, and keeps it across disconnection and reconnection (AC-09.3.1). A `src` still loading when the element is disconnected is aborted, and loaded again on the next connection.
+- **Replacement.** A new value of any of the three replaces the session, and one the element made is disposed; the same value again does nothing. A host's session is never disposed by the element. Setting a source to `null`, or removing `src`, empties the form. A load for a `src` value since replaced is dropped.
+- **Failure.** When the questionnaire cannot be had, the form stays empty and `fhirq-error` carries what was thrown: `FhirqError` `request-failed` for the request (§3.1), or what `createSession` threw, such as `definition-rejected`. It is not tried again on reconnection; a new value is.
+- **`session`** reads back the session the form shows, the host's or the one the element made, or `null`.
+- Properties set on the element before it is defined are taken up when it connects.
+
+**How it reads.** `locale` (a BCP 47 tag) overrides; without it, the `lang` of the element or its nearest ancestor that has one, then the browser's language, then `"en"` (ADR-0020). A tag that is not well formed, such as `lang="en_US"`, is passed over for the next. `lang` is read on connection and when the element's own `lang` changes; ancestors are not watched. `timeZone` and `messages` are as `createView`'s (§5.1). A new `locale`, `timeZone` or `messages`, or a `lang` that changes the locale, builds a new view over the same session: the form is drawn again, and typed drafts, the error summary and the status message start empty.
+
+**Events.** `CustomEvent`s on the element, which bubble. Each is raised only while the element is connected.
+
+| Event | When | `detail` |
+|---|---|---|
+| `fhirq-change` | After each cycle that changed the response | The `QuestionnaireResponse` (§3.8) without `authored`, which the host stamps when it stores or sends it: plain JSON data |
+| `fhirq-complete` | Once the form is completed | The same, with `status: "completed"` |
+| `fhirq-error` | The questionnaire could not be loaded or opened | `{ error }`, the error verbatim. A plain object around it, since an error is not plain data |
+
+**`requestCompletion()`** asks the session to complete (M7 plan D2). The element renders no submit control; the host's own button calls it. `fhirq-complete` follows, or the error summary shows and takes focus.
+
+## 8. Not in the API yet
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M7–M8:** the custom element's attributes and events, its tier-3 `controls`, and the theme tokens.
+- **M7–M8:** the element's `resolver`, `value-set-base`, tier-3 `controls` and `fhirq-diagnostic` (§7), and the theme tokens.
 - **A completion control.** Neither the view nor the default UI offers one, so a `<Questionnaire questionnaire>` cannot be completed and the quickstart needs the hook and the host's own button: 13 lines against NFR-U-01's 10 (M6 close-out).
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
 - **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).
