@@ -86,4 +86,4 @@ It is not sized for help text (M5 plan D5, option b), a second locale, or any ne
 
 **Follow-ups**
 - **Whether the published `dist` shares kernel modules between `@fhirq/core` and `@fhirq/core/view`** (option B's premise) is closed by M11's build. If it does, the view's gate method moves to the resume entry's, and the figure is re-read then, not raised again.
-- **Rung 3** is closed by M7's element gate, as ADR-0021 provides.
+- **Rung 3** is closed by M7's element gate, as ADR-0021 provides. *Closed 2026-09-25 by ADR-0024.*

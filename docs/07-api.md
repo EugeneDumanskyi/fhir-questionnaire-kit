@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` is `@alpha` and being built through M7 (§7): its inputs, lifecycle, events, value-set resolution and tier-3 `controls` are in. `@fhirq/themes` is still M1's spike surface, rewritten in M8.
+**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha`: M6 and M7 have both built on it without a new field, and moving it to `@beta` is open (`06-roadmap.md` M7, "Still open"). `@fhirq/react` is complete for M6 and `@fhirq/element` for M7; both stay `@alpha` while the view they expose is (§6, §7). `@fhirq/themes` is still M1's spike surface, rewritten in M8.
 
 ---
 
@@ -39,6 +39,8 @@
 **M4 (`06-roadmap.md` M4 D1)** used 3: `OptionResolver`, `ExpressionEvaluator` and `VisibleProjection`, the port types ADR-0012 and ADR-0017 name. Scorers, the sanitizer and the error handler are inline `SessionOptions` fields, as rules are; `RetryOptions` is a command and `dispose` a session member, neither a symbol. **Two remain** for M5–M8; the view's 15 are still the likeliest to shrink.
 
 **M5 (`06-roadmap.md` M5 D10)** kept the view at 15: the spike's per-kind node types (`YesNoViewNode`, `ShortTextViewNode`, `YesNoChoice`, `ErrorSummaryEntry`) went, and `ControlView`, `ControlProps`, `ChoiceView` and `InstanceView` came. One `ViewNode` union covers every kind, with its shared fields written inline, so no base type is left unexported. `ItemDefinition.units` is a field, not a symbol. **Two remain** for M6–M8.
+
+**M6 and M7 (`06-roadmap.md` M6 D5, M7 D4)** used one between them. React's `Questionnaire`, `QuestionnaireProps` and `useQuestionnaire` are one more than the two reserved for it; `createSession` is core's own declaration re-exported, listed and not counted. The element kept its reserved two, `FhirQuestionnaireElement` and `defineQuestionnaireElement`, counted from its API report from M7. Its properties, `requestCompletion()`, the `controls` map and its event details are class members or inline types, and its events are typed by an `HTMLElementEventMap` augmentation, a global and not a symbol. **One remains,** kept for M8; the themes' one is already counted from its source entry.
 
 ## 3. `@fhirq/core`
 
@@ -439,7 +441,11 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 ## 7. `@fhirq/element` (`@alpha`)
 
-`<fhir-questionnaire>`, registered by `defineQuestionnaireElement()` or by importing `@fhirq/element/define`; the script-tag bundle registers it as it loads. The class, `FhirQuestionnaireElement`, and that function are the entry point's two symbols (M7 plan D4). Everything below is a class member or an attribute, and the events are typed by an `HTMLElementEventMap` augmentation, which ships in the package's declarations but, as a global, is not in the API report. Built through M7 (plan steps 5–7); ADR-0014, ADR-0012 and their M7 notes are the decision.
+`<fhir-questionnaire>`, registered by `defineQuestionnaireElement()` or by importing `@fhirq/element/define`; the script-tag bundle registers it as it loads. The class, `FhirQuestionnaireElement`, and that function are the entry point's two symbols (M7 plan D4). Everything below is a class member or an attribute, and the events are typed by an `HTMLElementEventMap` augmentation, which ships in the package's declarations but, as a global, is not in the API report. Built in M7; ADR-0014, ADR-0012 and their M7 notes are the decision.
+
+**Three ways in** (M7 plan D9). `@fhirq/element` is ESM, with the theme inlined and `@fhirq/core` left to its dependency. Importing `@fhirq/element/define` registers the element. `dist/fhirq-element.js` is one file for a `<script>` tag and no bundler: it holds everything, registers the element as it loads, and exposes `window.fhirq.createSession`. `examples/element-embed/` is a page that uses nothing else. Gzipped, the ESM entry is at most 31.7 kB and the script-tag file 31.9 kB, core, the view and the theme included (NFR-S-02, NFR-S-03, ADR-0024).
+
+**What it draws.** Every control kind, in an open shadow root styled only by adopted stylesheets, as `08-dom-contract.md` sets out. A cycle patches the form in place: a node the view kept is not touched, and the control holding focus is never moved or replaced. `--fhirq-*` tokens set on the element reach the form, and each part's `part` name is its class stem, for `::part()`. A token set on an ancestor of the element does not reach it yet (§8).
 
 **Where the form comes from.** Whichever of these was set last (M7 plan D6):
 
@@ -484,7 +490,7 @@ The core calls the resolver once per distinct canonical per session, and again o
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M8:** the theme tokens.
+- **M8:** the theme tokens. On the element, a token set on an ancestor is hidden by the preset's defaults on `:host`, where ADR-0014 says it inherits; M8 decides (`06-roadmap.md` M7, "Still open").
 - **A resolver rejection on the element.** It reaches the host only as the session's `resolver-failed` diagnostic, since the element passes no `onCollaboratorError`; `fhirq-diagnostic` carries only what the element raises itself, as React's `onDiagnostic` does.
 - **A completion control.** Neither the view nor the default UI offers one, so a `<Questionnaire questionnaire>` cannot be completed and the quickstart needs the hook and the host's own button: 13 lines against NFR-U-01's 10 (M6 close-out).
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.

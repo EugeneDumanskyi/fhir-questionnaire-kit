@@ -106,4 +106,4 @@ Raising a number (rung 3) ranks above breaking the embed (option B). The number 
 
 **Follow-ups**
 - **The 4 kB resume budget** is closed by its first gate reading in M3. *Closed 2026-09-18: 3.34 kB gzipped, 8.88 kB minified, measured without the modules `@fhirq/core` bundles; the figure stands and the gate blocks (`03-nfr.md` §2). The lint rows are in `05-architecture.md` §4.1, with two additions that tighten rather than loosen them: `fhir/r4/decode` is resume-only too, and `resume` shares `open`, the session opener, with `index`.*
-- **Rung 2's trigger** is closed by the M5 reading; rung 3 by M7's element gate.
+- **Rung 2's trigger** is closed by the M5 reading; rung 3 by M7's element gate. *Closed 2026-09-25. Rung 2 fired on the M5 reading (`03-nfr.md` §2) and M7 built it: one keyed patcher under one descriptor table. The element still read 27.28 kB, so rung 3 is ADR-0024, which sets the element to 31.7 kB and the IIFE to 31.9 kB, both gated. The theme stays embedded, and the ladder is spent.*

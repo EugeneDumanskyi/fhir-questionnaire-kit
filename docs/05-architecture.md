@@ -277,9 +277,9 @@ C4Container
 | Engine `@fhirq/core` | BC1–BC5 | ≤ 15 kB (ADR-0022) | none (NFR-X-01) | none (NFR-C-04) |
 | Presentation model `@fhirq/core/view` | BC6, DOM-free half | ≤ 8.2 kB (measured, ADR-0023) | none | none |
 | React adapter | BC6 markup | ≤ 6 kB excl. React, core, view and resume (4.13 kB, gated from M6) | none | via React |
-| Web component | BC6 markup + default resolver | ≤ 24 kB incl. core, view, theme | `default-resolver.ts` only: value-set `$expand` and the `src` questionnaire (ADR-0012 note) | yes |
+| Web component | BC6 markup + default resolver | ≤ 31.7 kB incl. core, view, theme (27.28 kB, measured, ADR-0024; gated from M7) | `default-resolver.ts` only: value-set `$expand` and the `src` questionnaire (ADR-0012 note) | yes |
 | Themes | — | ≤ 3 kB per preset; structural sheet ≤ 4 kB | none | — |
-| Script-tag IIFE | all of the element | ≤ 30 kB | as the web component | yes |
+| Script-tag IIFE | all of the element | ≤ 31.9 kB (27.48 kB, measured, ADR-0024; gated from M7) | as the web component | yes |
 
 ---
 
@@ -352,8 +352,8 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 **What S1 set out to break, and did not.** One DOM-free view model drove a React renderer and a keyed vanilla renderer to identical markup, roles, accessible names and ARIA relationships in every state of the slice, asserted by one contract suite (AC-4). Neither renderer needed a field naming an element, an ARIA attribute or a CSS property (AC-3), and neither computes visibility, validity, ids or response shape. Axe found nothing in 24 runs (AC-5); React 18 and 19 hydrated with no warnings (AC-6); the element kept caret and focus through cycles that change the focused input's own state, on Chromium and WebKit (AC-7); and it rendered under `style-src 'self'` with adopted stylesheets only (AC-8). None of S1's three kill criteria triggered.
 
 **What S1 did not settle.**
-- **R1 stays open.** The element's extrapolated band, 12.6–35.5 kB, straddles its 24 kB budget; the view's, 3.0–9.0 kB, straddles 5 kB. Architecture B is not what is at risk here — Architecture A would carry the same engine and theme, and a heavier BC6 in each renderer — but the published numbers may be.
-- **R2 is proven on two control kinds,** not fourteen. The drift ADR-0007 fears is gradual; the deny-list test that caught `code` in S1 carries into M5. **Settled for the view on 2026-09-23 (M5):** eighteen control kinds, a tree whose unchanged subtrees keep their identity, and a field list with no markup names. The deny-list test caught `position` (a CSS property) on the way; the field is now `number`. What stays open is whether M6 and M7 need a field the view lacks. That is the one way R2 can still fail, and ADR-0023's margin is sized for it. **M6 (2026-09-24) needed none;** repeating-question entries with no identity of their own are the one gap it recorded.
+- **R1 stays open.** The element's extrapolated band, 12.6–35.5 kB, straddles its 24 kB budget; the view's, 3.0–9.0 kB, straddles 5 kB. Architecture B is not what is at risk here — Architecture A would carry the same engine and theme, and a heavier BC6 in each renderer — but the published numbers may be. **Held at M7 (2026-09-25) by ADR-0024,** ADR-0021's rung 3: the element reads 27.28 kB with every kind, and its figure is that reading plus M8's theme and a stated margin, 31.7 kB. The renderer itself came in under S1's centre; the element is over 24 kB because core and the view are.
+- **R2 is proven on two control kinds,** not fourteen. The drift ADR-0007 fears is gradual; the deny-list test that caught `code` in S1 carries into M5. **Settled for the view on 2026-09-23 (M5):** eighteen control kinds, a tree whose unchanged subtrees keep their identity, and a field list with no markup names. The deny-list test caught `position` (a CSS property) on the way; the field is now `number`. What stays open is whether M6 and M7 need a field the view lacks. That is the one way R2 can still fail, and ADR-0023's margin is sized for it. **M6 (2026-09-24) needed none;** repeating-question entries with no identity of their own are the one gap it recorded. **M7 (2026-09-25) needed none either:** the keyed patcher skips unchanged nodes by reference, and entries keyed by position keep caret and nodes in three engines (M7 plan D10). R2 has no renderer left to fail it.
 - **Two accepted ADRs disagreed on a name; resolved 2026-09-17.** ADR-0020's `display` field is a CSS property under ADR-0007's review rule. It is allowed as a coincidence, like `label` and `clear`: it is ADR-0020's name and FHIR's own word for rendered text (`Coding.display`), and it means formatted text, not styling. M5 adds it to the allowed list when the field lands.
 - **Leaving an item is decided in both renderers** (focus containment), the one duplicated behaviour left. M5 decides whether the DOM contract states it or `view/` helps. **Decided 2026-09-23 (M5 plan D11):** the DOM contract states it (`08-dom-contract.md` §1, the leave rule). `leave()` fires on `focusout` from the item root when `relatedTarget` is outside it; a view helper would need the DOM.
 
@@ -362,10 +362,10 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 | Kept, as a starting point | What it becomes |
 |---|---|
 | `scripts/measure-bundles.mjs` and its test | The budget gate from M2 |
-| The `tests/browser/` harness and all five specs | The SSR (M6), CSP (M7) and accessibility (M8) gates. **SSR done 2026-09-24:** `hydration.spec.ts` at full breadth, in the required `React gates` job |
+| The `tests/browser/` harness and all five specs | The SSR (M6), CSP (M7) and accessibility (M8) gates. **SSR done 2026-09-24:** `hydration.spec.ts` at full breadth, in the required `React gates` job. **CSP done 2026-09-25:** `csp.spec.ts` on the slice, the demo and the script-tag embed in Chromium, Firefox and WebKit, and `contract.spec.ts` on the demo across both renderers, in the required `Element gates` job |
 | `packages/core/test/deny-lists.ts` and `view-fields.test.ts` | The AC-3 check for M5 |
 | `view/ids.ts`, `view/format.ts` | Starting points for M5's view |
-| The element's inline-style lint bans and their must-fail tests | The CSP guard for M7 |
+| The element's inline-style lint bans and their must-fail tests | The CSP guard for M7. **Done 2026-09-25:** held over every file in `packages/element/src`, and checked at runtime by `csp.spec.ts` (0 `style` attributes, 0 `el.style` writes) |
 | The `@fhirq/themes` token-contract test; `docs/08-dom-contract.md` | The contract's first rows, completed in M5 and M8 |
 
 | Rewritten | Why |
@@ -374,5 +374,5 @@ Extends `03-nfr.md` §11. Correct before milestone planning. **A1 and A2 were ac
 | `definition/definition.ts` | Hand-built input and four checks; M2's R4 codec and INV-D-01…19 replace it. **Done 2026-09-17:** deleted; `fhir/r4/parse.ts` and `definition/{compile,checks,graph,scc}.ts` replace it |
 | `view/view.ts` | Two control kinds; M5 writes the full field list |
 | `validation/required.ts` | One rule; M3 |
-| `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3 |
+| `packages/element/src/{element,items}.ts` | M7's patcher covers every control kind and tier 3. **Done 2026-09-25:** `patch.ts` (one keyed reconciler for every child list, which never moves the focused control), `kinds.ts` (one descriptor per control kind over it, tier 3's `slot` among them), `summary.ts` (the error summary, which replaced `items.ts`), `dom.ts` (one delegated listener per event type per connection), `element.ts` (inputs, lifecycle, events), `locale.ts` (the only file that reads the browser's language), `default-resolver.ts` (the `src` loader and the value-set resolver, the one file with network access), `contract.ts` (the development check), and the entries `index.ts`, `define.ts` and `iife.ts`, built by `scripts/build-element.mjs`. The script-tag example is `examples/element-embed/` |
 | `packages/react/src/questionnaire.tsx` | M6's hook, tiers and controlled mode. **Done 2026-09-24:** `hook.ts` (`useQuestionnaire`), `ui/*.tsx` (the default UI and tier-3 chrome), `echo.ts` (the echo compare), `contract.ts` and `report.ts` (the development check and the diagnostic channel); `questionnaire.tsx` is the hook and `ui/form`. The quickstart is `examples/react-quickstart/`, a workspace package that consumes the published entry points, the pattern M8 and M10 reuse for compiled samples (M6 plan D7) |

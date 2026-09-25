@@ -97,4 +97,4 @@ Those are small against what has been built. This is the first reading that meas
 
 **Follow-ups**
 - **The margin** is read at every milestone's close-out that touches core, in `03-nfr.md` §2. It is closed by M11's release reading.
-- **The element forecast** is closed by the M5 reading (rung 2) and by M7's element gate (rung 3), as ADR-0021 already provides.
+- **The element forecast** is closed by the M5 reading (rung 2) and by M7's element gate (rung 3), as ADR-0021 already provides. *Closed 2026-09-25 by ADR-0024.*
