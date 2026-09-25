@@ -4,6 +4,7 @@
 
 ```ts
 
+import { OptionResolver } from '@fhirq/core';
 import { Questionnaire } from '@fhirq/core';
 import { Session } from '@fhirq/core';
 import { ViewOptions } from '@fhirq/core/view';
@@ -29,6 +30,8 @@ export class FhirQuestionnaireElement extends HTMLElement {
     get questionnaire(): Questionnaire | null;
     set questionnaire(questionnaire: Questionnaire | null);
     requestCompletion(): void;
+    get resolver(): OptionResolver | null;
+    set resolver(resolver: OptionResolver | null);
     get session(): Session | null;
     set session(session: Session | null);
     get timeZone(): string | null;

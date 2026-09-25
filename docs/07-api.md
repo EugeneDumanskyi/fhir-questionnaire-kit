@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` is `@alpha` and being built through M7 (§7): its inputs, lifecycle and events are in, and `resolver`, `value-set-base` and `controls` are to come. `@fhirq/themes` is still M1's spike surface, rewritten in M8.
+**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha` until M6 and M7 have built on it. `@fhirq/react` is complete for M6 and stays `@alpha` while the view it exposes is (§6). `@fhirq/element` is `@alpha` and being built through M7 (§7): its inputs, lifecycle, events and value-set resolution are in, and `controls` is to come. `@fhirq/themes` is still M1's spike surface, rewritten in M8.
 
 ---
 
@@ -439,13 +439,13 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 ## 7. `@fhirq/element` (`@alpha`)
 
-`<fhir-questionnaire>`, registered by `defineQuestionnaireElement()` or by importing `@fhirq/element/define`; the script-tag bundle registers it as it loads. The class, `FhirQuestionnaireElement`, and that function are the entry point's two symbols (M7 plan D4). Everything below is a class member or an attribute, and the events are typed by an `HTMLElementEventMap` augmentation, which ships in the package's declarations but, as a global, is not in the API report. Built through M7 (plan steps 5–7); ADR-0014 and its M7 note are the decision.
+`<fhir-questionnaire>`, registered by `defineQuestionnaireElement()` or by importing `@fhirq/element/define`; the script-tag bundle registers it as it loads. The class, `FhirQuestionnaireElement`, and that function are the entry point's two symbols (M7 plan D4). Everything below is a class member or an attribute, and the events are typed by an `HTMLElementEventMap` augmentation, which ships in the package's declarations but, as a global, is not in the API report. Built through M7 (plan steps 5–7); ADR-0014, ADR-0012 and their M7 notes are the decision.
 
 **Where the form comes from.** Whichever of these was set last (M7 plan D6):
 
 | Input | What it is |
 |---|---|
-| `questionnaire` property | A FHIR R4 `Questionnaire` (§3.1). The element makes a session from it with no options |
+| `questionnaire` property | A FHIR R4 `Questionnaire` (§3.1). The element makes a session from it, with a resolver as below and no other options |
 | `src` attribute | A URL, resolved against the document's base URL. The element `GET`s it once with `Accept: application/fhir+json` and `credentials: "same-origin"`, and makes a session from the JSON (ADR-0012 M7 note) |
 | `session` property | A session the host made, for a form that needs session options: rules, scorers, a sanitizer, `hostIdentity`, a restore. The script-tag bundle exposes `fhirq.createSession` for it |
 
@@ -454,6 +454,16 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 - **Failure.** When the questionnaire cannot be had, the form stays empty and `fhirq-error` carries what was thrown: `FhirqError` `request-failed` for the request (§3.1), or what `createSession` threw, such as `definition-rejected`. It is not tried again on reconnection; a new value is.
 - **`session`** reads back the session the form shows, the host's or the one the element made, or `null`.
 - Properties set on the element before it is defined are taken up when it connects.
+
+**Value sets** (ADR-0012). A session the element makes resolves the value sets its questionnaire references through:
+
+| Input | What it is |
+|---|---|
+| `resolver` property | An `OptionResolver` (§3.9), which replaces the default entirely |
+| `value-set-base` attribute | With no `resolver`, the default resolver: one `GET {value-set-base}/ValueSet/$expand?url={canonical}` per call, the canonical URL-encoded and a trailing `/` on the base dropped, with `Accept: application/fhir+json`, `credentials: "same-origin"` and the session's abort signal. A relative base is resolved against the document's base URL. The options are the expansion's `contains`, nested ones flattened in document order, less `abstract` entries and entries with no `code`. A network error, a response that is not a success, a body that is not JSON, and one that is not a `ValueSet` with an expansion of such entries each reject with `FhirqError` `request-failed`, what failed as its `cause`: the item shows its retry. No retries, caching or logging of its own |
+| neither | No resolver: each item bound to a value set reports `unresolved-options` and takes no coded answer (AC-01.1.2) |
+
+The core calls the resolver once per distinct canonical per session, and again only on a retry (ADR-0005). Both inputs are read when the element makes a session, as session options are, so they are set before `questionnaire`, or before `src` has loaded; a session keeps the resolver it was made with, and changing either affects only the next one. A host's own `session` has its own options, and the element adds none. `resolver` set before the element is defined is taken up on connection, as the other properties are.
 
 **How it reads.** `locale` (a BCP 47 tag) overrides; without it, the `lang` of the element or its nearest ancestor that has one, then the browser's language, then `"en"` (ADR-0020). A tag that is not well formed, such as `lang="en_US"`, is passed over for the next. `lang` is read on connection and when the element's own `lang` changes; ancestors are not watched. `timeZone` and `messages` are as `createView`'s (§5.1). A new `locale`, `timeZone` or `messages`, or a `lang` that changes the locale, builds a new view over the same session: the form is drawn again, and typed drafts, the error summary and the status message start empty.
 
@@ -471,7 +481,7 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M7–M8:** the element's `resolver`, `value-set-base`, tier-3 `controls` and `fhirq-diagnostic` (§7), and the theme tokens.
+- **M7–M8:** the element's tier-3 `controls` and `fhirq-diagnostic` (§7), and the theme tokens. Until `fhirq-diagnostic`, a rejection from the element's resolver reaches the host only as the session's `resolver-failed` diagnostic, since the element passes no `onCollaboratorError`.
 - **A completion control.** Neither the view nor the default UI offers one, so a `<Questionnaire questionnaire>` cannot be completed and the quickstart needs the hook and the host's own button: 13 lines against NFR-U-01's 10 (M6 close-out).
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
 - **A draft blocking completion.** Text that is not a value yet on an optional item does not stop `RequestCompletion`: the response simply omits it. The view shows its issue after a refused completion, but nothing refuses one for it (M5 close-out, follow-up).
