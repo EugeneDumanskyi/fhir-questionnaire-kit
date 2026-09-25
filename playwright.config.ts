@@ -2,9 +2,14 @@ import { defineConfig, devices } from '@playwright/test';
 
 /** The React adapter's page-level gates (M6 AC-1, AC-3, plan D11), blocking in CI's React gates job. */
 const REACT = ['hydration.spec.ts', 'quickstart.spec.ts', 'react-a11y.spec.ts'];
-/** The element's specs, in all three engines (M7 plan D8); blocking from M7's step 11. */
+/**
+ * The element's specs, in all three engines (M7 plan D8), blocking in CI's
+ * Element gates job. The cross-renderer DOM contract is among them: it is the
+ * element's half of ADR-0007, and markup, so it runs in Chromium only.
+ */
 const ELEMENT = [
   'caret.spec.ts',
+  'contract.spec.ts',
   'csp.spec.ts',
   'element-a11y.spec.ts',
   'embed.spec.ts',
@@ -27,12 +32,12 @@ const KEYSTROKE = 'keystroke.spec.ts';
  * - `element-chromium`, `element-firefox`, `element-webkit`: the element's
  *   caret, CSP, resolver, script-tag embed, isolation, tokens and parts,
  *   reconnection, two elements, and axe specs, in every engine NFR-C-07
- *   names (M7 plan D8, `pnpm test:browser:element`). Firefox is a browser
- *   binary Playwright installs, not a dependency. Not yet a required check:
- *   M7's `Element gates` job.
- * - `chromium`, `firefox`, `webkit`: S1's proofs, the DOM contract on the
- *   demo (M7 plan step 4), and axe on the slice (M1 decision D5). Not a
- *   required check: accessibility blocks from M8 (`pnpm
+ *   names (M7 plan D8, `pnpm test:browser:element`), and the DOM contract on
+ *   the demo across both renderers (M7 plan step 4). Firefox is a browser
+ *   binary Playwright installs, not a dependency. Blocking from M7 in CI's
+ *   `Element gates` job.
+ * - `chromium`, `firefox`, `webkit`: axe on M1's slice (M1 decision D5),
+ *   Chromium only. Not a required check: accessibility blocks from M8 (`pnpm
  *   test:browser:proofs`).
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.

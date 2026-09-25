@@ -54,7 +54,8 @@ export default defineConfig({
       exclude: ['**/*.d.ts'],
       reporter: ['text', 'json-summary', 'html'],
       reportsDirectory: './coverage/react',
-      // NFR-Q-02, blocking from M6 in CI's React gates job: both majors' runs together.
+      // NFR-Q-02: React's from M6 in CI's React gates job, both majors' runs together;
+      // the element's from M7 in its Element gates job (`test:coverage:element`).
       thresholds: { lines: 85, branches: 80 },
     },
     projects: [
