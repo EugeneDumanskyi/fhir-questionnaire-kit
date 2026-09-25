@@ -105,7 +105,7 @@ jobs:
       - name: Bundle budgets, @fhirq/core, @fhirq/core/view, @fhirq/core/resume and @fhirq/react, and resume inputs
         run: pnpm measure --check
 
-      - name: API reports, @fhirq/core, @fhirq/core/view, @fhirq/core/resume and @fhirq/react
+      - name: API reports, @fhirq/core, @fhirq/core/view, @fhirq/core/resume, @fhirq/react and @fhirq/element
         run: pnpm api:check
 
       - name: Upload the coverage summary and the bundle report
@@ -338,10 +338,12 @@ jobs:
             playwright-report/
           retention-days: 30
 
-  # M1's spike proofs (S1, decision D5): the DOM contract, axe on the slice,
-  # caret and CSP in Chromium and WebKit, and the bundle report. Deliberately
-  # not a required check: CSP blocks from M7 and accessibility from M8
-  # (06-roadmap.md §5); M6 moved hydration to the React gates. Keystroke to
+  # M1's spike proofs (S1, decision D5): the DOM contract and axe on the
+  # slice, and the bundle report. Deliberately not a required check:
+  # accessibility blocks from M8 (06-roadmap.md §5); M6 moved hydration to the
+  # React gates. The element's caret and CSP specs run here in Chromium,
+  # Firefox and WebKit, with its client tests in Chromium, until M7's Element
+  # gates job takes them and makes them blocking (M7 plan D8). Keystroke to
   # paint is read here too, report only, after the proofs so none runs beside
   # it (NFR-P-03).
   spike-proofs:
@@ -375,13 +377,19 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install browsers
-        run: pnpm exec playwright install --with-deps chromium webkit
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
 
       - name: Bundle report
         run: pnpm measure
 
       - name: Browser proofs
         run: pnpm test:browser:proofs
+
+      - name: The element's caret and CSP specs, Chromium, Firefox and WebKit
+        run: pnpm test:browser:element
+
+      - name: The element's client tests in Chromium
+        run: pnpm test:element
 
       - name: Keystroke to paint, report only, React 18 and 19 in Chromium
         run: pnpm test:keystroke

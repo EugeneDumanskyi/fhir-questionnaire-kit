@@ -135,6 +135,12 @@ describe('measure-bundles', () => {
     expect(element.nodeModules).toEqual([]);
   });
 
+  it('measures the element and its IIFE as production builds, the IIFE from its real entry (M7 plan D9)', () => {
+    const byName = Object.fromEntries(ENTRIES.map((entry) => [entry.name, entry]));
+    expect(byName['@fhirq/element'].define).toEqual(PRODUCTION);
+    expect(byName['@fhirq/element (IIFE)']).toMatchObject({ entry: 'packages/element/src/iife.ts', format: 'iife', define: PRODUCTION });
+  });
+
   it('measures React without the resume entry and without its development-only code (M6 plan D6)', async () => {
     const react = ENTRIES.find((entry) => entry.name === '@fhirq/react');
     expect(react.external).toEqual(expect.arrayContaining(['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume', 'react']));

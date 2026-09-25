@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 /** The React adapter's page-level gates (M6 AC-1, AC-3, plan D11), blocking in CI's React gates job. */
 const REACT = ['hydration.spec.ts', 'quickstart.spec.ts', 'react-a11y.spec.ts'];
+/** The element's specs, in all three engines (M7 plan D8); blocking from M7's step 11. */
+const ELEMENT = ['caret.spec.ts', 'csp.spec.ts'];
 /** Timings, report-only (M6 AC-10). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -13,9 +15,14 @@ const KEYSTROKE = 'keystroke.spec.ts';
  * - `react-chromium`, `react-webkit`: SSR hydration with 0 warnings on React
  *   18 and 19, the quickstart and axe on it and the demo. Blocking from M6
  *   (`pnpm test:browser:react`).
- * - `chromium`, `webkit`: S1's proofs, the DOM contract, axe on the slice,
- *   caret and CSP (M1 decision D5). Not a required check: CSP blocks from M7
- *   and accessibility from M8 (`pnpm test:browser:proofs`).
+ * - `element-chromium`, `element-firefox`, `element-webkit`: the element's
+ *   caret and CSP specs, in every engine NFR-C-07 names (M7 plan D8, `pnpm
+ *   test:browser:element`). Firefox is a browser binary Playwright installs,
+ *   not a dependency. Not yet a required check: M7's `Element gates` job.
+ * - `chromium`, `firefox`, `webkit`: S1's proofs, the DOM contract and axe
+ *   on the slice (M1 decision D5). Not a required check: the contract moves
+ *   to the demo in M7 and accessibility blocks from M8 (`pnpm
+ *   test:browser:proofs`).
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
  *
@@ -31,8 +38,12 @@ export default defineConfig({
   projects: [
     { name: 'react-chromium', use: { ...devices['Desktop Chrome'] }, testMatch: REACT },
     { name: 'react-webkit', use: { ...devices['Desktop Safari'] }, testMatch: REACT },
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: [...REACT, KEYSTROKE] },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: [...REACT, KEYSTROKE] },
+    { name: 'element-chromium', use: { ...devices['Desktop Chrome'] }, testMatch: ELEMENT },
+    { name: 'element-firefox', use: { ...devices['Desktop Firefox'] }, testMatch: ELEMENT },
+    { name: 'element-webkit', use: { ...devices['Desktop Safari'] }, testMatch: ELEMENT },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: [...REACT, ...ELEMENT, KEYSTROKE] },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: [...REACT, ...ELEMENT, KEYSTROKE] },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testIgnore: [...REACT, ...ELEMENT, KEYSTROKE] },
     { name: 'keystroke', use: { ...devices['Desktop Chrome'] }, testMatch: KEYSTROKE },
   ],
 });

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 /**
  * NFR-U-05: at most 60 public symbols across all packages. An entry point with
  * an API Extractor report is counted from the report; one without a report yet
- * (the element from M7, themes from M8) from its source entry.
+ * (themes, from M8) from its source entry.
  *
  * A re-export of another `@fhirq/*` package's declaration, such as
  * `@fhirq/react`'s `createSession` (ADR-0015), is one symbol under two names,
@@ -21,7 +21,7 @@ const ENTRY_POINTS = [
   { name: '@fhirq/core/view', report: 'packages/core/etc/core-view.api.md' },
   { name: '@fhirq/core/resume', report: 'packages/core/etc/core-resume.api.md' },
   { name: '@fhirq/react', report: 'packages/react/etc/react.api.md' },
-  { name: '@fhirq/element', source: 'packages/element/src/index.ts' },
+  { name: '@fhirq/element', report: 'packages/element/etc/element.api.md' },
   { name: '@fhirq/themes', source: 'packages/themes/src/index.ts' },
 ];
 

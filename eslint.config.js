@@ -7,7 +7,7 @@ import { fhirqPlugin } from './tools/eslint-rules/src/index.js';
 const ENTRY_POINTS = {
   '@fhirq/core': ['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume'],
   '@fhirq/react': ['@fhirq/react'],
-  '@fhirq/element': ['@fhirq/element'],
+  '@fhirq/element': ['@fhirq/element', '@fhirq/element/define'],
   '@fhirq/themes': ['@fhirq/themes', '@fhirq/themes/base.css', '@fhirq/themes/default.css'],
 };
 
@@ -119,6 +119,19 @@ const AMBIENT_LOCALE = [
   { property: 'resolvedOptions', message: 'Reads the environment\'s locale or zone (ADR-0020); the host passes both.' },
 ];
 
+/**
+ * The element picks a locale when the host passes none: `locale`, then
+ * `lang`, then the browser's language, then "en" (ADR-0020, M7). The one read
+ * of the browser's language is in `ELEMENT_LOCALE_FILE`; nowhere else in the
+ * element may read it, by any route to `navigator`.
+ */
+const BROWSER_LANGUAGE_MESSAGE = 'The browser\'s language is read in packages/element/src/locale.ts only, the fallback before "en" (ADR-0020).';
+const BROWSER_LANGUAGE = [
+  ...['language', 'languages'].map((property) => ({ object: 'navigator', property, message: BROWSER_LANGUAGE_MESSAGE })),
+  ...['window', 'self', 'globalThis'].map((object) => ({ object, property: 'navigator', message: BROWSER_LANGUAGE_MESSAGE })),
+];
+const RENDERER_INTL = { name: 'Intl', message: 'A renderer formats nothing: it renders the view\'s display strings (ADR-0020, NFR-I-04).' };
+
 export const LOCALE_RULES = {
   everywhere: {
     'no-restricted-properties': [
@@ -135,9 +148,16 @@ export const LOCALE_RULES = {
      replaces, for ADR-0013's development-only check. */
   renderer: {
     'no-restricted-properties': ['error', ...AMBIENT_LOCALE],
-    'no-restricted-globals': ['error', { name: 'Intl', message: 'A renderer formats nothing: it renders the view\'s display strings (ADR-0020, NFR-I-04).' }],
+    'no-restricted-globals': ['error', RENDERER_INTL],
+  },
+  /* The element outside its locale file: the renderer's rules, and not the
+     browser's language (M7). */
+  element: {
+    'no-restricted-properties': ['error', ...AMBIENT_LOCALE, ...BROWSER_LANGUAGE],
+    'no-restricted-globals': ['error', RENDERER_INTL],
   },
 };
+export const ELEMENT_LOCALE_FILE = 'packages/element/src/locale.ts';
 export const FORMAT_FILE = 'packages/core/src/view/format.ts';
 
 /**
@@ -252,6 +272,16 @@ export default tseslint.config(
     files: ['packages/element/src/**/*.ts'],
     rules: { 'no-restricted-syntax': ['error', NO_DEFAULT_EXPORT, ...NO_INLINE_STYLE] },
   },
+
+  {
+    /* ADR-0020 on the element, as on the React adapter: it formats nothing
+       and reads no ambient locale, except the browser's language in its one
+       locale file (M7). */
+    files: ['packages/element/src/**/*.ts'],
+    ignores: [ELEMENT_LOCALE_FILE],
+    rules: LOCALE_RULES.element,
+  },
+  { files: [ELEMENT_LOCALE_FILE], rules: LOCALE_RULES.renderer },
 
   {
     /* ADR-0015: the React adapter renders on a server and hydrates without a

@@ -30,7 +30,7 @@
 | `@fhirq/core/resume` | 3 | `packages/core/etc/core-resume.api.md` |
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
 | `@fhirq/react` | 3, plus `createSession` re-exported | `packages/react/etc/react.api.md` |
-| `@fhirq/element` | 2 | from M7 |
+| `@fhirq/element` | 2 | `packages/element/etc/element.api.md` |
 | `@fhirq/themes` | 1 | from M8 |
 | **Total** | **59 of 60** | |
 
