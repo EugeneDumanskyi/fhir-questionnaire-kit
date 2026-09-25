@@ -1,6 +1,6 @@
 # ADR-0024 — The element's and the IIFE's budgets are set from M7's measured reading, with the theme M8 still grows
 
-- **Status:** Proposed
+- **Status:** Accepted 2026-09-25
 - **Date:** 2026-09-25
 - **Traces to:** Brief §4 · AC-09.1.1 · NFR-S-02, NFR-S-03, NFR-C-07 · ADR-0007, ADR-0014, ADR-0021, ADR-0022, ADR-0023 · `03-nfr.md` §2 (the `ASSUMPTION` note, the S1 verdict, the M5 rung-2 reading), §11 N3 · `05-architecture.md` §6.1 · `06-roadmap.md` M7 (AC-2, plan decision D3), M8 (AC-8) · `00-s1-architecture-and-bytes.md` §3
 

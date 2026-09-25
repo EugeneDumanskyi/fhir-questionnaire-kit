@@ -30,7 +30,7 @@ The primary user is a clinical team; forms are long, devices are often old table
 |---|---|---|---|
 | NFR-P-01 | Session creation, including initial `enableWhen` evaluation, measured on **two** committed fixtures: 25 items (the observed median) and 500 items (the observed p90) | 25-item fixture ≤ 50 ms p95. 500-item fixture: **1.55 ms median, 6.9 ms p99**, measured 2026-09-17 on the CI runner and published in `benchmarks/baseline.json` (1.05–1.97 ms across runner models); held by the 20 % regression gate against the merge base | Gate |
 | NFR-P-02 | Re-evaluation after one answer change, cascade depth 5, on the same two fixtures | 25-item fixture ≤ 5 ms p95, ≤ 16 ms p99. 500-item fixture: **0.064 ms median, 0.10 ms p99**, measured and held the same way | Gate |
-| NFR-P-03 | Keystroke to painted character in a text item | ≤ 16 ms (one 60 fps frame) on reference hardware. **Read 2026-09-24 on the CI runner** (M6 AC-10, report only): the React adapter's script per keystroke is **1.5 ms median, 3.0 ms p95** at 500 items, and no form paints later than a bare textarea, which itself paints at 24 ms there (below) | Target |
+| NFR-P-03 | Keystroke to painted character in a text item | ≤ 16 ms (one 60 fps frame) on reference hardware. **Read 2026-09-24 on the CI runner** (M6 AC-10, report only): the React adapter's script per keystroke is **1.5 ms median, 3.0 ms p95** at 500 items, and no form paints later than a bare textarea, which itself paints at 24 ms there (below). **The element, read 2026-09-25 on the same runner** (M7 AC-5, report only): **1.0 ms median, 2.0 ms p95** of script at 500 items, painting no later than the control | Target |
 | NFR-P-04 | Scale ceiling supported and tested | 1,000 items; 500 `enableWhen` conditions; 50 instances of a repeating group; 20 items per repeat instance — **confirmed 2026-09-16** against 300 surveyed instruments (`00-s0-instrument-survey.md`), except the 50-instance figure, which a `Questionnaire` cannot evidence | Gate + Published |
 | NFR-P-05 | Maximum supported nesting and cascade depth | group nesting 10; `enableWhen` dependency chain 10 — **confirmed 2026-09-16**; observed maxima are 10 and 5. **As enforced from M2** (INV-D-07, fixture `depth-ceilings`): a group may sit inside at most 9 other groups, so 10 nested groups load and 11 do not; a dependency path may have at most 10 condition edges, counted along the longest path through `enableWhen` references, so a chain of 11 items loads and one of 12 does not | Gate + Published |
 | NFR-P-06 | Playground load on mid-tier mobile over simulated 4G | LCP ≤ 2.5 s, TBT ≤ 200 ms, CLS ≤ 0.1, Lighthouse performance ≥ 90 | Gate |
@@ -68,6 +68,17 @@ What it does not show:
 - **It is not a device reading.** The runner is not the reference hardware (§1: older tablets in clinics), and no device has been measured.
 - **Whether to re-state NFR-P-03** as what the kit controls (script time, or paint relative to the control) is returned to the maintainer at M6's close-out (`06-roadmap.md` M6, "Still open"). The wording is unchanged until then.
 
+**The element, read 2026-09-25 (M7 plan step 9), report only.** The same spec, run on the element: a production build that makes its own session from `questionnaire`, with the host listening for `fhirq-change`. The job's first run on the default branch read:
+
+| Page | Reported at ≥ 16 ms | Paint, median / p95 / max | Script, median / p95 / max |
+|---|---|---|---|
+| Demo | 50 of 50 | 24 / 24 / 24 ms | 0.6 / 0.8 / 1.7 ms |
+| 500-item bench fixture | 26 of 50 | 16 / 16 / 32 ms | 1.0 / 2.0 / 3.5 ms |
+
+- **The element's script is below React's** at both sizes (React at 500 items: 1.3 ms median and 2.2–2.6 ms p95 in the same run).
+- **The paint matches the control.** A local reading on a laptop had the element's 500-item median one frame later than React's (32 against 16 ms), with the extra time after the handlers: style, layout or paint, not the kit's script. The runner does not show it. It is recorded in `06-roadmap.md` M7 and not investigated.
+- The same limits hold: one runner, Chromium only, no device.
+
 **Note on measurement.** Performance gates run as a benchmark suite with a fixed fixture set. Regressions > 20% fail the build even when still inside the absolute number, because a silent 19% drift per release is how budgets die. **Revised 2026-09-17 (`06-roadmap.md` M2 D7):** unchanged code measured up to 2.2× apart across hosted runner jobs and about 1 % apart within one, so a timing is compared with the pull request's merge base benchmarked in the same job, never with a committed figure. Retained heap does not vary by runner and is compared with `benchmarks/baseline.json`, whose timings are published reference figures. **What this gives up:** drift in steps each under 20 % is not caught per PR. The published figures are re-measured and compared by hand at each release.
 
 ---
@@ -79,8 +90,8 @@ This is the competitive position (Brief §4). It is the number an adopting team'
 | ID | Requirement | Number | Type |
 |---|---|---|---|
 | NFR-S-01 | Runtime dependencies, each published package | **0 direct, 0 transitive** | Gate + Published |
-| NFR-S-02 | Bundle budgets, minified + gzipped, per published entry point | `@fhirq/core` ≤ 15 kB (measured, ADR-0022) · `@fhirq/core/resume` ≤ 4 kB (excl. `@fhirq/core`; ADR-0021, confirmed by its M3 gate reading) · `@fhirq/core/view` ≤ 8.2 kB (measured, ADR-0023) · `@fhirq/react` ≤ 6 kB (excl. React, `@fhirq/core`, `@fhirq/core/resume` and `@fhirq/core/view`) · `@fhirq/element` ≤ 24 kB (standalone, incl. core, view and default theme) · `@fhirq/themes` structural stylesheet `base.css` ≤ 4 kB, and ≤ 3 kB per theme preset | Gate + Published |
-| NFR-S-03 | Script-tag IIFE bundle for the embed case, total transfer | ≤ 30 kB gzipped | Gate + Published |
+| NFR-S-02 | Bundle budgets, minified + gzipped, per published entry point | `@fhirq/core` ≤ 15 kB (measured, ADR-0022) · `@fhirq/core/resume` ≤ 4 kB (excl. `@fhirq/core`; ADR-0021, confirmed by its M3 gate reading) · `@fhirq/core/view` ≤ 8.2 kB (measured, ADR-0023) · `@fhirq/react` ≤ 6 kB (excl. React, `@fhirq/core`, `@fhirq/core/resume` and `@fhirq/core/view`) · `@fhirq/element` ≤ 31.7 kB (standalone, incl. core, view and default theme; measured, ADR-0024) · `@fhirq/themes` structural stylesheet `base.css` ≤ 4 kB, and ≤ 3 kB per theme preset | Gate + Published |
+| NFR-S-03 | Script-tag IIFE bundle for the embed case, total transfer | ≤ 31.9 kB gzipped (measured, ADR-0024; 30 kB until then) | Gate + Published |
 | NFR-S-04 | Tree-shaking effectiveness: importing only the headless core from the React package | ≤ 60% of full package size reaches the bundle | Target |
 | NFR-S-05 | Peer dependencies | React ≥ 18 only, on `@fhirq/react`; no peer deps on any other package | Published |
 | NFR-S-06 | Direct development dependencies across the monorepo | ≤ 40 | Target |
@@ -124,6 +135,14 @@ The remaining-scope figure is a judgement, as S1's were. **Decided 2026-09-17 by
 - **By step:** the hook 1.66 kB, the default UI for 18 kinds 3.28 kB, controlled mode 3.78 kB, tier 3 4.10 kB, and the hydration tolerance for ICU skew 4.13 kB (ADR-0020 amendment note).
 - **Core** is unchanged at 14.68 kB: M6's two diagnostic codes and the `ControlProps` fix are types only.
 
+**M7 reading, 2026-09-25: `@fhirq/element` 27.28 kB, over 24 kB; the IIFE 27.48 kB of 30 kB. ADR-0024 (ADR-0021 rung 3) sets the figures to 31.7 and 31.9 kB, gated.**
+- **Measured as a production build** (M7 plan D9): the element with core, the view and the theme inlined, and the IIFE from `packages/element/src/iife.ts`, which adds its auto-definition and `fhirq.createSession`, 0.20 kB.
+- **By step:** the full view under the spike renderer 23.60 kB; 3a, the keyed reconciler, 23.74; 3b, the kind descriptors for the entry kinds, groups and repeats, 24.65; 4, the option and read-only kinds, 25.47; 5, inputs, lifecycle and events, 26.72 (about 0.54 kB of it core's emission, which the events need); 6, the default resolver, 27.03; 7, tier 3, 27.28. Steps 8 and 9 changed no source.
+- **The renderer came in under S1's estimate:** about 4.4 kB against S1's 5.9 kB centre. The element is over 24 kB because core and the view are, each already set from its reading (ADR-0022, ADR-0023).
+- **The theme inside the bundle** costs 0.88 kB: the element with both sheets emptied reads 26.40 kB.
+- **The figure** is the reading, plus 3.21 kB for the theme M8 still grows (S1's full-theme centre, 4.2 kB, less the slice's 0.99), plus a 1.21 kB margin: 0.75 kB that core and the view still hold under their own figures, and 0.46 kB for the element's fixes and M8 findings that need behaviour. **M8 reads its theme under this figure**, not under the theme rows alone (ADR-0024, decision 4). ADR-0021's ladder is spent.
+- **Core** is unchanged at 14.68 kB, 0.32 kB under its figure, and **the view** at 7.77 kB, 0.43 kB under (ADR-0022, ADR-0023). Core's reading did not move with M7's `request-failed` code and `FhirqError`'s `cause`, and M7 added no view field.
+
 ---
 
 ## 3. Compatibility and portability
@@ -151,7 +170,7 @@ EVL reads the test suite. Coverage percentage alone is not the signal — the co
 | ID | Requirement | Number | Type |
 |---|---|---|---|
 | NFR-Q-01 | Line and branch coverage, `@fhirq/core` | ≥ 95% line, ≥ 90% branch | Gate |
-| NFR-Q-02 | Line coverage, adapters and element | ≥ 85% line, ≥ 80% branch. **`@fhirq/react`, gated from M6:** 98.4 % line, 96.3 % branch, measured in Chromium on React 18 and 19 (M6 plan D4) | Gate |
+| NFR-Q-02 | Line coverage, adapters and element | ≥ 85% line, ≥ 80% branch. **`@fhirq/react`, gated from M6:** 98.4 % line, 96.3 % branch, measured in Chromium on React 18 and 19 (M6 plan D4). **`@fhirq/element`, gated from M7:** 99.17 % line, 97.17 % branch, measured in Chromium, with the throwing-stub test among the tests (M7 plan D8) | Gate |
 | NFR-Q-03 | Mutation score, `@fhirq/core` engine modules (enablement, validation, emission) | ≥ 80% | Gate |
 | NFR-Q-04 | Conformance matrix rows marked `supported` with a linked passing test | 100% | Gate |
 | NFR-Q-05 | `enableWhen` operator × answer type coverage | every supported pair has a named test; 0 gaps | Gate |
@@ -213,7 +232,7 @@ The integration cost is what the primary user actually evaluates.
 |---|---|---|---|
 | NFR-U-01 | Time from `npm install` to a rendered, working form following the quickstart | ≤ 5 minutes; ≤ 10 lines of consumer code. **Read 2026-09-24 (M6 AC-1): 13 lines, missed.** A form the host can complete needs the hook and the host's own submit button (`06-roadmap.md` M6, "Still open"). The 5 minutes is untimed until M10 | Published |
 | NFR-U-02 | Lines of code to match a host design system via tokens | ≤ 30 lines of CSS, 0 JavaScript | Published |
-| NFR-U-03 | Configuration options on the top-level component | ≤ 12, each documented with default and rationale. **`<Questionnaire>`, M6: 11** (M6 plan D9, `07-api.md` §6) | Target |
+| NFR-U-03 | Configuration options on the top-level component | ≤ 12, each documented with default and rationale. **`<Questionnaire>`, M6: 11** (M6 plan D9, `07-api.md` §6). **`<fhir-questionnaire>`, M7: 10**: seven properties and three attributes, `lang` among them (M7 plan D5, `07-api.md` §7) | Target |
 | NFR-U-04 | STK time to comprehension on the playground | understands what the library does within 30 seconds, no scrolling required on a 375 px viewport | Published |
 | NFR-U-05 | Public API symbols exported across all packages | ≤ 60, tracked in a committed API report | Gate |
 | NFR-U-06 | Documentation reading time for the full integration guide | ≤ 20 minutes | Target |
@@ -284,7 +303,7 @@ Every number in this document that the brief did not fix. Correct these before m
 |---|---|---|---|
 | N1 | §0 | 2-core CI runner + 4× throttled mobile as reference hardware. **Observed 2026-09-17 (M2):** `ubuntu-latest` gives this public repository **4 cores** (`nproc`) on varying AMD EPYC models (7763, 9V45, 9V74), and every M2 timing is from those runners. **Resolved 2026-09-17:** 4 cores is recorded as the observed reference. Runner CPU models still vary, which is why timing gates compare within one job (`06-roadmap.md` M2 D7) | All timing figures are meaningless without it |
 | N2 | NFR-P-01…09 | **Resolved 2026-09-16** by spike S0 (`00-s0-instrument-survey.md`, 300 instruments): NFR-P-04's ceiling and NFR-P-05 confirmed; NFR-P-01/02 re-anchored to 25-item and 500-item fixtures. **2026-09-17 (M2 step 10):** the millisecond figures are measured on the CI runner and committed as `benchmarks/baseline.json`; NFR-P-04's **50 repeat instances** is recorded as deliberate headroom rather than evidenced (M2 D8) | The ceiling was challenged first, as §1 asked, and held |
-| N3 | NFR-S-02/03/04 | Core ≤ 15 kB (14 kB until ADR-0022), view ≤ 8.2 kB (5 kB until ADR-0023), react ≤ 6 kB (excl. React, core and view), element ≤ 24 kB, `base.css` ≤ 4 kB, theme preset ≤ 3 kB, IIFE ≤ 30 kB; from ADR-0021, `@fhirq/core/resume` ≤ 4 kB, and react's figure also excludes it. **S1 measured the slice on 2026-09-16** (element 5.84 kB standalone) **and extrapolated bands that straddle the core (at its top edge only), view, react, element and IIFE budgets** (§2 note, `00-s1-architecture-and-bytes.md`). **Approved 2026-09-17:** figures unchanged, still assumed; each is re-read when its budget gate switches on. **Core's M2 reading tripped §2's tripwire; ADR-0021 holds the figures by a structural split and ranked, measured reductions** | Published competitive claim; re-baseline after the engine spike |
+| N3 | NFR-S-02/03/04 | Core ≤ 15 kB (14 kB until ADR-0022), view ≤ 8.2 kB (5 kB until ADR-0023), react ≤ 6 kB (excl. React, core and view), element ≤ 31.7 kB (24 kB until ADR-0024), `base.css` ≤ 4 kB, theme preset ≤ 3 kB, IIFE ≤ 31.9 kB (30 kB until ADR-0024); from ADR-0021, `@fhirq/core/resume` ≤ 4 kB, and react's figure also excludes it. **S1 measured the slice on 2026-09-16** (element 5.84 kB standalone) **and extrapolated bands that straddle the core (at its top edge only), view, react, element and IIFE budgets** (§2 note, `00-s1-architecture-and-bytes.md`). **Approved 2026-09-17:** figures unchanged, still assumed; each is re-read when its budget gate switches on. **Core's M2 reading tripped §2's tripwire; ADR-0021 holds the figures by a structural split and ranked, measured reductions.** Core, the view, react, the element and the IIFE are no longer assumed: each is set from, or confirmed by, its own gate reading (M7: ADR-0024). The two theme rows are read at M8 | Published competitive claim; re-baseline after the engine spike |
 | N4 | NFR-S-06 | ≤ 40 direct dev dependencies | Soft; keeps the dev toolchain small enough to audit, not a hard constraint |
 | N5 | NFR-C-01 | Last 2 browser versions, iOS Safari 16.4+ | Lowering this costs bundle size |
 | N6 | NFR-C-02 | The six consumer environments | Each one added costs CI time |
