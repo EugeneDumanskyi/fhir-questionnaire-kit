@@ -19,6 +19,15 @@ export const TYPED = ['control', 'demo', 'large-500', 'large-500-cloned'] as con
 export type Typed = (typeof TYPED)[number];
 
 /**
+ * The element's keystroke pages (M7 step 9): the demo and the 500-item bench
+ * fixture, each a production build of the element making its own session
+ * from the `questionnaire` property, with a host listening for `fhirq-change`.
+ * The control reading is the React pages' textarea.
+ */
+export const ELEMENT_TYPED = ['demo', 'large-500'] as const;
+export type ElementTyped = (typeof ELEMENT_TYPED)[number];
+
+/**
  * The element's pages (M7): the S1 slice, a form of every kind
  * (`packages/element/test/kinds.ts`), and the demo, which the DOM contract
  * compares with React's. Client-rendered, one bundle for all three.

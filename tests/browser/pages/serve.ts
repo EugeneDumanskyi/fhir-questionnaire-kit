@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Page as BrowserPage } from '@playwright/test';
 import { build, transform, type Plugin } from 'esbuild';
 
-import { ELEMENT_PAGES, HOST_STYLES, PAGES, TYPED, type ElementPage, type HostStyle, type Page, type Typed } from './names.js';
+import { ELEMENT_PAGES, ELEMENT_TYPED, HOST_STYLES, PAGES, TYPED, type ElementPage, type ElementTyped, type HostStyle, type Page, type Typed } from './names.js';
 
 /**
  * Test pages for the S1 browser proofs, built in memory with esbuild and served
@@ -164,9 +164,10 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       `${EMBED}${file}`,
       { body: readFileSync(at(`examples/element-embed/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' },
     ]);
-  const [element, elementSrc, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
+  const [element, elementSrc, elementTyped, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
     bundle('tests/browser/pages/element-src.ts', null),
+    bundle('tests/browser/pages/element-keystroke.ts', null, 'production'),
     bundle('tests/browser/pages/react-client.tsx', 19),
     bundle('tests/browser/pages/react-client.tsx', 18),
     bundle('tests/browser/pages/keystroke-page.tsx', 19, 'production'),
@@ -205,6 +206,16 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
     ]),
     ['/element.js', js(element)],
     [
+      `/${TWO}.html`,
+      page(
+        html(
+          'fhirq element',
+          '<script type="module" src="/element.js"></script>',
+          '<fhir-questionnaire data-page="demo"></fhir-questionnaire><fhir-questionnaire data-page="demo"></fhir-questionnaire>',
+        ),
+      ),
+    ],
+    [
       '/element-src.html',
       page(
         html(
@@ -229,10 +240,18 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
     ['/keystroke-19.js', js(typed19)],
     ...typedPages(18),
     ['/keystroke-18.js', js(typed18)],
+    ...ELEMENT_TYPED.map((name): [string, Asset] => [
+      `/keystroke-element-${name}.html`,
+      page(html('fhirq keystroke element', '<script type="module" src="/keystroke-element.js"></script>', `<fhir-questionnaire data-page="${name}"></fhir-questionnaire>`)),
+    ]),
+    ['/keystroke-element.js', js(elementTyped)],
     ['/base.css', css('packages/themes/src/base.css')],
     ['/default.css', css('packages/themes/src/default.css')],
   ]);
 }
+
+/** The page of two elements on the demo, each with its own session (M7 step 9, AC-9). */
+const TWO = 'element-two';
 
 /** An isolation page's path. */
 const isolation = (style: HostStyle, withElement: boolean) => `isolation-${style}-${withElement ? 'with' : 'without'}`;
@@ -296,6 +315,13 @@ export async function open(page: BrowserPage, renderer: Renderer, form: Page | E
   await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
 }
 
+/** Opens the page of two elements on the demo and waits until both are interactive. */
+export async function openTwo(page: BrowserPage): Promise<void> {
+  await serve(page);
+  await page.goto(`${ORIGIN}/${TWO}.html`);
+  await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
+}
+
 /** Opens an isolation page and waits until it is interactive. */
 export async function openIsolation(page: BrowserPage, style: HostStyle, withElement: boolean): Promise<void> {
   await serve(page);
@@ -307,6 +333,13 @@ export async function openIsolation(page: BrowserPage, style: HostStyle, withEle
 export async function openTyped(page: BrowserPage, major: 18 | 19, form: Typed): Promise<void> {
   await serve(page);
   await page.goto(`${ORIGIN}/keystroke-${major}-${form}.html`);
+  await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
+}
+
+/** Opens an element keystroke page, a production build, and waits until the element has its session. */
+export async function openElementTyped(page: BrowserPage, form: ElementTyped): Promise<void> {
+  await serve(page);
+  await page.goto(`${ORIGIN}/keystroke-element-${form}.html`);
   await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
 }
 

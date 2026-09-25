@@ -18,9 +18,11 @@ const FORMS: Readonly<Record<ElementPage, { readonly form: Questionnaire; readon
 };
 
 defineQuestionnaireElement();
-const element = document.querySelector<FhirQuestionnaireElement>('fhir-questionnaire');
-// The page's form, named by the element (`names.ts`).
-const { form, options } = FORMS[ELEMENT_PAGES.find((name) => name === element?.dataset['page']) ?? 'slice'];
-const session = createSession(form, options);
-if (element !== null) element.session = session;
-Object.assign(window, { fhirq: { session, ready: true } });
+// Each element's form, named by the element (`names.ts`), in a session of its own.
+const sessions = [...document.querySelectorAll<FhirQuestionnaireElement>('fhir-questionnaire')].map((element) => {
+  const { form, options } = FORMS[ELEMENT_PAGES.find((name) => name === element.dataset['page']) ?? 'slice'];
+  const session = createSession(form, options);
+  element.session = session;
+  return session;
+});
+Object.assign(window, { fhirq: { session: sessions[0], sessions, ready: true } });
