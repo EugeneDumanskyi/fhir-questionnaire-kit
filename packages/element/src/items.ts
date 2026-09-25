@@ -1,20 +1,11 @@
-import type { ControlView, ErrorSummary, ViewModel, ViewNode } from '@fhirq/core/view';
+import type { ControlView, ErrorSummary, ViewIssue, ViewModel, ViewNode } from '@fhirq/core/view';
 
 import { attr, el, text } from './dom.js';
+import { patch, type List, type Part, type Records } from './patch.js';
 
 /** The two control kinds the S1 slice renders; the rest are M7 (M5 plan D14). */
 export type SliceNode = ControlView<'yes-no'> | ControlView<'short-text'>;
 export const inSlice = (node: ViewNode): node is SliceNode => node.control === 'yes-no' || node.control === 'short-text';
-
-/**
- * One item's DOM, created once per item path and patched in place for as
- * long as the path is visible. Markup follows docs/08-dom-contract.md.
- */
-export interface ItemRecord {
-  node: SliceNode;
-  readonly root: HTMLElement;
-  update(node: SliceNode, marker: string): void;
-}
 
 /** Label text plus the required marker, which is visual only. */
 function labelParts(label: HTMLElement) {
@@ -32,23 +23,24 @@ function labelParts(label: HTMLElement) {
   };
 }
 
+/** An item's issues, by position: an issue has no identity of its own, and two may share a rule. */
+const ISSUES: List<ViewIssue, null> = {
+  key: (_, index) => String(index),
+  create() {
+    const message = el('p', 'fhirq-error-message', 'error-message');
+    const content = message.appendChild(document.createTextNode(''));
+    return { root: message, update: (issue) => text(content, issue.message) };
+  },
+};
+
 /** The error container is always present, hidden when there is nothing to say. */
 function errorPart(parent: HTMLElement) {
   const error = el('div', 'fhirq-error', 'error', parent);
-  let shown: ViewNode['issues'] | undefined;
+  let issues: Records<ViewIssue, null> = new Map();
   return (node: ViewNode) => {
     attr(error, 'id', node.ids.error);
     attr(error, 'hidden', node.invalid ? null : '');
-    if (node.issues === shown) return;
-    shown = node.issues;
-    // Never focused, so rebuilding its children cannot disturb focus or caret.
-    error.replaceChildren(
-      ...node.issues.map((issue) => {
-        const message = el('p', 'fhirq-error-message', 'error-message');
-        message.textContent = issue.message;
-        return message;
-      }),
-    );
+    issues = patch(error, issues, node.issues, ISSUES, null);
   };
 }
 
@@ -59,7 +51,7 @@ function controlState(control: HTMLElement, node: ViewNode): void {
   attr(control, 'aria-describedby', node.invalid ? node.ids.error : null);
 }
 
-function shortText(node: ControlView<'short-text'>): ItemRecord {
+function shortText(): Part<SliceNode, ViewModel> {
   const root = el('div', 'fhirq-item', 'item');
   const label = el('label', 'fhirq-label', 'label', root);
   const updateLabel = labelParts(label);
@@ -67,16 +59,14 @@ function shortText(node: ControlView<'short-text'>): ItemRecord {
   input.type = 'text';
   const updateError = errorPart(root);
 
-  const record: ItemRecord = {
-    node,
+  return {
     root,
-    update(next, marker) {
+    update(next, model) {
       const current = next as ControlView<'short-text'>;
-      record.node = current;
       attr(root, 'data-path', current.path);
       attr(label, 'id', current.ids.label);
       attr(label, 'for', current.ids.control);
-      updateLabel(current, marker);
+      updateLabel(current, model.requiredMarker);
       attr(input, 'id', current.ids.control);
       controlState(input, current);
       // The caret survives because an equal value is never written back.
@@ -84,10 +74,9 @@ function shortText(node: ControlView<'short-text'>): ItemRecord {
       updateError(current);
     },
   };
-  return record;
 }
 
-function yesNo(node: ControlView<'yes-no'>): ItemRecord {
+function yesNo(node: ControlView<'yes-no'>): Part<SliceNode, ViewModel> {
   const root = el('div', 'fhirq-item', 'item');
   const label = el('span', 'fhirq-label', 'label', root);
   const updateLabel = labelParts(label);
@@ -103,15 +92,13 @@ function yesNo(node: ControlView<'yes-no'>): ItemRecord {
   });
   const updateError = errorPart(root);
 
-  const record: ItemRecord = {
-    node,
+  return {
     root,
-    update(next, marker) {
+    update(next, model) {
       const current = next as ControlView<'yes-no'>;
-      record.node = current;
       attr(root, 'data-path', current.path);
       attr(label, 'id', current.ids.label);
-      updateLabel(current, marker);
+      updateLabel(current, model.requiredMarker);
       attr(group, 'aria-labelledby', current.ids.label);
       controlState(group, current);
       current.options.forEach((choice, index) => {
@@ -126,43 +113,59 @@ function yesNo(node: ControlView<'yes-no'>): ItemRecord {
       updateError(current);
     },
   };
-  return record;
 }
 
-export function createItem(node: SliceNode, marker: string): ItemRecord {
-  const record = node.control === 'yes-no' ? yesNo(node) : shortText(node);
-  record.update(node, marker);
-  return record;
-}
+/**
+ * The form's items, keyed by item path, which each root carries as
+ * `data-path`. Markup follows docs/08-dom-contract.md §3.1 and §3.2.
+ */
+export const ITEMS: List<SliceNode, ViewModel> = {
+  key: (node) => node.path,
+  create: (node) => (node.control === 'yes-no' ? yesNo(node) : shortText()),
+};
 
-/** The error summary. The section is kept while shown, so focus on it survives a cycle. */
+type SummaryEntry = ErrorSummary['entries'][number];
+
+/**
+ * The summary's entries, keyed by what they link to, so an item's entry keeps
+ * its link while entries before it come and go. A form-level issue has no
+ * item to link to: its entry is text alone (DOM contract §2), keyed `''`.
+ */
+const ENTRIES: List<SummaryEntry, null> = {
+  key: (entry) => entry.focusId ?? '',
+  create(entry) {
+    const item = el('li', 'fhirq-summary-entry', 'summary-entry');
+    const link = entry.focusId === null ? null : el('a', 'fhirq-summary-link', 'summary-link', item);
+    const message = (link ?? item).appendChild(document.createTextNode(''));
+    return {
+      root: item,
+      update(next) {
+        if (link !== null) attr(link, 'href', `#${next.focusId ?? ''}`);
+        text(message, next.message);
+      },
+    };
+  },
+};
+
+/** The error summary. Its section, heading and list are kept while it shows, so focus on any of them survives a cycle. */
 export function summaryPart(form: HTMLElement) {
   const section = el('section', 'fhirq-summary', 'summary');
   section.tabIndex = -1;
-  let shown: ErrorSummary | null = null;
+  const heading = el('h2', 'fhirq-summary-heading', 'summary-heading', section);
+  const title = heading.appendChild(document.createTextNode(''));
+  const list = el('ul', 'fhirq-summary-list', 'summary-list', section);
+  let entries: Records<SummaryEntry, null> = new Map();
   return (model: ViewModel) => {
     const summary = model.errorSummary;
     if (summary === null) {
       section.remove();
-      shown = null;
       return;
     }
-    if (!section.isConnected) form.prepend(section);
-    if (summary === shown) return;
-    shown = summary;
+    if (section.parentNode !== form) form.prepend(section);
     attr(section, 'id', summary.id);
     attr(section, 'aria-labelledby', summary.headingId);
-    const heading = el('h2', 'fhirq-summary-heading', 'summary-heading');
-    heading.id = summary.headingId;
-    heading.textContent = summary.heading;
-    const list = el('ul', 'fhirq-summary-list', 'summary-list');
-    for (const entry of summary.entries) {
-      const item = el('li', 'fhirq-summary-entry', 'summary-entry', list);
-      // A form-level issue has no item to link to.
-      const link = entry.focusId === null ? item : el('a', 'fhirq-summary-link', 'summary-link', item);
-      if (link instanceof HTMLAnchorElement) link.href = `#${entry.focusId ?? ''}`;
-      link.textContent = entry.message;
-    }
-    section.replaceChildren(heading, list);
+    attr(heading, 'id', summary.headingId);
+    text(title, summary.heading);
+    entries = patch(list, entries, summary.entries, ENTRIES, null);
   };
 }
