@@ -954,7 +954,7 @@
 - **AC-14.6.1 — Enforcement test**
   **Given** a test environment where `fetch`, `XMLHttpRequest`, `WebSocket`, `navigator.sendBeacon`, `localStorage`, `sessionStorage`, `indexedDB` and `document.cookie` are replaced with throwing stubs
   **When** the full lifecycle of `@fhirq/core`, `@fhirq/react` and `@fhirq/themes` runs end to end
-  **Then** no stub is invoked, and the same test with only the documented default resolver in `@fhirq/element` shows network access confined to that single documented code path.
+  **Then** no stub is invoked, and the same test with only the documented default resolver in `@fhirq/element` shows network access confined to that single documented code path. That path is one file, `packages/element/src/default-resolver.ts`, which also loads the questionnaire named by `src` (ADR-0012 amendment note, 2026-09-25).
 
 ---
 

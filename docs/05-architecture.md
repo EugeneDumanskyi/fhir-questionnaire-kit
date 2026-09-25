@@ -207,7 +207,7 @@ C4Context
   Rel(hostApp, kit, "Embeds, injects ports")
   Rel(hostPage, kit, "Script-tag embed")
   Rel(hostApp, fhirServer, "Stores responses", "HTTPS, host auth")
-  Rel(kit, fhirServer, "Default resolver only", "HTTPS GET")
+  Rel(kit, fhirServer, "Default resolver only: ValueSet expansion, src questionnaire", "HTTPS GET")
   Rel(integrator, npm, "Installs")
   Rel(hostPage, npm, "Loads IIFE")
   Rel(evaluator, kit, "Playground, docs")
@@ -217,7 +217,7 @@ C4Context
   UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
 
-**What the diagram claims.** Exactly one arrow leaves the kit towards a network service, and it starts at the element's default resolver (AC-07.1.3). Everything the respondent enters stays inside the host application's process until the host pulls it out (INV-S-34, `04-domain.md` §9.3 property 5).
+**What the diagram claims.** Exactly one arrow leaves the kit towards a network service, and it starts at the element's default resolver (AC-07.1.3). That one file makes two kinds of request, both `GET`s: a value set's `$expand` when `value-set-base` is set and no `resolver` is given, and the questionnaire named by the `src` attribute (AC-09.1.1; ADR-0012 amendment note, 2026-09-25). Everything the respondent enters stays inside the host application's process until the host pulls it out (INV-S-34, `04-domain.md` §9.3 property 5).
 
 ---
 
@@ -259,7 +259,7 @@ C4Container
   Rel(element, core, "Drives session")
   Rel(element, themes, "Adopts sheets")
   Rel(view, core, "Reads settled view")
-  Rel(element, fhirServer, "Default resolver only", "HTTPS GET")
+  Rel(element, fhirServer, "Default resolver only: ValueSet expansion, src questionnaire", "HTTPS GET")
   Rel(playground, react, "Built on")
   Rel(evaluator, playground, "Uses", "HTTPS")
   Rel(evaluator, docs, "Reads", "HTTPS")
@@ -277,9 +277,9 @@ C4Container
 | Engine `@fhirq/core` | BC1–BC5 | ≤ 15 kB (ADR-0022) | none (NFR-X-01) | none (NFR-C-04) |
 | Presentation model `@fhirq/core/view` | BC6, DOM-free half | ≤ 8.2 kB (measured, ADR-0023) | none | none |
 | React adapter | BC6 markup | ≤ 6 kB excl. React, core, view and resume (4.13 kB, gated from M6) | none | via React |
-| Web component | BC6 markup + default resolver | ≤ 24 kB incl. core, view, theme | default resolver only | yes |
+| Web component | BC6 markup + default resolver | ≤ 24 kB incl. core, view, theme | `default-resolver.ts` only: value-set `$expand` and the `src` questionnaire (ADR-0012 note) | yes |
 | Themes | — | ≤ 3 kB per preset; structural sheet ≤ 4 kB | none | — |
-| Script-tag IIFE | all of the element | ≤ 30 kB | default resolver only | yes |
+| Script-tag IIFE | all of the element | ≤ 30 kB | as the web component | yes |
 
 ---
 
