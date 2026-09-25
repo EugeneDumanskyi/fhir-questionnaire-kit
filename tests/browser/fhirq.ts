@@ -10,7 +10,7 @@ export interface TestWindow {
     completed?: readonly { status: string; item?: readonly { linkId: string; answer?: readonly Record<string, unknown>[] }[] }[];
     session: {
       dispatch(command: { type: string }): unknown;
-      getSnapshot(): { cycle: number; nodes: { answers: readonly { value: unknown }[] }[] };
+      getSnapshot(): { cycle: number; nodes: { path: string; answers: readonly { value: unknown }[] }[] };
     };
   };
 }

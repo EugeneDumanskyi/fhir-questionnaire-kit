@@ -1,11 +1,14 @@
 import type { Session } from '@fhirq/core';
-import { createView, type View, type ViewModel } from '@fhirq/core/view';
+import { createView, type ControlView, type View, type ViewModel } from '@fhirq/core/view';
 import base from '@fhirq/themes/base.css';
 import preset from '@fhirq/themes/default.css';
 
-import { el } from './dom.js';
-import { inSlice, ITEMS, summaryPart, type SliceNode } from './items.js';
-import { patch, type Keyed, type Records } from './patch.js';
+import { dispatch, el, type EventName } from './dom.js';
+import { covered, ITEMS, type Covered, type Cx } from './kinds.js';
+import { patch, type Records } from './patch.js';
+import { summaryPart } from './summary.js';
+
+const EVENTS: readonly EventName[] = ['input', 'change', 'click', 'focusout'];
 
 /** One parsed sheet per stylesheet, shared by every instance (ADR-0014). */
 let sheets: CSSStyleSheet[] | undefined;
@@ -20,9 +23,10 @@ function adopt(root: ShadowRoot): void {
 }
 
 /**
- * `<fhir-questionnaire>`, S1 slice. Renders a host-created session into an
- * open shadow root through the keyed reconciler (`patch.ts`): one record per
- * item path, patched in place, never replaced while visible.
+ * `<fhir-questionnaire>`. Renders a host-created session into an open shadow
+ * root: each kind as its descriptor (`kinds.ts`) builds it, kept in line by
+ * the keyed reconciler (`patch.ts`), one record per item path, patched in
+ * place and never replaced while visible.
  *
  * @alpha S1 spike surface: M7 adds `questionnaire`, `src`, `locale` and events.
  */
@@ -31,7 +35,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
   readonly #form: HTMLDivElement;
   readonly #status: HTMLDivElement;
   readonly #summary: (model: ViewModel) => void;
-  #records: Records<SliceNode, ViewModel> = new Map();
+  #records: Records<ControlView<Covered>, Cx> = new Map();
   #session: Session | null = null;
   #view: View | null = null;
   #connection: AbortController | null = null;
@@ -39,6 +43,8 @@ export class FhirQuestionnaireElement extends HTMLElement {
   /** Set while a model is painted: a render asked for meanwhile runs after it (`#render`). */
   #painting = false;
   #again = false;
+  /** Set while the lists are patched, before focus moves: the events that sets off are ignored. */
+  #patching = false;
 
   constructor() {
     super();
@@ -62,7 +68,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#rendered = null;
     this.#session = session;
     // Ids are scoped by the shadow root, so a fixed prefix cannot collide (ADR-0014).
-    // `lang` and the `locale` property are M7 (ADR-0020); the slice formats nothing.
+    // `lang` and the `locale` property are M7 plan step 5 (ADR-0020).
     this.#view = session === null ? null : createView(session, { idPrefix: 'fhirq', locale: 'en' });
     if (this.isConnected) this.connectedCallback();
   }
@@ -76,11 +82,13 @@ export class FhirQuestionnaireElement extends HTMLElement {
     const unsubscribe = view.subscribe(() => this.#render());
     signal.addEventListener('abort', unsubscribe);
 
-    const root = this.#root;
-    root.addEventListener('input', (event) => this.#onInput(event), { signal });
-    root.addEventListener('change', (event) => this.#onChange(event), { signal });
-    root.addEventListener('focusout', (event) => this.#onFocusOut(event as FocusEvent), { signal });
-    root.addEventListener('click', (event) => this.#onClick(event), { signal });
+    // One listener per event for the whole tree: each part's handlers are found from the target (`dom.ts`).
+    // An event the patch sets off is not the respondent's: Chromium fires `focusout` from a focused
+    // control the patch removes, such as a remove control, and focus has not left its group.
+    const listener = (event: Event) => {
+      if (!this.#patching) dispatch(event);
+    };
+    for (const type of EVENTS) this.#root.addEventListener(type, listener, { signal });
     this.#render();
   }
 
@@ -91,37 +99,6 @@ export class FhirQuestionnaireElement extends HTMLElement {
   #disconnect(): void {
     this.#connection?.abort();
     this.#connection = null;
-  }
-
-  #recordOf(target: EventTarget | null): Keyed<SliceNode, ViewModel> | undefined {
-    const item = target instanceof Element ? target.closest('[data-path]') : null;
-    return item === null ? undefined : this.#records.get(item.getAttribute('data-path') ?? '');
-  }
-
-  #onInput(event: Event): void {
-    const node = this.#recordOf(event.target)?.view;
-    if (node?.control === 'short-text' && event.target instanceof HTMLInputElement) node.set(event.target.value);
-  }
-
-  #onChange(event: Event): void {
-    const node = this.#recordOf(event.target)?.view;
-    if (node?.control === 'yes-no' && event.target instanceof HTMLInputElement) node.set(event.target.value);
-  }
-
-  #onFocusOut(event: FocusEvent): void {
-    const record = this.#recordOf(event.target);
-    const next = event.relatedTarget;
-    if (record === undefined || (next instanceof Node && record.root.contains(next))) return;
-    record.view.leave();
-  }
-
-  #onClick(event: Event): void {
-    const link = event.target instanceof Element ? event.target.closest('.fhirq-summary-link') : null;
-    const target = link?.getAttribute('href')?.slice(1);
-    if (target === undefined) return;
-    // A fragment link cannot reach into a shadow root, so focus is moved by id.
-    event.preventDefault();
-    this.#root.getElementById(target)?.focus();
   }
 
   /**
@@ -153,9 +130,15 @@ export class FhirQuestionnaireElement extends HTMLElement {
     const previous = this.#rendered;
     if (model === previous) return;
     this.#rendered = model;
-    this.#summary(model);
-    // Between the summary and the status, which stays the form's last child (DOM contract §2).
-    this.#records = patch(this.#form, this.#records, model.nodes.filter(inSlice), ITEMS, model, this.#status);
+    this.#patching = true;
+    try {
+      this.#summary(model);
+      // Between the summary and the status, which stays the form's last child (DOM contract §2).
+      const cx = { marker: model.requiredMarker, labels: model.labels, level: 3 };
+      this.#records = patch(this.#form, this.#records, model.nodes.filter(covered), ITEMS, cx, this.#status);
+    } finally {
+      this.#patching = false;
+    }
 
     const { announcement, focusTarget } = model;
     // Assigned even when the text repeats, so a second identical message is announced.
