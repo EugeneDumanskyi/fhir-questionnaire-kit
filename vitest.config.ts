@@ -112,6 +112,7 @@ export default defineConfig({
           root: './packages/element',
           environment: 'node',
           include: ['test/**/*.test.ts'],
+          exclude: ['test/browser/**'],
         },
       },
       {

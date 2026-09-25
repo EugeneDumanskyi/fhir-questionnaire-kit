@@ -165,7 +165,11 @@ export class FhirQuestionnaireElement extends HTMLElement {
   }
 }
 
-/** Registers `<fhir-questionnaire>` once. */
+/**
+ * Registers `<fhir-questionnaire>` once.
+ *
+ * @alpha S1 spike surface, as the class.
+ */
 export function defineQuestionnaireElement(name = 'fhir-questionnaire'): void {
   if (customElements.get(name) === undefined) customElements.define(name, FhirQuestionnaireElement);
 }

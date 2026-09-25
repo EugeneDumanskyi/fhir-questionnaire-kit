@@ -6,7 +6,8 @@ import { open, reach } from './pages/serve.js';
  * M1 AC-8, ADR-0014: the element renders under
  * `default-src 'self'; script-src 'self'; style-src 'self'` with no `<style>`,
  * no `style` attribute and no `el.style` write, and its token-derived styles
- * are applied. Both engines; WebKit exercises `adoptedStyleSheets`.
+ * are applied. Chromium, Firefox and WebKit (M7 plan D8); WebKit exercises
+ * `adoptedStyleSheets`.
  */
 
 interface Csp {

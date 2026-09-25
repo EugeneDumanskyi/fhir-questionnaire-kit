@@ -86,22 +86,26 @@ export const ENTRIES = [
   },
   {
     name: '@fhirq/element',
-    // The S1 element takes a host-created session (decision D2), so its own
-    // entry reaches no engine code. NFR-S-02 counts core in the element's
-    // figure, and from M7 the element creates sessions itself, so the engine a
-    // page needs is bundled in explicitly.
+    // NFR-S-02 counts core in the element's figure, and the engine a page
+    // needs is bundled in explicitly: the S1 element takes a host-created
+    // session, so its own entry reaches no engine code until M7 creates
+    // sessions itself. A production build, as React's (M7 plan D9).
     stdin: "export * from '@fhirq/element';\nexport { createSession } from '@fhirq/core';\n",
     external: [],
+    define: PRODUCTION,
     resumeFree: true,
-    note: 'standalone: the element plus core (createSession), view and the embedded, minified theme',
+    note: 'standalone production build: the element plus core (createSession), view and the embedded, minified theme',
   },
   {
     name: '@fhirq/element (IIFE)',
-    stdin: "import { defineQuestionnaireElement } from '@fhirq/element';\nexport { createSession } from '@fhirq/core';\ndefineQuestionnaireElement();\n",
+    // The file a script tag loads, from its real entry: scripts/build-element.mjs
+    // builds dist/fhirq-element.js from the same source with the same options.
+    entry: 'packages/element/src/iife.ts',
     format: 'iife',
     external: [],
+    define: PRODUCTION,
     resumeFree: true,
-    note: 'script-tag embed: the element, defined, plus createSession on window.fhirq',
+    note: 'script-tag embed, production build: the element, defined, plus createSession on window.fhirq',
   },
   { name: '@fhirq/themes/base.css', entry: '@fhirq/themes/base.css', external: [], css: true },
   { name: '@fhirq/themes/default.css', entry: '@fhirq/themes/default.css', external: [], css: true },

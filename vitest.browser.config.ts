@@ -12,6 +12,17 @@ const workspaceSources = [
   { find: /^@fhirq\/react$/, replacement: here('./packages/react/src/index.ts') },
 ];
 
+/**
+ * The element's own front door, and the theme it embeds. The element imports
+ * each stylesheet as text: the build's esbuild text loader gives it minified,
+ * and Vite's `?raw` gives the source as written.
+ */
+const elementSources = [
+  ...workspaceSources,
+  { find: /^@fhirq\/element$/, replacement: here('./packages/element/src/index.ts') },
+  { find: /^@fhirq\/themes\/(base|default)\.css$/, replacement: `${here('./packages/themes/src/')}$1.css?raw` },
+];
+
 /** Pre-bundled up front, so a late discovery cannot load a second React mid-run. */
 const REACT_DEPS = ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client', 'react-dom/server.browser'];
 
@@ -29,6 +40,11 @@ const chromium = () => ({ enabled: true, provider: 'playwright', headless: true,
  * Both majors run the same files (NFR-C-03). React 18 lives in its own
  * workspace package, so its project aliases `react` and `react-dom` there and
  * has Vite pre-bundle them, since they ship CommonJS.
+ *
+ * The element's client tests run here too, in Chromium, and its NFR-Q-02
+ * coverage is read from them (M7 plan D8, `pnpm test:coverage:element`, which
+ * points coverage at the element's sources). The `test:react` and
+ * `test:element` scripts each name their own projects.
  */
 export default defineConfig({
   test: {
@@ -67,6 +83,15 @@ export default defineConfig({
           root: './packages/react',
           include: ['test/browser/**/*.test.{ts,tsx}'],
           env: { FHIRQ_REACT_MAJOR: '18' },
+          browser: chromium(),
+        },
+      },
+      {
+        resolve: { alias: elementSources },
+        test: {
+          name: 'element-browser',
+          root: './packages/element',
+          include: ['test/browser/**/*.test.ts'],
           browser: chromium(),
         },
       },

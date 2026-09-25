@@ -415,6 +415,23 @@ describe("ADR-0020's locale lint pair (NFR-M-06, NFR-I-04)", () => {
     ]);
   });
 
+  it("holds the element to the renderer's rules, and to no read of the browser's language outside its locale file (M7)", () => {
+    expect(lintWith('element-must-fail.ts', LOCALE_RULES.element).map((message) => [message.line, message.ruleId])).toEqual([
+      [2, 'no-restricted-properties'],
+      [3, 'no-restricted-properties'],
+      [4, 'no-restricted-properties'],
+      [5, 'no-restricted-properties'],
+      [6, 'no-restricted-properties'],
+      [7, 'no-restricted-properties'],
+      [9, 'no-restricted-properties'],
+      [10, 'no-restricted-globals'],
+      [10, 'no-restricted-properties'],
+    ]);
+    // src/locale.ts may read navigator.language, and nothing more.
+    expect(lintWith('element-must-fail.ts', LOCALE_RULES.renderer).map((message) => message.line)).toEqual([9, 10, 10]);
+    expect(lintWith('must-fail.ts', LOCALE_RULES.element)).toEqual(lintWith('must-fail.ts', LOCALE_RULES.renderer));
+  });
+
   it('lets view/format use Intl with the locale it is given, and still bans resolvedOptions there', () => {
     expect(lintWith('format.ts', LOCALE_RULES.everywhere)).toEqual([]);
     expect(lintWith('must-fail.ts', LOCALE_RULES.everywhere).map((message) => message.line)).toEqual([5, 7, 9, 11]);

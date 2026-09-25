@@ -278,6 +278,7 @@ importers:
       '@fhirq/core':
         specifier: workspace:0.0.0
         version: link:../core
+    devDependencies:
       '@fhirq/themes':
         specifier: workspace:0.0.0
         version: link:../themes

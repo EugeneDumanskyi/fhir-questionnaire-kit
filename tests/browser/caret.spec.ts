@@ -6,8 +6,8 @@ import { open, reach } from './pages/serve.js';
 /**
  * M1 AC-7, R4's thin proof: typing into the element's string item never
  * loses focus or caret across a cycle, including a cycle that changes the
- * input's own ARIA state. Run on both engines; WebKit is the one expected to
- * break first.
+ * input's own ARIA state. Run in Chromium, Firefox and WebKit (M7 plan D8);
+ * WebKit was the one expected to break first.
  */
 
 interface Probe {
@@ -80,8 +80,10 @@ test.describe('the element keeps focus and caret across cycles (M1 AC-7)', () =>
   });
 
   test('a cycle that flips the input’s own invalid state, both ways', async ({ page }) => {
-    // Leave empty: the required issue surfaces on this input.
-    await page.keyboard.press('Tab');
+    // Leave empty, back to the question before: the required issue surfaces
+    // on this input. Tabbing forward would leave the page, which Firefox under
+    // Playwright does not do.
+    await page.keyboard.press('Shift+Tab');
     const input = page.getByRole('textbox');
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await input.focus();
