@@ -137,7 +137,7 @@ export function createItem(node: SliceNode, marker: string): ItemRecord {
 
 /** The error summary. The section is kept while shown, so focus on it survives a cycle. */
 export function summaryPart(form: HTMLElement) {
-  const section = el('section', 'fhirq-summary', 'error-summary');
+  const section = el('section', 'fhirq-summary', 'summary');
   section.tabIndex = -1;
   let shown: ErrorSummary | null = null;
   return (model: ViewModel) => {
@@ -152,14 +152,14 @@ export function summaryPart(form: HTMLElement) {
     shown = summary;
     attr(section, 'id', summary.id);
     attr(section, 'aria-labelledby', summary.headingId);
-    const heading = el('h2', 'fhirq-summary-heading', 'error-summary-heading');
+    const heading = el('h2', 'fhirq-summary-heading', 'summary-heading');
     heading.id = summary.headingId;
     heading.textContent = summary.heading;
-    const list = el('ul', 'fhirq-summary-list', 'error-summary-list');
+    const list = el('ul', 'fhirq-summary-list', 'summary-list');
     for (const entry of summary.entries) {
-      const item = el('li', 'fhirq-summary-entry', 'error-summary-entry', list);
+      const item = el('li', 'fhirq-summary-entry', 'summary-entry', list);
       // A form-level issue has no item to link to.
-      const link = entry.focusId === null ? item : el('a', 'fhirq-summary-link', 'error-summary-link', item);
+      const link = entry.focusId === null ? item : el('a', 'fhirq-summary-link', 'summary-link', item);
       if (link instanceof HTMLAnchorElement) link.href = `#${entry.focusId ?? ''}`;
       link.textContent = entry.message;
     }

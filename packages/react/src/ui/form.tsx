@@ -54,17 +54,17 @@ function Summary({ summary }: { readonly summary: ErrorSummary }): ReactElement 
     byId(event.currentTarget, focusId)?.focus();
   };
   return (
-    <section className="fhirq-summary" part="error-summary" id={summary.id} tabIndex={-1} aria-labelledby={summary.headingId}>
-      <h2 className="fhirq-summary-heading" part="error-summary-heading" id={summary.headingId}>
+    <section className="fhirq-summary" part="summary" id={summary.id} tabIndex={-1} aria-labelledby={summary.headingId}>
+      <h2 className="fhirq-summary-heading" part="summary-heading" id={summary.headingId}>
         {summary.heading}
       </h2>
-      <ul className="fhirq-summary-list" part="error-summary-list">
+      <ul className="fhirq-summary-list" part="summary-list">
         {summary.entries.map((entry) => (
-          <li key={`${entry.path} ${entry.message}`} className="fhirq-summary-entry" part="error-summary-entry" {...FORMATTED}>
+          <li key={`${entry.path} ${entry.message}`} className="fhirq-summary-entry" part="summary-entry" {...FORMATTED}>
             {entry.focusId === null ? (
               entry.message
             ) : (
-              <a className="fhirq-summary-link" part="error-summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId ?? '')} {...FORMATTED}>
+              <a className="fhirq-summary-link" part="summary-link" href={`#${entry.focusId}`} onClick={(event) => onClick(event, entry.focusId ?? '')} {...FORMATTED}>
                 {entry.message}
               </a>
             )}

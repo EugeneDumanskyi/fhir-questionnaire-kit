@@ -233,15 +233,15 @@ export function contractViolations(model: ViewModel, form: Element, overridden: 
   if (summary === null) ok(form.querySelector('.fhirq-summary') === null, 'no summary');
   else {
     const section = children.shift();
-    ok(is(section, 'section', 'summary', 'error-summary') && section.id === summary.id && section.getAttribute('tabindex') === '-1', 'summary');
+    ok(is(section, 'section', 'summary') && section.id === summary.id && section.getAttribute('tabindex') === '-1', 'summary');
     const heading = byId(summary.headingId);
-    ok(section?.getAttribute('aria-labelledby') === summary.headingId && is(heading, 'h2', 'summary-heading', 'error-summary-heading') && text(heading) === summary.heading, 'summary heading');
+    ok(section?.getAttribute('aria-labelledby') === summary.headingId && is(heading, 'h2', 'summary-heading') && text(heading) === summary.heading, 'summary heading');
     const entries = [...(section?.querySelectorAll('li') ?? [])];
     ok(entries.length === summary.entries.length, 'one entry per issue');
     summary.entries.forEach((entry, index) => {
       const link = entries[index]?.querySelector('a');
       if (entry.focusId === null) return ok(link === null && text(entries[index]) === entry.message, `summary entry ${index}`);
-      ok(is(link, 'a', 'summary-link', 'error-summary-link') && link.getAttribute('href') === `#${entry.focusId}` && text(link) === entry.message, `summary link ${index}`);
+      ok(is(link, 'a', 'summary-link') && link.getAttribute('href') === `#${entry.focusId}` && text(link) === entry.message, `summary link ${index}`);
     });
   }
   const status = children.pop();
