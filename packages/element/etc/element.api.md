@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ControlKind } from '@fhirq/core/view';
 import { OptionResolver } from '@fhirq/core';
 import { Questionnaire } from '@fhirq/core';
 import { Session } from '@fhirq/core';
@@ -19,6 +20,10 @@ export class FhirQuestionnaireElement extends HTMLElement {
     attributeChangedCallback(name: string, old: string | null, value: string | null): void;
     // (undocumented)
     connectedCallback(): void;
+    get controls(): {
+        readonly [K in Exclude<ControlKind, 'calculated' | 'statement' | 'unsupported' | 'group' | 'repeating-group'>]?: string;
+    };
+    set controls(controls: FhirQuestionnaireElement['controls'] | null);
     // (undocumented)
     disconnectedCallback(): void;
     get locale(): string | null;

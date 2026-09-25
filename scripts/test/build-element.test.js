@@ -41,6 +41,13 @@ describe('build-element', () => {
     expect(Object.keys(iife.metafile.inputs)).toEqual(expect.arrayContaining(['packages/core/src/session/session.ts', 'packages/element/src/iife.ts']));
   });
 
+  it('leaves the tier-3 development check to the consumer build of the ESM entry, and out of the IIFE (ADR-0013)', async () => {
+    const all = await files();
+    expect(all['index.js'].text).toContain('control-contract');
+    expect(all['fhirq-element.js'].text).not.toContain('control-contract');
+    expect(all['fhirq-element.js'].text).not.toContain('console.warn');
+  });
+
   it('is the file the IIFE budget measures', async () => {
     const measured = await measure(ENTRIES.find((entry) => entry.name === '@fhirq/element (IIFE)'));
     expect(gzipSize((await files())['fhirq-element.js'].contents)).toBe(measured.gzip);
