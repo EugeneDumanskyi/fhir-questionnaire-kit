@@ -1,0 +1,20 @@
+/* A host theming the element on purpose (AC-09.2.2): tokens on the element
+   and on an ancestor, and a `::part()` rule. The values are unlike the
+   default preset's, so the spec can tell them apart. */
+fhir-questionnaire {
+  --fhirq-color-border: rgb(1, 2, 3);
+  --fhirq-font-weight-strong: 800;
+  --fhirq-radius: 7px;
+}
+
+.host-frame {
+  --fhirq-color-error: rgb(4, 5, 6);
+}
+
+fhir-questionnaire::part(label) {
+  text-decoration-line: underline;
+}
+
+fhir-questionnaire::part(add) {
+  letter-spacing: 3px;
+}

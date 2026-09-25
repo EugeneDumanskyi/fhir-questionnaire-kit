@@ -1,14 +1,14 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import type { Page as BrowserPage } from '@playwright/test';
 import { build, transform, type Plugin } from 'esbuild';
 
-import { ELEMENT_PAGES, PAGES, TYPED, type ElementPage, type Page, type Typed } from './names.js';
+import { ELEMENT_PAGES, HOST_STYLES, PAGES, TYPED, type ElementPage, type HostStyle, type Page, type Typed } from './names.js';
 
 /**
  * Test pages for the S1 browser proofs, built in memory with esbuild and served
@@ -22,6 +22,9 @@ export type Renderer = 'element' | 'react-19' | 'react-18';
 
 /** What `/element-src.html` names, for the spec that opens it to serve: its form and its value-set base. */
 export const SRC = { form: '/forms/coded.json', valueSetBase: '/fhir' } as const;
+
+/** Where `examples/element-embed` is served, as it is on disk, with the script-tag build in place of the copy its README makes. */
+export const EMBED = '/embed/';
 
 /**
  * ADR-0020's pair, 26 hours apart: React pages are rendered on a server in
@@ -117,6 +120,26 @@ async function serverRender(major: 18 | 19): Promise<Rendered> {
   return JSON.parse(run.stdout) as Rendered;
 }
 
+/** Builds the element as `pnpm build:element` does, in memory, and prints the script-tag build. */
+const IIFE = `const { buildElement } = await import(process.argv[1]);
+const [, , iife] = await buildElement({ write: false });
+process.stdout.write(iife.outputFiles[0].text);`;
+
+/**
+ * The script-tag build a host loads (M7 plan D9), from the build script
+ * itself rather than a copy of its options, so the embed page runs what
+ * ships. In its own Node process, as the script is plain JavaScript.
+ */
+function scriptTagBuild(): string {
+  const run = spawnSync(process.execPath, ['--input-type=module', '-e', IIFE, pathToFileURL(at('scripts/build-element.mjs')).href], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (run.status !== 0 || run.stderr !== '') throw new Error(`The element's build: ${run.stderr || `exit ${String(run.status)}`}`);
+  return run.stdout;
+}
+
 const html = (title: string, head: string, body: string) =>
   `<!doctype html><html lang="en"><head><meta charset="utf-8">` +
   `<meta name="viewport" content="width=device-width, initial-scale=1">` +
@@ -134,6 +157,13 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
   const js = (body: string): Asset => ({ body, type: 'text/javascript' });
   const page = (body: string): Asset => ({ body, type: 'text/html' });
   const css = (path: string): Asset => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
+  const TYPES: Readonly<Record<string, string>> = { html: 'text/html', json: 'application/json', md: 'text/markdown' };
+  const embed = readdirSync(at('examples/element-embed'))
+    .filter((file) => file !== 'fhirq-element.js')
+    .map((file): [string, Asset] => [
+      `${EMBED}${file}`,
+      { body: readFileSync(at(`examples/element-embed/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' },
+    ]);
   const [element, elementSrc, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
     bundle('tests/browser/pages/element-src.ts', null),
@@ -185,6 +215,12 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       ),
     ],
     ['/element-src.js', js(elementSrc)],
+    ...embed,
+    [`${EMBED}fhirq-element.js`, js(scriptTagBuild())],
+    ...HOST_STYLES.flatMap((style) =>
+      [true, false].map((withElement): [string, Asset] => [`/${isolation(style, withElement)}.html`, page(isolationPage(style, withElement))]),
+    ),
+    ...HOST_STYLES.map((style): [string, Asset] => [`/host/${style}.css`, css(`tests/browser/pages/host/${style}.css`)]),
     ...reactPages(19, ssr19),
     ['/react-19.js', js(react19)],
     ...reactPages(18, ssr18),
@@ -197,6 +233,28 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
     ['/default.css', css('packages/themes/src/default.css')],
   ]);
 }
+
+/** An isolation page's path. */
+const isolation = (style: HostStyle, withElement: boolean) => `isolation-${style}-${withElement ? 'with' : 'without'}`;
+
+/**
+ * An isolation page: the host's own elements, then, when `withElement`,
+ * the element on the demo inside a `div` of the host's (an ancestor for
+ * tokens), placed by `clean.css`. The host's stylesheets are
+ * `clean.css` and the variant's; the element's bundle is loaded either way,
+ * so the only difference between the pair is the element in the page.
+ */
+const isolationPage = (style: HostStyle, withElement: boolean) =>
+  html(
+    'fhirq isolation',
+    '<link rel="stylesheet" href="/host/clean.css">' +
+      (style === 'clean' ? '' : `<link rel="stylesheet" href="/host/${style}.css">`) +
+      '<script type="module" src="/element.js"></script>',
+    '<div class="host" id="host"><h2>Host heading</h2><p>Host text with <a href="#host">a link</a>.</p>' +
+      '<label for="host-input">Host field</label><input id="host-input" type="text">' +
+      '<select aria-label="Host menu"><option>One</option></select><button type="button">Host button</button></div>' +
+      `<div class="host-frame">${withElement ? '<fhir-questionnaire data-page="demo"></fhir-questionnaire>' : ''}</div>`,
+  );
 
 /** A page's path: the renderer's own for the slice, suffixed by the form otherwise. */
 const address = (renderer: Renderer, form: Page | ElementPage) => (form === 'slice' ? renderer : `${renderer}-${form}`);
@@ -215,7 +273,9 @@ export async function serve(page: BrowserPage): Promise<void> {
   assets ??= buildAssets();
   const files = await assets;
   await page.route(`${ORIGIN}/**`, async (route) => {
-    const asset = files.get(new URL(route.request().url()).pathname);
+    // A directory is its index, as a static server serves it.
+    const path = new URL(route.request().url()).pathname.replace(/\/$/, '/index.html');
+    const asset = files.get(path);
     if (asset === undefined) {
       await route.fulfill({ status: 404, body: '' });
       return;
@@ -233,6 +293,13 @@ export async function serve(page: BrowserPage): Promise<void> {
 export async function open(page: BrowserPage, renderer: Renderer, form: Page | ElementPage = 'slice'): Promise<void> {
   await serve(page);
   await page.goto(`${ORIGIN}/${address(renderer, form)}.html`);
+  await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
+}
+
+/** Opens an isolation page and waits until it is interactive. */
+export async function openIsolation(page: BrowserPage, style: HostStyle, withElement: boolean): Promise<void> {
+  await serve(page);
+  await page.goto(`${ORIGIN}/${isolation(style, withElement)}.html`);
   await page.waitForFunction(() => (window as { fhirq?: { ready: boolean } }).fhirq?.ready === true);
 }
 

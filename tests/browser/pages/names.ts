@@ -25,3 +25,13 @@ export type Typed = (typeof TYPED)[number];
  */
 export const ELEMENT_PAGES = ['slice', 'kinds', 'demo'] as const;
 export type ElementPage = (typeof ELEMENT_PAGES)[number];
+
+/**
+ * The isolation pages (M7 step 8, AC-09.2.1, AC-09.2.2): a host page of its
+ * own elements and, when `with`, the element on the demo, under one of four
+ * host stylesheets. `clean` has only the host's layout; `hostile` adds
+ * aggressive global rules; `inherited` sets inherited properties and the
+ * root font size on the host page; `themed` sets tokens and `::part()` rules.
+ */
+export const HOST_STYLES = ['clean', 'hostile', 'inherited', 'themed'] as const;
+export type HostStyle = (typeof HOST_STYLES)[number];
