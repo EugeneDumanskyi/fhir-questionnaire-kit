@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 /** The React adapter's page-level gates (M6 AC-1, AC-3, plan D11), blocking in CI's React gates job. */
 const REACT = ['hydration.spec.ts', 'quickstart.spec.ts', 'react-a11y.spec.ts'];
 /** The element's specs, in all three engines (M7 plan D8); blocking from M7's step 11. */
-const ELEMENT = ['caret.spec.ts', 'csp.spec.ts'];
+const ELEMENT = ['caret.spec.ts', 'csp.spec.ts', 'resolver.spec.ts'];
 /** Timings, report-only (M6 AC-10). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -16,7 +16,7 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   18 and 19, the quickstart and axe on it and the demo. Blocking from M6
  *   (`pnpm test:browser:react`).
  * - `element-chromium`, `element-firefox`, `element-webkit`: the element's
- *   caret and CSP specs, in every engine NFR-C-07 names (M7 plan D8, `pnpm
+ *   caret, CSP and resolver specs, in every engine NFR-C-07 names (M7 plan D8, `pnpm
  *   test:browser:element`). Firefox is a browser binary Playwright installs,
  *   not a dependency. Not yet a required check: M7's `Element gates` job.
  * - `chromium`, `firefox`, `webkit`: S1's proofs, the DOM contract on the

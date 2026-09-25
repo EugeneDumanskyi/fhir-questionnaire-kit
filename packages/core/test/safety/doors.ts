@@ -10,6 +10,8 @@ export const GLOBALS = ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', '
 export interface Doors {
   /** Every door touched, in order: a name from `GLOBALS`, `navigator.sendBeacon` or `document.cookie`. */
   readonly touched: string[];
+  /** The stack at each touch, in the same order: where it came from, for a test that allows one caller. */
+  readonly stacks: string[];
   /** Puts every door back as it was. */
   readonly unlock: () => void;
 }
@@ -22,12 +24,15 @@ export interface Doors {
  */
 export function lock(global: object, navigator: object, document: object): Doors {
   const touched: string[] = [];
+  const stacks: string[] = [];
   const restore: (() => void)[] = [];
   const trap = (target: object, name: string, label = name) => {
     const before = Object.getOwnPropertyDescriptor(target, name);
     const refuse = (): never => {
+      const error = new Error(`${label} is off limits to @fhirq/*`);
       touched.push(label);
-      throw new Error(`${label} is off limits to @fhirq/*`);
+      stacks.push(error.stack ?? '');
+      throw error;
     };
     Object.defineProperty(target, name, { configurable: true, get: refuse, set: refuse });
     restore.push(() => {
@@ -40,6 +45,7 @@ export function lock(global: object, navigator: object, document: object): Doors
   trap(document, 'cookie', 'document.cookie');
   return {
     touched,
+    stacks,
     unlock: () => {
       for (const undo of restore.reverse()) undo();
     },

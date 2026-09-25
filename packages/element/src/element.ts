@@ -1,9 +1,9 @@
-import { createSession, emitResponse, type Questionnaire, type QuestionnaireResponse, type Session, type SessionChange } from '@fhirq/core';
+import { createSession, emitResponse, type OptionResolver, type Questionnaire, type QuestionnaireResponse, type Session, type SessionChange } from '@fhirq/core';
 import { createView, type View, type ViewModel, type ViewNode, type ViewOptions } from '@fhirq/core/view';
 import base from '@fhirq/themes/base.css';
 import preset from '@fhirq/themes/default.css';
 
-import { loadQuestionnaire } from './default-resolver.js';
+import { loadQuestionnaire, valueSetResolver } from './default-resolver.js';
 import { dispatch, el, type EventName } from './dom.js';
 import { ITEMS, type Cx } from './kinds.js';
 import { localeOf } from './locale.js';
@@ -29,7 +29,7 @@ declare global {
 const EVENTS: readonly EventName[] = ['input', 'change', 'click', 'focusout'];
 
 /** The properties a host can set before the element is defined, which the upgrade would otherwise leave shadowing the class's own. */
-const PROPERTIES = ['questionnaire', 'session', 'locale', 'timeZone', 'messages'] as const;
+const PROPERTIES = ['questionnaire', 'session', 'resolver', 'locale', 'timeZone', 'messages'] as const;
 
 /** What the element makes its next session from: a box per value, so a load for a value since replaced is known. */
 type Source = { readonly questionnaire: Questionnaire } | { readonly src: string };
@@ -59,7 +59,12 @@ function adopt(root: ShadowRoot): void {
  * it when another value replaces it; a host's session is the host's to
  * dispose. Setting the same value again does nothing.
  *
- * @alpha M7 builds it step by step: `resolver`, `value-set-base` and `controls` are still to come.
+ * Value sets are resolved by the `resolver` property, or else, with a
+ * `value-set-base` attribute, by the default resolver's `$expand` request
+ * (ADR-0012). Either is read when the element makes a session, as session
+ * options are, and a session keeps the one it was made with.
+ *
+ * @alpha M7 builds it step by step: `controls` is still to come.
  */
 export class FhirQuestionnaireElement extends HTMLElement {
   static readonly observedAttributes = ['src', 'lang'];
@@ -76,6 +81,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
   #session: Session | null = null;
   /** The element made `#session`, so disposes it once replaced. */
   #owned = false;
+  #resolver: OptionResolver | null = null;
   #locale: string | null = null;
   #timeZone: string | null = null;
   #messages: NonNullable<ViewOptions['messages']> | null = null;
@@ -123,6 +129,20 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#replace(null);
     this.#session = session;
     this.#look();
+  }
+
+  /**
+   * Resolves the value sets the questionnaire references, in place of the
+   * default resolver (ADR-0012). Read when the element makes a session, so
+   * set it before `questionnaire`, or before `src` has loaded. A host's own
+   * `session` keeps its own.
+   */
+  get resolver(): OptionResolver | null {
+    return this.#resolver;
+  }
+
+  set resolver(resolver: OptionResolver | null) {
+    this.#resolver = resolver;
   }
 
   /** A BCP 47 tag. Without one, the `lang` of the element or its nearest ancestor, then the browser's language, then `"en"`. */
@@ -232,7 +252,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#source = null;
     let session: Session;
     try {
-      session = createSession(questionnaire);
+      session = createSession(questionnaire, this.#options());
     } catch (error) {
       this.#fail(error);
       return;
@@ -240,6 +260,13 @@ export class FhirQuestionnaireElement extends HTMLElement {
     this.#session = session;
     this.#owned = true;
     this.#look();
+  }
+
+  /** The resolver a session made now takes: the property's, else the default's with `value-set-base`, else none. */
+  #options(): { resolver?: OptionResolver } {
+    const base = this.getAttribute('value-set-base');
+    const resolver = this.#resolver ?? (base === null ? null : valueSetResolver(base));
+    return resolver === null ? {} : { resolver };
   }
 
   /** The questionnaire could not be had: the form stays empty until another source is set. */

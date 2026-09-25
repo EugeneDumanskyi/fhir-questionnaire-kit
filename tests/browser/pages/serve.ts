@@ -20,6 +20,9 @@ export const ORIGIN = 'http://fhirq.test';
 export const CSP = "default-src 'self'; script-src 'self'; style-src 'self'";
 export type Renderer = 'element' | 'react-19' | 'react-18';
 
+/** What `/element-src.html` names, for the spec that opens it to serve: its form and its value-set base. */
+export const SRC = { form: '/forms/coded.json', valueSetBase: '/fhir' } as const;
+
 /**
  * ADR-0020's pair, 26 hours apart: React pages are rendered on a server in
  * the first zone and hydrated in a browser in the second, so a date that
@@ -131,8 +134,9 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
   const js = (body: string): Asset => ({ body, type: 'text/javascript' });
   const page = (body: string): Asset => ({ body, type: 'text/html' });
   const css = (path: string): Asset => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
-  const [element, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
+  const [element, elementSrc, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
+    bundle('tests/browser/pages/element-src.ts', null),
     bundle('tests/browser/pages/react-client.tsx', 19),
     bundle('tests/browser/pages/react-client.tsx', 18),
     bundle('tests/browser/pages/keystroke-page.tsx', 19, 'production'),
@@ -170,6 +174,17 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       page(html('fhirq element', '<script type="module" src="/element.js"></script>', `<fhir-questionnaire data-page="${name}"></fhir-questionnaire>`)),
     ]),
     ['/element.js', js(element)],
+    [
+      '/element-src.html',
+      page(
+        html(
+          'fhirq element',
+          '<script type="module" src="/element-src.js"></script>',
+          `<fhir-questionnaire src="${SRC.form}" value-set-base="${SRC.valueSetBase}"></fhir-questionnaire>`,
+        ),
+      ),
+    ],
+    ['/element-src.js', js(elementSrc)],
     ...reactPages(19, ssr19),
     ['/react-19.js', js(react19)],
     ...reactPages(18, ssr18),
