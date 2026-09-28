@@ -804,6 +804,24 @@ Also recorded: radio and checkbox insides drawn by the platform (G3), `text-deco
 
 **Effort.** ASSUMPTION: 12 h.
 
+**Plan decisions, 2026-09-28.** Taken with the M9 plan, D1–D11 as recommended. D2 and D3 resolved conflicts between documents, raised rather than picked. D10's dev dependency was approved with it. Enabling Pages, checking the live URL on a phone and adding `Playground gates` to branch protection are the maintainer's. The 12 h figure does not include D1, D3 or the source-import lint check. Hours are logged per step, and if the total passes about 16 h, share links (D7) are the first thing dropped.
+
+| # | Decision | Resolution |
+|---|---|---|
+| D1 | How the packages get a JavaScript `dist` | `pnpm build`: an esbuild script builds every JavaScript target the `exports` maps name, from the entry points in `eslint.config.js` `ENTRY_POINTS`. That is ESM and CJS for core, react and themes; the element keeps `scripts/build-element.mjs` and stays ESM only (M7 D9). `tsc` still emits the declarations, and themes copies its CSS into `dist`. A test checks that every `exports` target exists after the build. If the maps turn out wrong, the fix is a changeset. ADR-0018 note |
+| D2 | Who deploys to Pages *(conflict: M9's scope and M11's both name it)* | M9 adds a workflow that deploys the playground only, on push to `main`. M11 adds the docs and ties both to the release. Vite builds with `base: './'`, so the page works under `/<repo>/playground/`. ADR-0019 note |
+| D3 | The demo's first question gates nothing *(conflict: AC-12.1.2 and AC-15.1.4 against the fixture's order)* | Demo v3 moves the `pain` group right after `notice`, so the first question reveals conditional ones. The README, `demo.test.ts` and every test that depends on the order change with it, in their own PR. The fixture stays the one demo for the README, the tests and the playground (US-15.1) |
+| D4 | What "no network request after initial assets" allows, given ADR-0019's lazy chunks | Every request is a same-origin `GET`, with no query string and no body, for a file in the built `dist`. None carries the pasted sentinel, and none starts after the lazy chunks settle. ADR-0019 note |
+| D5 | Diagnostic codes → conformance rows | An optional `diagnostics` field on rows in `docs/conformance/matrix.json`, with a test that every load-time code maps to at least one row. The playground shows the row's feature, status and reason inline and links to `matrix.json` on GitHub; M10 re-points the links to the docs site |
+| D6 | Load mode for pasted JSON | Strict by default, with a visible lenient toggle. Strict shows AC-01.3.1's full rejection; lenient shows the form beside its warnings |
+| D7 | Share links (`Could`, AC-12.5.1, no M9 criterion) | Built last, fragment only, with `CompressionStream`. A link that would be too long is refused, not truncated. The first thing dropped if the hours run over |
+| D8 | "Theme" in the switcher | A scheme control (system, light, dark) set with tier-2 tokens, and `examples/themed-host`'s tokens as a second look. M8 D6's single preset stands |
+| D9 | Value sets for the in-memory resolver | The `urn:` sets from `fixtures/option-resolution`, bundled, with a samples picker (demo, option-resolution). An unknown canonical fails, so the kit's retry UI shows. HL7 R4 expansions can come later; fetching them is the maintainer's |
+| D10 | Lighthouse tool | `@lhci/cli` (Apache-2.0), exact-pinned, as ADR-0018 names it. Three runs against the built playground on the default mobile preset (simulated slow 4G, 4× CPU), asserting NFR-P-06 on the median. ADR-0018 note |
+| D11 | The viewport for "above the fold" | 375 × 667 (iPhone SE), the stricter of the two phone heights |
+
+**Spike S3's plan.** It runs right after step 1, with a 2 h timebox. A throwaway page holds the sentence, the privacy line and `<Questionnaire>` on the demo, built by Vite from `dist`. Lighthouse runs three times on the mobile preset, and the median of performance, LCP, TBT, CLS and JavaScript bytes is recorded here. The editor, panes and tier switcher are lazy from the start either way, as ADR-0019 decides. **Kill criteria,** on the form-only page: median performance under 90, LCP over 2.5 s, TBT over 200 ms, CLS over 0.1, or the timebox running out. Any of them stops the milestone after step 3 and goes to the maintainer with the numbers. The likely options are build-time prerendering of the first screen with `hydrateRoot`, which would need an ADR-0019 note, or trimming what the first screen imports.
+
 ---
 
 ### M10 — Docs, conformance matrix, adoption pack
