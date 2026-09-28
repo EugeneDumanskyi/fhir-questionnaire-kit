@@ -27,6 +27,13 @@ export const SRC = { form: '/forms/coded.json', valueSetBase: '/fhir' } as const
 export const EMBED = '/embed/';
 
 /**
+ * Where `examples/themed-host` is served in the same way, and the React page
+ * that links its two stylesheets after the kit's and renders the demo inside
+ * `.intake`, as its README tells a React host to (M8 AC-9).
+ */
+export const THEMED_HOST = { element: '/themed-host/', react: '/themed-host-react.html' } as const;
+
+/**
  * ADR-0020's pair, 26 hours apart: React pages are rendered on a server in
  * the first zone and hydrated in a browser in the second, so a date that
  * passed through either would land on another day and fail hydration.
@@ -157,13 +164,12 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
   const js = (body: string): Asset => ({ body, type: 'text/javascript' });
   const page = (body: string): Asset => ({ body, type: 'text/html' });
   const css = (path: string): Asset => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
-  const TYPES: Readonly<Record<string, string>> = { html: 'text/html', json: 'application/json', md: 'text/markdown' };
-  const embed = readdirSync(at('examples/element-embed'))
-    .filter((file) => file !== 'fhirq-element.js')
-    .map((file): [string, Asset] => [
-      `${EMBED}${file}`,
-      { body: readFileSync(at(`examples/element-embed/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' },
-    ]);
+  const TYPES: Readonly<Record<string, string>> = { css: 'text/css', html: 'text/html', json: 'application/json', md: 'text/markdown' };
+  const example = (directory: string, served: string) =>
+    readdirSync(at(directory))
+      .filter((file) => file !== 'fhirq-element.js')
+      .map((file): [string, Asset] => [`${served}${file}`, { body: readFileSync(at(`${directory}/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' }]);
+  const iife = scriptTagBuild();
   const [element, elementSrc, elementTyped, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
     bundle('tests/browser/pages/element-src.ts', null),
@@ -226,8 +232,22 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       ),
     ],
     ['/element-src.js', js(elementSrc)],
-    ...embed,
-    [`${EMBED}fhirq-element.js`, js(scriptTagBuild())],
+    ...example('examples/element-embed', EMBED),
+    [`${EMBED}fhirq-element.js`, js(iife)],
+    ...example('examples/themed-host', THEMED_HOST.element),
+    [`${THEMED_HOST.element}fhirq-element.js`, js(iife)],
+    [
+      THEMED_HOST.react,
+      page(
+        html(
+          'fhirq themed host',
+          '<link rel="stylesheet" href="/default.css"><link rel="stylesheet" href="/base.css">' +
+            `<link rel="stylesheet" href="${THEMED_HOST.element}design-system.css"><link rel="stylesheet" href="${THEMED_HOST.element}theme.css">` +
+            '<script type="module" src="/react-19.js"></script>',
+          `<div class="intake"><div id="root" data-page="demo">${ssr19.pages.demo}</div></div>`,
+        ),
+      ),
+    ],
     ...HOST_STYLES.flatMap((style) =>
       [true, false].map((withElement): [string, Asset] => [`/${isolation(style, withElement)}.html`, page(isolationPage(style, withElement))]),
     ),

@@ -502,6 +502,8 @@ fhir-questionnaire, .intake {
 
 **Where a token is set** (ADR-0014, 2026-09-28 note). The preset declares every token on `:root` and `:host`. In React there is no shadow root, so a token set on any ancestor of the form wins over `:root`. In the element, the declaration on `:host` hides whatever the element would inherit, so a host sets tokens on `fhir-questionnaire` itself. Tokens are in `rem`, so the form follows the page's root font size, which is also what honours a user's font-size setting.
 
+`examples/themed-host` is the worked example: a host's design system reaching the form in both renderers through one 20-line stylesheet of tokens and no JavaScript (NFR-U-02).
+
 **`TOKENS`** lists the token names, as a `readonly` tuple, for a host that generates or checks its own values. It is the whole set; `base.css` reads no other.
 
 | Group | Tokens | Default (light) |

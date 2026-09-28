@@ -24,3 +24,5 @@ playwright-report/
 
 # The element-embed example's copy of the built IIFE (examples/element-embed/README.md)
 examples/element-embed/fhirq-element.js
+# and the themed-host example's (examples/themed-host/README.md)
+examples/themed-host/fhirq-element.js

@@ -1,0 +1,41 @@
+/*
+ * A stand-in for the host's own design system: the variables its components
+ * already read, light and dark, and its page. It is what a host has before
+ * adding a form, so it is not part of the count; theme.css is.
+ */
+
+:root {
+  color-scheme: light dark;
+  --ds-font: Georgia, 'Times New Roman', serif;
+  --ds-text: 1.0625rem;
+  --ds-unit: 0.375rem;
+  --ds-radius: 0.5rem;
+  --ds-ink: #14213d;
+  --ds-ink-soft: #4a5568;
+  --ds-paper: #fbfaf7;
+  --ds-surface: #ffffff;
+  --ds-line: #6b7280;
+  --ds-brand: #0f766e;
+  --ds-danger: #b42318;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ds-ink: #f1f5f9;
+    --ds-ink-soft: #cbd5e1;
+    --ds-paper: #0b1220;
+    --ds-surface: #111a2e;
+    --ds-line: #94a3b8;
+    --ds-brand: #5eead4;
+    --ds-danger: #fda29b;
+  }
+}
+
+body {
+  margin: 0;
+  padding: calc(var(--ds-unit) * 4);
+  font-family: var(--ds-font);
+  font-size: var(--ds-text);
+  color: var(--ds-ink);
+  background-color: var(--ds-paper);
+}
