@@ -1,6 +1,7 @@
-/* A host theming the element on purpose (AC-09.2.2): tokens on the element
-   and on an ancestor, and a `::part()` rule. The values are unlike the
-   default preset's, so the spec can tell them apart. */
+/* A host theming the element on purpose (AC-09.2.2): tokens on the element,
+   a token on an ancestor, which does not reach inside (ADR-0014, 2026-09-28
+   note), and `::part()` rules. The values are unlike the default preset's,
+   so the spec can tell them apart. */
 fhir-questionnaire {
   --fhirq-color-border: rgb(1, 2, 3);
   --fhirq-font-weight-strong: 800;
