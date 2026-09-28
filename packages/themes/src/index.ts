@@ -1,17 +1,23 @@
 /**
- * `@fhirq/themes` — `base.css` and the token presets.
+ * `@fhirq/themes` — `base.css` and the token preset.
  *
  * The stylesheets are the product; they are published as `@fhirq/themes/base.css`
  * and `@fhirq/themes/default.css`. This entry names the token contract they
- * share, so a test can hold the two files to it. S1 slice: the tokens two
- * controls need; the full set is M8.
+ * share (ADR-0013 tier 2), so a test can hold the two files to it.
  *
- * @alpha S1 spike surface.
+ * The documented token set (AC-10.2.1): type scale, spacing, radius, border,
+ * focus ring, target sizes and colour. `default.css` gives every token a light
+ * value and every colour token a dark one. A host sets tokens on
+ * `fhir-questionnaire` itself for the element, or on any ancestor for React
+ * (ADR-0014, 2026-09-28 note).
+ *
+ * @beta
  */
 export const TOKENS = [
   '--fhirq-font-family',
   '--fhirq-font-size',
   '--fhirq-font-size-heading',
+  '--fhirq-font-size-subheading',
   '--fhirq-font-weight-strong',
   '--fhirq-line-height',
   '--fhirq-space-1',
@@ -26,6 +32,7 @@ export const TOKENS = [
   '--fhirq-target-size',
   '--fhirq-radio-size',
   '--fhirq-color-text',
+  '--fhirq-color-text-muted',
   '--fhirq-color-background',
   '--fhirq-color-control-background',
   '--fhirq-color-border',

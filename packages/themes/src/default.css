@@ -3,8 +3,10 @@
  * (ADR-0013). Light by default, dark under prefers-color-scheme.
  *
  * `:root` serves light DOM (React); `:host` serves the element's shadow root.
- * A host overriding a token on any ancestor, or on the element itself, wins.
- * Colour pairs are chosen for WCAG 2.2 AA contrast; M8 measures them.
+ * In React, a token set on any ancestor wins. In the element, `:host` hides an
+ * ancestor's value, so a host sets tokens on `fhir-questionnaire` itself
+ * (ADR-0014, 2026-09-28 note). Colours are #rrggbb, and every pair the default
+ * UI draws holds WCAG 2.2 AA contrast in both schemes: test/stylesheets.test.ts.
  */
 
 :root,
@@ -12,6 +14,7 @@
   --fhirq-font-family: inherit;
   --fhirq-font-size: 1rem;
   --fhirq-font-size-heading: 1.25rem;
+  --fhirq-font-size-subheading: 1.125rem;
   --fhirq-font-weight-strong: 600;
   --fhirq-line-height: 1.5;
   --fhirq-space-1: 0.25rem;
@@ -27,6 +30,7 @@
   --fhirq-radio-size: 1.5rem;
 
   --fhirq-color-text: #1b1b1f;
+  --fhirq-color-text-muted: #5c5f66;
   --fhirq-color-background: #ffffff;
   --fhirq-color-control-background: #ffffff;
   --fhirq-color-border: #5c5f66;
@@ -39,6 +43,7 @@
   :root,
   :host {
     --fhirq-color-text: #e8e8ec;
+    --fhirq-color-text-muted: #b4b6bd;
     --fhirq-color-background: #121316;
     --fhirq-color-control-background: #1c1d21;
     --fhirq-color-border: #9a9ca3;
