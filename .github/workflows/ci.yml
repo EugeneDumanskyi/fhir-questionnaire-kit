@@ -462,6 +462,70 @@ jobs:
             playwright-report/
           retention-days: 30
 
+  # The playground's gates, required from M9 (06-roadmap.md §5, M9 plan D10):
+  # the packages and then the playground built from their dist (ADR-0019,
+  # AC-8); its specs on that build in Chromium, the fold, the cascade, the
+  # panes, the paste editor, the samples and the tiers, and its privacy claim
+  # in Chromium, Firefox and WebKit, the policy first in <head>, every
+  # connection refused, and only D4's requests across load, paste, answers and
+  # every tier (AC-5); then Lighthouse on the same build, three runs on the
+  # default mobile preset, with NFR-P-06 asserted on the median run (AC-7).
+  # Every run's numbers go to the job summary and the reports to an artifact,
+  # whether or not the thresholds held. Its lint rules are in the fast lane.
+  playground-gates:
+    name: Playground gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Build the packages, then the playground from their dist
+        run: pnpm build:playground
+
+      - name: Playground specs in Chromium, and the privacy claim in Chromium, Firefox and WebKit
+        run: pnpm test:playground
+
+      # The runner's Google Chrome, not Playwright's: Lighthouse's own launcher
+      # finds it, as it would on a developer's machine.
+      - name: Lighthouse, three runs on the mobile preset, NFR-P-06 on the median
+        run: pnpm lighthouse
+
+      - name: Upload the Lighthouse reports and the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-gates
+          path: |
+            reports/lighthouse/
+            playwright-report/
+          retention-days: 30
+
   # Keystroke to paint (NFR-P-03), report only: React 18 and 19 and the
   # element in Chromium, on one worker in a job of its own, so no other spec
   # runs beside the reading. Every other spec of the retired spike-proofs job

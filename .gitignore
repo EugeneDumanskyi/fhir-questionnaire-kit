@@ -11,6 +11,7 @@ coverage/
 reports/
 test-results/
 playwright-report/
+.lighthouseci/
 *.tsbuildinfo
 .tsbuild/
 .vite/
