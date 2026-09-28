@@ -127,6 +127,12 @@
   border-radius: var(--fhirq-radius);
 }
 
+/* WebKit sizes a one-line menu itself, under any min-block-size; a set
+   block size holds it at the target, arrow kept (NFR-A-05). */
+select:is(.fhirq-control, .fhirq-unit):not([multiple], [size]) {
+  block-size: var(--fhirq-target-size);
+}
+
 textarea.fhirq-control {
   min-block-size: calc(var(--fhirq-target-size) * 2);
   resize: block;
@@ -252,7 +258,8 @@ textarea.fhirq-control {
   }
 }
 
-/* The theme moves nothing; this keeps a host's additions still too. */
+/* The theme moves nothing; this stills what a host adds with no more
+   specificity, earlier in the cascade. */
 @media (prefers-reduced-motion: reduce) {
   .fhirq-form,
   .fhirq-form * {

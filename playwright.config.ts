@@ -21,7 +21,7 @@ const ELEMENT = [
 /** M8's axe matrix, Chromium only (plan D4), blocking in CI's Accessibility gates job. */
 const MATRIX = 'a11y-matrix.spec.ts';
 /** The theme's and accessibility's specs in every engine, blocking in the same job (M8). */
-const A11Y = ['print.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts'];
+const A11Y = ['print.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts', 'visual-a11y.spec.ts'];
 /** Timings, report-only (M6 AC-10, M7 AC-5). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -43,8 +43,8 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   `Element gates` job.
  * - `a11y-matrix`: axe across forms, tiers, schemes, widths and both
  *   renderers, in Chromium (M8 plan D4); `a11y-chromium`, `a11y-firefox`,
- *   `a11y-webkit`: print, the tier-2 example and the token sentinel in every
- *   engine. Blocking from M8 in CI's `Accessibility gates` job (`pnpm
+ *   `a11y-webkit`: print, the tier-2 example, the token sentinel and the
+ *   visual gates (contrast, focus, targets, reflow, motion) in every engine. Blocking from M8 in CI's `Accessibility gates` job (`pnpm
  *   test:browser:a11y`), which replaced M1's axe proof on the slice.
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
