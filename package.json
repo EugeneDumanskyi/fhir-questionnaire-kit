@@ -27,7 +27,7 @@
     "test:browser:a11y": "playwright test --project a11y-matrix --project a11y-chromium --project a11y-firefox --project a11y-webkit",
     "a11y:report": "node scripts/a11y-report.mjs",
     "a11y:pages": "node scripts/a11y-pages.mjs",
-    "test:playground": "playwright test --project playground",
+    "test:playground": "playwright test --project playground --project playground-firefox --project playground-webkit",
     "test:keystroke": "playwright test --project keystroke --workers 1 --reporter list",
     "test:mutation": "stryker run",
     "test:mutation:shard": "node scripts/mutation-shard.mjs",
