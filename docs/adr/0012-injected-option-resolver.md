@@ -27,6 +27,7 @@ ADR-0005 decides *when* options are resolved and that they stay out of snapshots
 
 **The port** (types in `ports/`, exported from `@fhirq/core`):
 
+<!-- signature -->
 ```ts
 type OptionResolver = (
   valueSet: string,               // canonical URL, possibly with |version

@@ -30,6 +30,7 @@ ADR-0003 already decides that calculated items are read-only once the seam exist
 
 **The seam** (`ports/`, exported type):
 
+<!-- signature -->
 ```ts
 interface ExpressionEvaluator {
   evaluate(

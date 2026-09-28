@@ -1,0 +1,5 @@
+<main>
+  <!-- #region embed -->
+  <script src="kit.js"></script>
+  <!-- #endregion -->
+</main>

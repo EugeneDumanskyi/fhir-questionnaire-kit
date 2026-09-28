@@ -1,0 +1,14 @@
+{
+  "name": "@fhirq/docs-examples",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Every runnable code block the docs show, as source: typechecked, linted and run in CI, and copied into the Markdown by scripts/docs-snippets.mjs (NFR-Q-08, M10 AC-3). Never published.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --build --force"
+  },
+  "dependencies": {
+    "@fhirq/core": "workspace:0.0.0"
+  }
+}

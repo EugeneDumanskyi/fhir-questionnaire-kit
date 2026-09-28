@@ -7,6 +7,7 @@ host's own submit button.
 npm install @fhirq/react @fhirq/themes react react-dom
 ```
 
+<!-- snippet: examples/react-quickstart/src/app.tsx -->
 ```tsx
 import { Questionnaire, useQuestionnaire, type QuestionnaireProps } from '@fhirq/react';
 import '@fhirq/themes/base.css';
