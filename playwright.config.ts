@@ -20,8 +20,8 @@ const ELEMENT = [
 ];
 /** M8's axe matrix, Chromium only (plan D4), blocking in CI's Accessibility gates job. */
 const MATRIX = 'a11y-matrix.spec.ts';
-/** The theme's and accessibility's specs, RTL's among them (plan D5), in every engine, blocking in the same job (M8). */
-const A11Y = ['print.spec.ts', 'rtl.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts', 'visual-a11y.spec.ts'];
+/** The theme's and accessibility's specs, RTL's (plan D5) and the pass pages' among them, in every engine, blocking in the same job (M8). */
+const A11Y = ['pass-pages.spec.ts', 'print.spec.ts', 'rtl.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts', 'visual-a11y.spec.ts'];
 /** Timings, report-only (M6 AC-10, M7 AC-5). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -44,7 +44,8 @@ const KEYSTROKE = 'keystroke.spec.ts';
  * - `a11y-matrix`: axe across forms, tiers, schemes, widths and both
  *   renderers, in Chromium (M8 plan D4); `a11y-chromium`, `a11y-firefox`,
  *   `a11y-webkit`: print, the tier-2 example, the token sentinel and the
- *   visual gates (contrast, focus, targets, reflow, motion) and RTL in every engine. Blocking from M8 in CI's `Accessibility gates` job (`pnpm
+ *   visual gates (contrast, focus, targets, reflow, motion), RTL and the
+ *   screen-reader pass pages in every engine. Blocking from M8 in CI's `Accessibility gates` job (`pnpm
  *   test:browser:a11y`), which replaced M1's axe proof on the slice.
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
