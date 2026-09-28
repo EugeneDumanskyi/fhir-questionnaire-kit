@@ -1,7 +1,7 @@
 import './tiers/scheme.css';
 
 import type { Session } from '@fhirq/core';
-import { useEffect, useState, type JSX } from 'react';
+import type { JSX } from 'react';
 
 import theme from '../../../examples/themed-host/theme.css?raw';
 import tier1 from './tiers/tier1.tsx?raw';
@@ -11,14 +11,11 @@ import tier3 from './tiers/tier3.tsx?raw';
 import tier4 from './tiers/tier4.tsx?raw';
 import tier4Css from './tiers/tier4.css?raw';
 import scheme from './tiers/scheme.css?raw';
+import type { Scheme, Tier } from './choices.js';
 import { Tier2 } from './tiers/tier2.js';
 import { Tier3 } from './tiers/tier3.js';
 import { Tier4 } from './tiers/tier4.js';
 
-/** ADR-0013's four tiers, each stopping at a layer boundary. */
-export type Tier = 1 | 2 | 3 | 4;
-
-type Scheme = 'system' | 'light' | 'dark';
 
 interface File {
   readonly name: string;
@@ -65,17 +62,19 @@ export function TierForm({ tier, session }: { readonly tier: Exclude<Tier, 1>; r
 /**
  * The tier and scheme switcher (M9 AC-6, AC-12.4.1). The form above re-renders
  * in the tier chosen, over the same session, so the answers stay; beside it,
- * the code that tier needs. The scheme is the page's: the system's, or light
- * or dark set with tier-2 tokens (plan D8).
+ * the code that tier needs. The scheme is the page's, which sets it.
  */
-export function Switcher({ tier, onTier }: { readonly tier: Tier; readonly onTier: (tier: Tier) => void }): JSX.Element {
-  const [chosen, setChosen] = useState<Scheme>('system');
-  useEffect(() => {
-    const root = document.documentElement;
-    if (chosen === 'system') delete root.dataset['scheme'];
-    else root.dataset['scheme'] = chosen;
-  }, [chosen]);
-
+export function Switcher({
+  tier,
+  onTier,
+  scheme: chosen,
+  onScheme,
+}: {
+  readonly tier: Tier;
+  readonly onTier: (tier: Tier) => void;
+  readonly scheme: Scheme;
+  readonly onScheme: (scheme: Scheme) => void;
+}): JSX.Element {
   return (
     <section className="switcher" aria-labelledby="switcher-title">
       <h2 id="switcher-title">Customization tiers</h2>
@@ -93,7 +92,7 @@ export function Switcher({ tier, onTier }: { readonly tier: Tier; readonly onTie
           <legend>Colour scheme</legend>
           {SCHEMES.map((value) => (
             <label key={value}>
-              <input type="radio" name="scheme" checked={chosen === value} onChange={() => setChosen(value)} /> {SCHEME_NAMES[value]}
+              <input type="radio" name="scheme" checked={chosen === value} onChange={() => onScheme(value)} /> {SCHEME_NAMES[value]}
             </label>
           ))}
         </fieldset>

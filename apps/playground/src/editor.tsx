@@ -2,19 +2,14 @@ import type { Diagnostic, LoadMode, Session } from '@fhirq/core';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type JSX } from 'react';
 
 import matrix from '../../../docs/conformance/matrix.json?raw';
-import optionResolution from '../../../fixtures/option-resolution/questionnaire.json?raw';
-import scenario from '../../../fixtures/option-resolution/scenario.json?raw';
-import { load, type Loaded } from './load.js';
-import { inMemory, valueSets } from './resolver.js';
+import { load, type Loaded, type Source } from './load.js';
 import { rowsByCode, rowsFor, type Row } from './rows.js';
+import { resolver, SAMPLES } from './samples.js';
 
 /** How long typing pauses before the form re-renders. */
 const DEBOUNCE = 300;
 
 const rows = rowsByCode(matrix);
-
-/** The value sets the `option-resolution` fixture's resolver holds, answered from memory (plan D9). */
-const resolver = inMemory(valueSets(scenario));
 
 /**
  * Paste your own questionnaire (M9 AC-4, AC-12.3.1). The form above re-renders
@@ -22,15 +17,25 @@ const resolver = inMemory(valueSets(scenario));
  * lenient switch (plan D6): strict shows the full rejection, lenient the form
  * beside its warnings. Every finding is shown with its conformance rows. A
  * sample puts a fixture in the text; value sets resolve from memory, and one
- * the page does not hold fails, to show the kit's retry.
+ * the page does not hold fails, to show the kit's retry. It opens on what the
+ * page opened with, the demo or a share link's, already loaded, and tells the
+ * page each text and mode it loads, whatever it became.
  */
-export function Editor({ initial, onLoad }: { readonly initial: string; readonly onLoad: (session: Session, hostCode: boolean) => void }): JSX.Element {
-  const [text, setText] = useState(initial);
-  const [mode, setMode] = useState<LoadMode>('strict');
-  const [loaded, setLoaded] = useState<Loaded | null>(null);
-  // The page opens on the demo already loaded, strict; only an edit or a switch loads again.
-  const shown = useRef({ text: initial, mode: 'strict' });
-  const samples = useMemo(() => [{ name: 'The demo', text: initial }, ...SAMPLES], [initial]);
+export function Editor({
+  demo,
+  start,
+  onLoad,
+}: {
+  readonly demo: string;
+  readonly start: Source & { readonly loaded: Loaded | null };
+  readonly onLoad: (source: Source, loaded: Loaded) => void;
+}): JSX.Element {
+  const [text, setText] = useState(start.text);
+  const [mode, setMode] = useState<LoadMode>(start.mode);
+  const [loaded, setLoaded] = useState<Loaded | null>(start.loaded);
+  // Only an edit or a switch loads again.
+  const shown = useRef<Source>(start);
+  const samples = useMemo(() => [{ name: 'The demo', text: demo }, ...SAMPLES], [demo]);
   const sample = samples.findIndex((candidate) => candidate.text === text);
 
   useEffect(() => {
@@ -39,7 +44,7 @@ export function Editor({ initial, onLoad }: { readonly initial: string; readonly
       shown.current = { text, mode };
       const next = load(text, mode, resolver);
       setLoaded(next);
-      if (next.kind === 'loaded') onLoad(next.session, next.hostCode);
+      onLoad({ text, mode }, next);
     }, DEBOUNCE);
     return () => clearTimeout(handle);
   }, [text, mode, onLoad]);
@@ -78,9 +83,6 @@ export function Editor({ initial, onLoad }: { readonly initial: string; readonly
     </section>
   );
 }
-
-/** Fixtures past the demo, each with what it shows. */
-const SAMPLES = [{ name: 'Value sets (option-resolution)', text: optionResolution }] as const;
 
 function Outcome({ loaded }: { readonly loaded: Loaded }): JSX.Element {
   switch (loaded.kind) {
