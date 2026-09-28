@@ -31,5 +31,13 @@ demo's cross-field rule there too: the date someone stopped smoking may not
 come after the visit date (M3's rule shape, AC-15.1.1). The rule lives in the test, not
 the form, since R4 has no standard way to author one.
 
+**Version 3 (M9)** moves the `pain` group up, straight after `notice`, and
+changes nothing else. The playground opens on this form, and its first
+question, `pain-now`, now reveals the next one (`pain-score`) when it is
+answered yes (M9 AC-2, AC-12.1.2). In version 2 the first question was
+`visit-date`, which reveals nothing. Paths are unchanged, since they follow
+linkIds rather than position; only the order of items, and of answers in an
+emitted response, moves.
+
 Codes in `answerOption` carry no `system`: they are local to this form, and no
 code system is invented for them.

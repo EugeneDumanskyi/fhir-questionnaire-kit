@@ -11,6 +11,7 @@ import { createSession, itemPath, type Answer, type Questionnaire, type SessionO
  * and carries every structure the demo is there to show. Version 1 (M2) held
  * the conditions, the repeat and the item types; version 2 (M4) adds the
  * scored block, and this test the cross-field rule a host registers with it.
+ * Version 3 (M9) moves the pain block first, so the first question reveals one.
  */
 
 const json: unknown = JSON.parse(readFileSync(new URL('../../../../fixtures/demo/questionnaire.json', import.meta.url), 'utf8'));
@@ -134,6 +135,16 @@ describe('the demo fixture (AC-15.1.1)', () => {
     expect(ruled()).toEqual([['smoking/smoking-stopped', 'demo-stopped-after-visit']]);
     session.dispatch({ type: 'SetAnswer', path: itemPath('smoking', 'smoking-stopped'), answers: date('2020-01-01') });
     expect(ruled()).toEqual([]);
+  });
+
+  it('opens on a question that reveals another (version 3; M9 AC-2, AC-12.1.2)', () => {
+    const session = createSession(json as Questionnaire);
+    const questions = () => session.getSnapshot().nodes.filter((node) => node.item.type !== 'display' && node.item.type !== 'group');
+    const [first] = questions();
+    expect(first?.path).toBe('pain/pain-now');
+
+    session.dispatch({ type: 'SetAnswer', path: itemPath('pain', 'pain-now'), answers: [{ kind: 'boolean', value: true }] });
+    expect(questions()[1]?.path).toBe('pain/pain-score');
   });
 
   it('collapses the pain chain in one cycle, and keeps medicine instances apart', () => {

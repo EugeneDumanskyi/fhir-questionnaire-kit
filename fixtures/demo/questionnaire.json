@@ -1,7 +1,7 @@
 {
   "resourceType": "Questionnaire",
   "url": "urn:fhirq:demo:pre-visit-intake",
-  "version": "2",
+  "version": "3",
   "name": "PreVisitIntake",
   "title": "Pre-visit intake (demonstration)",
   "status": "draft",
@@ -11,25 +11,6 @@
       "linkId": "notice",
       "text": "This is a demonstration form. It is not for clinical use.",
       "type": "display"
-    },
-    {
-      "linkId": "visit",
-      "text": "About your visit",
-      "type": "group",
-      "item": [
-        {
-          "linkId": "visit-date",
-          "text": "Date of your appointment",
-          "type": "date",
-          "required": true
-        },
-        {
-          "linkId": "visit-reason",
-          "text": "What is the main reason for your visit?",
-          "type": "text",
-          "required": true
-        }
-      ]
     },
     {
       "linkId": "pain",
@@ -58,6 +39,25 @@
           "text": "Please tell reception about your pain when you arrive.",
           "type": "display",
           "enableWhen": [{ "question": "pain-onset", "operator": "exists", "answerBoolean": true }]
+        }
+      ]
+    },
+    {
+      "linkId": "visit",
+      "text": "About your visit",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "visit-date",
+          "text": "Date of your appointment",
+          "type": "date",
+          "required": true
+        },
+        {
+          "linkId": "visit-reason",
+          "text": "What is the main reason for your visit?",
+          "type": "text",
+          "required": true
         }
       ]
     },
