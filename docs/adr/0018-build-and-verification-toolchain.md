@@ -89,3 +89,8 @@ The licence gate reads each direct dev dependency's `license` field against the 
 | CSS lint for the themes (NFR-I-05, ADR-0013's tokens-only rule) | stylelint, exact-pinned, built-in rules only | MIT |
 
 It runs over `packages/themes/src/*.css` in `pnpm lint`, so in the fast lane. The config uses no plugin and no shared config, so it adds one direct dev dependency, and the count stays well inside NFR-S-06. Like every gate, it has fixtures that must fail. It replaces the Vitest regex checks over the stylesheets, which were a stand-in until now.
+
+**Amendment note, accepted 2026-09-28 (`06-roadmap.md` M9 plan D1 and D10): the package build and Lighthouse CI.** Two rows of the Decision's table are made concrete:
+
+- **Bundling.** `pnpm build` runs an in-repo esbuild script. It builds every JavaScript target that the packages' `exports` maps name, from the published entry points: ESM and CJS for core, react and themes. `tsc` still emits the declarations, and themes copies its CSS into `dist`. The element keeps `scripts/build-element.mjs`, ESM only (M7 D9). A test checks that every `exports` target exists after a build, so a map can no longer point at a file nothing builds.
+- **Lighthouse CI.** `@lhci/cli` (Apache-2.0), exact-pinned, one direct dev dependency. It runs three times against the built playground with the default mobile preset (simulated slow 4G, 4× CPU slowdown). It asserts NFR-P-06's thresholds on the median, in a blocking `Playground gates` job, which is the pipeline shape's "playground and docs build + Lighthouse" lane for the playground. The docs join it in M10.

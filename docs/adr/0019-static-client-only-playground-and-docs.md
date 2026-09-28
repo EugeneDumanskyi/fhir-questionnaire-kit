@@ -58,3 +58,9 @@ Neither site handles data that needs a server. The open questions are hosting, t
 - A test asserts the served HTML contains the CSP meta tag with `connect-src 'none'` as the first element in `<head>`.
 - Lighthouse CI runs against the built playground at mobile settings and fails below the NFR-P-06 thresholds.
 - A link checker runs over the built docs, including every conformance-matrix test link (AC-13.4.2).
+
+**Amendment note, accepted 2026-09-28 (`06-roadmap.md` M9 plan D2 and D4): the path, the CSP in development, and "initial assets".** The Decision stands. Three readings are added:
+
+- **Relative asset paths.** Vite builds with `base: './'`, so the same build works under `/<repo>/playground/` on Pages and from any local static server. M9 deploys the playground alone, on push to the default branch. M11 adds the docs and ties both to the release.
+- **The CSP is injected into builds only.** A small Vite plugin writes the policy above as the first element of `<head>` in the built HTML. Vite's development server needs inline scripts and a WebSocket, which the policy forbids, so it runs without one. Every CSP and network test runs against the build, which is what is deployed.
+- **"No request after initial asset load."** The editor, the panes and the tier switcher are lazy chunks, loaded after first interaction or idle, so their requests come after first paint. The Verification test therefore allows only these requests: a same-origin `GET`, with no query string and no body, for a file in the built output. None may carry the pasted sentinel, and none may start after the lazy chunks have settled. `connect-src 'none'` is unchanged, since chunks load through `script-src 'self'`.
