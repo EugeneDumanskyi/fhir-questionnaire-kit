@@ -1,10 +1,9 @@
-import { createSession, type Questionnaire, type SessionOptions } from '@fhirq/core';
+import { createSession } from '@fhirq/core';
 import type { ControlKind, ControlProps } from '@fhirq/core/view';
 import { defineQuestionnaireElement, type FhirQuestionnaireElement } from '@fhirq/element';
 
-import DEMO from '../../../fixtures/demo/questionnaire.json';
-import { KINDS, KINDS_OPTIONS } from '../../../packages/element/test/kinds.js';
-import { MATRIX_FORMS, type MatrixForm } from './names.js';
+import { FORMS } from './forms.js';
+import { MATRIX_FORMS } from './names.js';
 import type { EntryKind, OptionKind } from './tier3.js';
 
 /**
@@ -15,11 +14,6 @@ import type { EntryKind, OptionKind } from './tier3.js';
  * mirror `tier3.tsx`: a text field, with a unit menu for a quantity that
  * names its units, or a native `select`.
  */
-
-const FORMS: Readonly<Record<MatrixForm, { readonly form: Questionnaire; readonly options?: SessionOptions }>> = {
-  demo: { form: DEMO as Questionnaire },
-  kinds: { form: KINDS, options: { ...KINDS_OPTIONS, resolver: () => Promise.reject(new Error('The kinds page has no terminology server')) } },
-};
 
 type Props<K extends ControlKind> = ControlProps<K>;
 

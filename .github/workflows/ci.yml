@@ -401,8 +401,9 @@ jobs:
   # of every kind, tiers 1-3 in both renderers and 4 in React, loaded,
   # answered and refused, light and dark, 375 and 1280 px, in Chromium
   # (NFR-A-01); then print, the tier-2 worked example, the token sentinel,
-  # the visual gates (contrast, focus, targets, reflow, motion) and RTL in
-  # Chromium, Firefox and WebKit. The report is published as an artifact
+  # the visual gates (contrast, focus, targets, reflow, motion), RTL and the
+  # screen-reader pass pages in Chromium, Firefox and WebKit. The report and
+  # the pass pages (docs/accessibility.md) are published as an artifact
   # whether or not the matrix passed. It replaced M1's axe proof on the slice.
   a11y-gates:
     name: Accessibility gates
@@ -437,14 +438,18 @@ jobs:
       - name: Install browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
-      - name: Axe matrix in Chromium; print, tier-2 example and token sentinel in Chromium, Firefox and WebKit
+      - name: Axe matrix in Chromium; the theme's, visual, RTL and pass-page gates in Chromium, Firefox and WebKit
         run: pnpm test:browser:a11y
 
       - name: Build the accessibility report
         if: ${{ !cancelled() }}
         run: pnpm a11y:report
 
-      - name: Upload the accessibility report and the browser report
+      - name: Build the screen-reader pass pages
+        if: ${{ !cancelled() }}
+        run: pnpm a11y:pages
+
+      - name: Upload the accessibility report, the pass pages and the browser report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:

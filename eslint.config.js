@@ -177,6 +177,8 @@ export default tseslint.config(
       '**/*.tsbuildinfo',
       '**/.tsbuild/**',
       '.stryker-tmp/**',
+      // Generated: reports, and the built pages `pnpm a11y:pages` writes there.
+      'reports/**',
       // Deliberate violations, linted only by the rules' own tests.
       'tools/eslint-rules/test/fixtures/**',
     ],
