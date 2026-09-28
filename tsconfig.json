@@ -21,6 +21,12 @@
       "path": "examples/react-quickstart"
     },
     {
+      "path": "examples/themed-host"
+    },
+    {
+      "path": "docs/examples"
+    },
+    {
       "path": "./tsconfig.tests.json"
     }
   ]

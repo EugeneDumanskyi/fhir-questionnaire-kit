@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* The docs' examples and their Node test, under the repository's own
+       strictness. They emit nothing anyone ships: the declarations go to a
+       scratch directory only because `composite` requires an output. */
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "rootDir": ".",
+    "outDir": ".tsbuild"
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "references": [{ "path": "../../packages/core" }]
+}

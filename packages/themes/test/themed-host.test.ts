@@ -39,7 +39,9 @@ describe('the tier-2 worked example (M8 AC-9)', () => {
 
   it('has no JavaScript: the page loads the element and the two stylesheets, and nothing else', () => {
     const page = read('index.html');
-    expect(readdirSync(at('.')).filter((file) => /\.[cm]?[jt]sx?$/.test(file) && file !== 'fhirq-element.js')).toEqual([]);
+    // `react.ts` is the React host's stylesheet imports the README shows (M10 plan step 3), and nothing more.
+    expect(readdirSync(at('.')).filter((file) => /\.[cm]?[jt]sx?$/.test(file) && file !== 'fhirq-element.js')).toEqual(['react.ts']);
+    expect(read('react.ts').split('\n').filter((line) => !/^import '[^']+\.css';$/.test(line) && line !== '')).toEqual([]);
     expect(page.match(/<script\b[^>]*>/g)).toEqual(['<script src="fhirq-element.js">']);
     expect(page.match(/<link\b[^>]*>/g)).toEqual(['<link rel="stylesheet" href="design-system.css">', '<link rel="stylesheet" href="theme.css">']);
     expect(page).not.toMatch(/<style\b|\sstyle=|\son[a-z]+=/i);

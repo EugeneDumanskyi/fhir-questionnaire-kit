@@ -3,6 +3,7 @@
 A FHIR R4 `Questionnaire` rendered as an accessible form by one script tag
 and one element, with no bundler, transpiler or framework (AC-09.1.1).
 
+<!-- snippet: examples/element-embed/index.html#embed -->
 ```html
 <script src="fhirq-element.js"></script>
 

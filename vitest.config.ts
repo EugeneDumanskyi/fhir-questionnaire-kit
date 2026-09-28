@@ -107,6 +107,16 @@ export default defineConfig({
         },
       },
       {
+        // NFR-Q-08 (M10 AC-3): the examples the docs show, run as written.
+        resolve: { alias: workspaceSources },
+        test: {
+          name: 'docs-examples',
+          root: './docs/examples',
+          environment: 'node',
+          include: ['test/**/*.test.ts'],
+        },
+      },
+      {
         test: {
           name: 'element',
           root: './packages/element',

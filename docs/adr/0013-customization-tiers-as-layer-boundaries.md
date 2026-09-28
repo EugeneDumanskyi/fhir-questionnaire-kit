@@ -39,6 +39,7 @@ Each tier means "use the kit down to layer N, supply the rest yourself".
 
 **The tier-3 control contract** is the view node from ADR-0007, narrowed to what a control needs:
 
+<!-- signature -->
 ```ts
 interface ControlProps<T extends ItemType> {
   node: ControlView<T>;   // value, options + option state, required, invalid, issues, units

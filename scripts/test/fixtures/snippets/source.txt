@@ -1,0 +1,19 @@
+const outside = 1;
+
+// #region top
+import { a } from 'a';
+// #endregion
+
+function f() {
+  // #region nested
+  const x = 1;
+  // #region inner
+  const y = 2;
+  // #endregion
+
+  return x + y;
+  // #endregion
+}
+
+// #region open
+const never = 3;

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* The React host's imports the README shows, typechecked and linted.
+       They emit nothing anyone ships: the declarations go to a scratch
+       directory only because `composite` requires an output. The docs'
+       examples run them (docs/examples/test/examples.test.ts). */
+    "rootDir": ".",
+    "outDir": ".tsbuild"
+  },
+  "include": ["react.ts"]
+}

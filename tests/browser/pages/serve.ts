@@ -198,9 +198,10 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
   const css = (path: string): Asset => ({ body: readFileSync(at(path), 'utf8'), type: 'text/css' });
   const TYPES: Readonly<Record<string, string>> = { css: 'text/css', html: 'text/html', json: 'application/json', md: 'text/markdown' };
   const example = (directory: string, served: string) =>
-    readdirSync(at(directory))
-      .filter((file) => file !== 'fhirq-element.js')
-      .map((file): [string, Asset] => [`${served}${file}`, { body: readFileSync(at(`${directory}/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' }]);
+    // Files only: a typechecked example has a `.tsbuild/` directory beside them.
+    readdirSync(at(directory), { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name !== 'fhirq-element.js')
+      .map(({ name: file }): [string, Asset] => [`${served}${file}`, { body: readFileSync(at(`${directory}/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' }]);
   const iife = scriptTagBuild();
   const [element, elementSrc, elementTyped, react19, react18, typed19, typed18, ssr19, ssr18, matrixElement, matrixReact] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),

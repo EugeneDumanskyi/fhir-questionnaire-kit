@@ -9,6 +9,7 @@ the variables its own components already read, light and dark, and its page.
 [`theme.css`](theme.css) is all the form needs. It maps those variables onto
 the kit's tokens:
 
+<!-- snippet: examples/themed-host/theme.css -->
 ```css
 fhir-questionnaire,
 .intake {
@@ -52,6 +53,7 @@ it, so there is nothing else to load.
 The same `theme.css`, imported after the kit's two stylesheets, with the form
 inside an element of class `intake`:
 
+<!-- snippet: examples/themed-host/react.ts -->
 ```tsx
 import '@fhirq/themes/default.css';
 import '@fhirq/themes/base.css';

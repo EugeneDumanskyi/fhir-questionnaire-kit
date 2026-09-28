@@ -16,6 +16,7 @@
 | At most 60 public symbols across all packages | `scripts/test/api-surface.test.js` counts them (NFR-U-05) |
 | No `any` in the public surface | `@typescript-eslint/no-explicit-any` everywhere (NFR-M-04) |
 | Hosts import entry points only | `fhirq/no-deep-imports` (NFR-M-06) |
+| Every example in this document compiles and runs | Each is a region of a file in `docs/examples/`, typechecked, linted and run by its Vitest project; `pnpm docs:snippets` copies it here and `pnpm lint` fails on a copy out of step (NFR-Q-08) |
 
 **Release tags.**
 - **`@beta`:** documented and supported. Before 1.0, a change can land in a minor release, with a report diff and a changeset.
@@ -48,11 +49,12 @@
 
 ### 3.1 Creating a session
 
+<!-- snippet: docs/examples/src/session.ts#create -->
 ```ts
 import { createSession, itemPath } from '@fhirq/core';
 
 const session = createSession(questionnaire, { loadMode: 'strict', retention: 'retain-exclude' });
-session.subscribe((change) => render(session.getSnapshot()));
+session.subscribe(() => render(session.getSnapshot()));
 session.dispatch({ type: 'SetAnswer', path: itemPath('smoker'), answers: [{ kind: 'boolean', value: true }] });
 ```
 
@@ -215,12 +217,18 @@ Only enabled items have issues: a hidden required item never blocks completion (
 
 **Cross-field rules** are `SessionOptions.rules`, fixed for the session's life:
 
+<!-- snippet: docs/examples/src/rules.ts#rules -->
 ```ts
-createSession(questionnaire, {
+const reading = (answers?: readonly Answer[]) => {
+  const first = answers?.[0];
+  return first?.kind === 'integer' ? first.value : null;
+};
+
+const session = createSession(questionnaire, {
   rules: [{
     inputs: ['systolic', 'diastolic'],
     check: ({ systolic, diastolic }) =>
-      (systolic?.[0]?.value ?? 0) <= (diastolic?.[0]?.value ?? 0) ? 'bp-order' : null,
+      (reading(systolic) ?? 0) <= (reading(diastolic) ?? 0) ? 'bp-order' : null,
   }],
 });
 ```
@@ -234,6 +242,7 @@ createSession(questionnaire, {
 
 ### 3.8 Emission
 
+<!-- snippet: docs/examples/src/emission.ts#emit -->
 ```ts
 import { emitResponse } from '@fhirq/core';
 
@@ -253,11 +262,12 @@ A hidden item is absent, never present with an empty answer, whatever the retent
 
 What the host plugs in (BC5, `04-domain.md` §3.5). Each is a `SessionOptions` field, fixed for the session's life. None performs I/O on core's behalf: whatever a resolver does is the host's.
 
+<!-- snippet: docs/examples/src/collaborators.ts#collaborators -->
 ```ts
-createSession(questionnaire, {
+const session = createSession(questionnaire, {
   resolver: (valueSet, { signal }) => terminology.expand(valueSet, { signal }),
   scorers: { total: { inputs: ['q1', 'q2'], score: (projection) => sumOrdinals(projection) } },
-  evaluator: { evaluate: (expression, { path, projection }) => fhirpath(expression, projection) },
+  evaluator: { evaluate: (expression, { projection }) => fhirpath(expression, projection) },
   sanitize: (xhtml) => purify(xhtml),
   onCollaboratorError: (error, diagnostic) => report(error, diagnostic.code),
 });
@@ -283,8 +293,14 @@ createSession(questionnaire, {
 
 ## 4. `@fhirq/core/resume`
 
+<!-- snippet: docs/examples/src/resume.ts#resume -->
 ```ts
 import { hydrateSession, restoreSession, snapshot } from '@fhirq/core/resume';
+
+// Engine state: the hidden answer to "per-day" comes back.
+const restored = restoreSession(questionnaire, snapshot(session));
+// A stored response: only what was emitted comes back.
+const hydrated = hydrateSession(questionnaire, emitResponse(session));
 ```
 
 A third entry point (ADR-0021), so that hosts that never resume, and the element, do not carry this code. Its functions take the `Questionnaire`, `QuestionnaireResponse`, `Session` and `SessionOptions` of `@fhirq/core`, and return a `Session`.
@@ -325,6 +341,7 @@ Hydration never fails because of content (INV-E-08). It throws only `definition-
 
 The presentation model (ADR-0007): every BC6 behaviour that is not markup, written once, for both renderers and for a headless host (tier 4, ADR-0013). `createView(session, options)` returns a `View` whose `subscribe` and `getSnapshot` go straight into `useSyncExternalStore`. `getSnapshot` returns one `ViewModel` until the session or the text being typed changes. The view holds no domain state: another view over the same session, with another locale or prefix, changes nothing in it (INV-P-01).
 
+<!-- snippet: docs/examples/src/view.ts#view -->
 ```ts
 import { createSession } from '@fhirq/core';
 import { createView } from '@fhirq/core/view';

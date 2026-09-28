@@ -31,6 +31,7 @@ So this is not a call-through. It is branching on precision, and formatting with
 
 **The locale is a presentation option, not session state.** `view/` extends the options object ADR-0007 already defines:
 
+<!-- signature -->
 ```ts
 interface ViewOptions {
   idPrefix: string;
