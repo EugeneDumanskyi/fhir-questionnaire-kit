@@ -107,6 +107,9 @@ jobs:
       - name: API reports, @fhirq/core, @fhirq/core/view, @fhirq/core/resume, @fhirq/react and @fhirq/element
         run: pnpm api:check
 
+      - name: Package build, ESM and CJS, and every exports target exists
+        run: pnpm build
+
       - name: Upload the coverage summary and the bundle report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

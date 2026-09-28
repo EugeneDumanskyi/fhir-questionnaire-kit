@@ -1,0 +1,9 @@
+{
+  "name": "unbuilt",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" },
+    "./extra": { "import": "./dist/extra.js" },
+    "./theme.css": "./dist/theme.css",
+    "./package.json": "./package.json"
+  }
+}
