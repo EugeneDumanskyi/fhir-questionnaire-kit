@@ -112,3 +112,65 @@ body {
     display: block;
   }
 }
+
+/* Paste your own questionnaire (M9 AC-4). */
+
+.editor {
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  margin-block-start: 2rem;
+}
+
+.editor h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.load-mode {
+  display: grid;
+  gap: 0.25rem;
+  margin-block: 0 0.75rem;
+  margin-inline: 0;
+  font-size: 0.875rem;
+}
+
+.editor textarea {
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  margin-block-start: 0.25rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+}
+
+.outcome {
+  font-size: 0.875rem;
+}
+
+.findings {
+  padding-inline-start: 1.25rem;
+}
+
+.findings > li + li {
+  margin-block-start: 0.75rem;
+}
+
+.findings p {
+  margin: 0;
+}
+
+.severity {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.rows {
+  margin-block: 0.25rem 0;
+  padding-inline-start: 1rem;
+}
+
+.findings code,
+.outcome code {
+  overflow-wrap: anywhere;
+}

@@ -13,10 +13,10 @@ const ENTRY_POINTS = {
 
 /**
  * What an app may import from outside itself by relative path: the fixtures it
- * bundles as data. Packages come by name, from their built `dist` (ADR-0019,
- * M9 AC-8).
+ * bundles as data, and the conformance matrix its diagnostics link to (M9 plan
+ * D5). Packages come by name, from their built `dist` (ADR-0019, M9 AC-8).
  */
-const APP_OUTSIDE = ['fixtures/**'];
+const APP_OUTSIDE = ['fixtures/**', 'docs/conformance/matrix.json'];
 
 /**
  * ADR-0012's single exception. It does not exist yet — the element is M7 — and

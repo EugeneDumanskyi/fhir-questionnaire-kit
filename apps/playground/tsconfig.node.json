@@ -6,6 +6,6 @@
     "rootDir": ".",
     "outDir": ".tsbuild/node"
   },
-  "include": ["vite.config.ts", "vite/**/*.ts", "test/**/*.ts", "src/host.ts"],
+  "include": ["vite.config.ts", "vite/**/*.ts", "test/**/*.ts", "src/host.ts", "src/load.ts", "src/rows.ts"],
   "references": [{ "path": "../../packages/core" }]
 }

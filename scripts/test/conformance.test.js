@@ -16,6 +16,16 @@ const matrix = JSON.parse(text('docs/conformance/matrix.json'));
 const STATUSES = ['supported', 'partial', 'not supported', 'out of scope'];
 const RUNNER = 'packages/core/test/conformance/fixtures.test.ts';
 
+/** Every `DiagnosticCode`, read from the union that declares them. */
+const CODES = [...text('packages/core/src/kernel/diagnostic.ts').matchAll(/^\s*\| '([a-z0-9-]+)';?$/gm)].map(([, code]) => code);
+
+/** The files that report on a questionnaire as it loads: the R4 codec, the compiler and the session's opening. */
+const LOAD_SOURCES = [
+  'packages/core/src/fhir/r4/parse.ts',
+  'packages/core/src/open.ts',
+  ...readdirSync(new URL('packages/core/src/definition/', root)).map((name) => `packages/core/src/definition/${name}`),
+].map(text);
+
 /** Every `<behaviour>: <case>` the conformance runner will name. */
 const fixtureCases = readdirSync(new URL('fixtures/', root), { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(new URL(`fixtures/${entry.name}/scenario.json`, root)))
@@ -28,11 +38,11 @@ describe('the generated operator × type fixtures (M2 AC-1)', () => {
 });
 
 describe('docs/conformance/matrix.json (M2 plan D6)', () => {
-  it('has rows of {id, feature, status, reason, tests}, with unique ids', () => {
+  it('has rows of {id, feature, status, reason, tests} and optional diagnostics, with unique ids', () => {
     const ids = matrix.rows.map((row) => row.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const row of matrix.rows) {
-      expect(Object.keys(row).sort(), row.id).toEqual(['feature', 'id', 'reason', 'status', 'tests']);
+      expect(Object.keys(row).filter((key) => key !== 'diagnostics').sort(), row.id).toEqual(['feature', 'id', 'reason', 'status', 'tests']);
       expect(row.id, row.id).toMatch(/^[a-z][a-z-]*(\.[A-Za-z0-9-]+)+$/);
       expect(STATUSES, row.id).toContain(row.status);
       expect(typeof row.feature, row.id).toBe('string');
@@ -67,6 +77,23 @@ describe('docs/conformance/matrix.json (M2 plan D6)', () => {
       expect(row?.tests, `${operator} on ${type}`).toContain(`${RUNNER} > enablewhen-${type}: operators on ${type}`);
     }
     expect(PAIRS).toHaveLength(50);
+  });
+
+  it('lists only diagnostic codes that exist, each once per row (M9 plan D5)', () => {
+    expect(CODES).toContain('control-contract');
+    for (const row of matrix.rows.filter((candidate) => 'diagnostics' in candidate)) {
+      expect(row.diagnostics.length, row.id).toBeGreaterThan(0);
+      expect(new Set(row.diagnostics).size, row.id).toBe(row.diagnostics.length);
+      for (const code of row.diagnostics) expect(CODES, row.id).toContain(code);
+    }
+  });
+
+  it('maps every load-time diagnostic code to at least one row (M9 plan D5)', () => {
+    const loadTime = CODES.filter((code) => LOAD_SOURCES.some((source) => source.includes(`'${code}'`)));
+    expect(loadTime).toContain('not-r4');
+    expect(loadTime).toContain('unsupported-extension');
+    const mapped = new Set(matrix.rows.flatMap((row) => row.diagnostics ?? []));
+    expect(loadTime.filter((code) => !mapped.has(code))).toEqual([]);
   });
 
   it('links every conformance fixture case from some row', () => {
