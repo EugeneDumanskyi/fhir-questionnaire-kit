@@ -54,8 +54,8 @@ const KEYSTROKE = 'keystroke.spec.ts';
  * - `playground`: the built playground under Pages' project path, from its
  *   `dist` rather than in memory (M9; `pnpm test:playground`, after `pnpm
  *   build:playground`); `playground-firefox`, `playground-webkit`: its
- *   privacy and CSP spec in the other two engines. They join CI in the
- *   `Playground gates` job.
+ *   privacy and CSP spec in the other two engines. Blocking from M9 in CI's
+ *   `Playground gates` job, with Lighthouse on the same build.
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
  *
