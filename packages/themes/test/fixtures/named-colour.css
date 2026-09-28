@@ -1,0 +1,4 @@
+/* Must fail: color-named. */
+.fhirq-label {
+  color: black;
+}

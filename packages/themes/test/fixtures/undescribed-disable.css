@@ -1,0 +1,5 @@
+/* Must fail: a disable carries its reason. */
+.fhirq-item {
+  /* stylelint-disable-next-line unit-allowed-list */
+  gap: 1px;
+}

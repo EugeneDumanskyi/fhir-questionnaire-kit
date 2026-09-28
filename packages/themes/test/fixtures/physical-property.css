@@ -1,0 +1,8 @@
+/* Must fail: property-disallowed-list. */
+.fhirq-item {
+  margin-left: var(--fhirq-space-1);
+  padding-bottom: 0;
+  border-right: 0;
+  width: 100%;
+  top: 0;
+}

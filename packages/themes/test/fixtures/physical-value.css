@@ -1,0 +1,12 @@
+/* Must fail: declaration-property-value-disallowed-list. */
+.fhirq-item {
+  text-align: left;
+  float: right;
+  margin: 0 var(--fhirq-space-2) 0 0;
+  border-radius: var(--fhirq-radius) 0;
+}
+
+.fhirq-choice {
+  padding: calc(var(--fhirq-space-1) * 2) 0 0 calc(var(--fhirq-space-2) + var(--fhirq-space-1));
+  border-radius: calc(var(--fhirq-radius) * 2) 0 / var(--fhirq-radius);
+}
