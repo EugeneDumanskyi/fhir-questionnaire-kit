@@ -1,0 +1,18 @@
+{
+  "$comment": "A Vitest JSON report, cut to the fields the gate reads. Paths are relative to the repository root.",
+  "success": false,
+  "testResults": [
+    {
+      "name": "packages/core/test/example.test.ts",
+      "assertionResults": [
+        { "ancestorTitles": ["enableWhen"], "title": "shows a question", "status": "passed" },
+        { "ancestorTitles": ["enableWhen"], "title": "hides a question", "status": "passed" },
+        { "ancestorTitles": ["scoring"], "title": "adds the scores", "status": "failed" },
+        { "ancestorTitles": ["scoring"], "title": "rounds the total", "status": "passed" },
+        { "ancestorTitles": ["calculated"], "title": "recomputes", "status": "skipped" },
+        { "ancestorTitles": [], "title": "a top-level test", "status": "passed" },
+        { "ancestorTitles": [], "title": "a todo", "status": "todo" }
+      ]
+    }
+  ]
+}

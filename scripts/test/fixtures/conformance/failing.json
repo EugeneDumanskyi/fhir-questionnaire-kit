@@ -1,0 +1,17 @@
+{
+  "$comment": "A matrix that must fail over report.json: one row per reason the gate fails.",
+  "rows": [
+    { "id": "bad.status", "feature": "an unknown status", "status": "mostly", "reason": "Why.", "tests": [] },
+    { "id": "bad.reason-on-supported", "feature": "a reason on a supported row", "status": "supported", "reason": "Why.", "tests": ["packages/core/test/example.test.ts > enableWhen"] },
+    { "id": "bad.no-reason", "feature": "an exclusion without a reason", "status": "out of scope", "reason": null, "tests": [] },
+    { "id": "bad.two-line-reason", "feature": "a reason over two lines", "status": "partial", "reason": "One.\nTwo.", "tests": ["packages/core/test/example.test.ts > enableWhen"] },
+    { "id": "bad.unlinked", "feature": "a supported row with no test", "status": "supported", "reason": null, "tests": [] },
+    { "id": "bad.shape", "feature": "a link without a title", "status": "supported", "reason": null, "tests": ["packages/core/test/example.test.ts"] },
+    { "id": "bad.missing-file", "feature": "a link to a file that does not exist", "status": "supported", "reason": null, "tests": ["packages/core/test/gone.test.ts > enableWhen"] },
+    { "id": "bad.not-run", "feature": "a link to a file that did not run", "status": "supported", "reason": null, "tests": ["scripts/check-conformance.mjs > enableWhen"] },
+    { "id": "bad.title", "feature": "a title nothing carries", "status": "supported", "reason": null, "tests": ["packages/core/test/example.test.ts > enableWhen hides"] },
+    { "id": "bad.failed", "feature": "a describe with a failing test", "status": "supported", "reason": null, "tests": ["packages/core/test/example.test.ts > scoring"] },
+    { "id": "bad.skipped", "feature": "a skipped test", "status": "supported", "reason": null, "tests": ["packages/core/test/example.test.ts > recomputes"] },
+    { "id": "bad.todo", "feature": "a todo", "status": "partial", "reason": "Why.", "tests": ["packages/core/test/example.test.ts > a todo"] }
+  ]
+}

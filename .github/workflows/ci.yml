@@ -67,7 +67,9 @@ jobs:
   # ADR-0021), from M5 the view, from M6 @fhirq/react and from M7 the element
   # and its IIFE (ADR-0024), from M8 the theme's stylesheets, and the API
   # reports (NFR-M-04): a public surface that differs from
-  # packages/*/etc/*.api.md fails until the PR commits the new report.
+  # packages/*/etc/*.api.md fails until the PR commits the new report. From
+  # M10 the coverage run's test report also holds every conformance row's
+  # links to passing tests (NFR-Q-04, scripts/check-conformance.mjs).
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest
@@ -101,6 +103,9 @@ jobs:
       - name: Core coverage, 95 % line and 90 % branch
         run: pnpm test:coverage:core
 
+      - name: Conformance links, every supported or partial row links a passing test
+        run: node scripts/check-conformance.mjs
+
       - name: Bundle budgets, @fhirq/core, @fhirq/core/view, @fhirq/core/resume, @fhirq/react, the element and its IIFE, and resume inputs
         run: pnpm measure --check
 
@@ -117,6 +122,7 @@ jobs:
           name: engine-gates
           path: |
             coverage/coverage-summary.json
+            reports/core-tests.json
             reports/bundle-sizes.md
             reports/api/
           retention-days: 30
