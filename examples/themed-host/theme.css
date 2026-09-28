@@ -1,0 +1,20 @@
+fhir-questionnaire,
+.intake {
+  --fhirq-font-family: var(--ds-font);
+  --fhirq-font-size: var(--ds-text);
+  --fhirq-font-size-heading: calc(var(--ds-text) * 1.4);
+  --fhirq-font-size-subheading: calc(var(--ds-text) * 1.2);
+  --fhirq-space-1: var(--ds-unit);
+  --fhirq-space-2: calc(var(--ds-unit) * 2);
+  --fhirq-space-3: calc(var(--ds-unit) * 3);
+  --fhirq-space-4: calc(var(--ds-unit) * 4);
+  --fhirq-radius: var(--ds-radius);
+  --fhirq-color-text: var(--ds-ink);
+  --fhirq-color-text-muted: var(--ds-ink-soft);
+  --fhirq-color-background: var(--ds-paper);
+  --fhirq-color-control-background: var(--ds-surface);
+  --fhirq-color-border: var(--ds-line);
+  --fhirq-color-accent: var(--ds-brand);
+  --fhirq-color-focus: var(--ds-brand);
+  --fhirq-color-error: var(--ds-danger);
+}

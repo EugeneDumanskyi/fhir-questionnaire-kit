@@ -1,0 +1,215 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "urn:fhirq:demo:pre-visit-intake",
+  "version": "2",
+  "name": "PreVisitIntake",
+  "title": "Pre-visit intake (demonstration)",
+  "status": "draft",
+  "description": "A demonstration form for the FHIR Questionnaire Kit. Not for clinical use: it is not a validated instrument and has not been reviewed by a clinician.",
+  "item": [
+    {
+      "linkId": "notice",
+      "text": "This is a demonstration form. It is not for clinical use.",
+      "type": "display"
+    },
+    {
+      "linkId": "visit",
+      "text": "About your visit",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "visit-date",
+          "text": "Date of your appointment",
+          "type": "date",
+          "required": true
+        },
+        {
+          "linkId": "visit-reason",
+          "text": "What is the main reason for your visit?",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "linkId": "pain",
+      "text": "Pain",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "pain-now",
+          "text": "Are you in pain today?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "pain-score",
+          "text": "From 0 (no pain) to 10 (the worst pain you can imagine), how strong is it?",
+          "type": "integer",
+          "enableWhen": [{ "question": "pain-now", "operator": "=", "answerBoolean": true }]
+        },
+        {
+          "linkId": "pain-onset",
+          "text": "When did the strong pain start?",
+          "type": "dateTime",
+          "enableWhen": [{ "question": "pain-score", "operator": ">=", "answerInteger": 7 }]
+        },
+        {
+          "linkId": "pain-tell-reception",
+          "text": "Please tell reception about your pain when you arrive.",
+          "type": "display",
+          "enableWhen": [{ "question": "pain-onset", "operator": "exists", "answerBoolean": true }]
+        }
+      ]
+    },
+    {
+      "linkId": "body",
+      "text": "Measurements",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "weight",
+          "text": "Your weight, if you know it",
+          "type": "quantity"
+        },
+        {
+          "linkId": "temperature",
+          "text": "Your temperature today in °C, if you have taken it",
+          "type": "decimal"
+        }
+      ]
+    },
+    {
+      "linkId": "smoking",
+      "text": "Smoking",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "smoking-status",
+          "text": "Do you smoke?",
+          "type": "choice",
+          "answerOption": [
+            { "valueCoding": { "code": "never", "display": "I have never smoked" } },
+            { "valueCoding": { "code": "former", "display": "I used to smoke" } },
+            { "valueCoding": { "code": "current", "display": "I smoke now" } }
+          ]
+        },
+        {
+          "linkId": "smoking-per-day",
+          "text": "About how many cigarettes a day?",
+          "type": "integer",
+          "enableWhen": [{ "question": "smoking-status", "operator": "=", "answerCoding": { "code": "current" } }]
+        },
+        {
+          "linkId": "smoking-stopped",
+          "text": "When did you stop?",
+          "type": "date",
+          "enableWhen": [{ "question": "smoking-status", "operator": "=", "answerCoding": { "code": "former" } }]
+        },
+        {
+          "linkId": "smoking-support",
+          "text": "Would you like information about support to stop smoking?",
+          "type": "boolean",
+          "enableBehavior": "all",
+          "enableWhen": [
+            { "question": "smoking-status", "operator": "=", "answerCoding": { "code": "current" } },
+            { "question": "smoking-per-day", "operator": ">", "answerInteger": 0 }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "medicine",
+      "text": "Medicines you take",
+      "type": "group",
+      "repeats": true,
+      "extension": [
+        { "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs", "valueInteger": 20 }
+      ],
+      "item": [
+        {
+          "linkId": "medicine-name",
+          "text": "Name of the medicine",
+          "type": "string"
+        },
+        {
+          "linkId": "medicine-as-needed",
+          "text": "Do you take it only when you need it?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "medicine-how-often",
+          "text": "How often do you take it?",
+          "type": "open-choice",
+          "enableWhen": [{ "question": "medicine-as-needed", "operator": "=", "answerBoolean": false }],
+          "answerOption": [
+            { "valueCoding": { "code": "daily", "display": "Once a day" } },
+            { "valueCoding": { "code": "twice-daily", "display": "Twice a day" } },
+            { "valueCoding": { "code": "weekly", "display": "Once a week" } }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "allergies",
+      "text": "Allergies",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "allergies-any",
+          "text": "Do you have any allergies?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "allergies-detail",
+          "text": "What are you allergic to, and what happens?",
+          "type": "text",
+          "enableWhen": [{ "question": "allergies-any", "operator": "=", "answerBoolean": true }]
+        }
+      ]
+    },
+    {
+      "linkId": "wellbeing",
+      "type": "group",
+      "text": "How you have been feeling",
+      "item": [
+        {
+          "linkId": "wellbeing-intro",
+          "type": "display",
+          "text": "Over the past two weeks, how often has each of these been true for you?"
+        },
+        {
+          "linkId": "wellbeing-energy",
+          "type": "choice",
+          "text": "I have had little energy for the things I usually do",
+          "answerOption": [
+            { "valueCoding": { "code": "never", "display": "Not at all", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 0 }] } },
+            { "valueCoding": { "code": "some-days", "display": "On some days", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 1 }] } },
+            { "valueCoding": { "code": "most-days", "display": "On most days", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 2 }] } },
+            { "valueCoding": { "code": "every-day", "display": "Every day or almost", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 3 }] } }
+          ]
+        },
+        {
+          "linkId": "wellbeing-sleep",
+          "type": "choice",
+          "text": "My sleep has not left me rested",
+          "answerOption": [
+            { "valueCoding": { "code": "never", "display": "Not at all", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 0 }] } },
+            { "valueCoding": { "code": "some-days", "display": "On some days", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 1 }] } },
+            { "valueCoding": { "code": "most-days", "display": "On most days", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 2 }] } },
+            { "valueCoding": { "code": "every-day", "display": "Every day or almost", "extension": [{ "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue", "valueDecimal": 3 }] } }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "arrival-note",
+      "text": "A member of staff will check these answers with you when you arrive.",
+      "type": "display",
+      "enableBehavior": "any",
+      "enableWhen": [
+        { "question": "pain-score", "operator": ">=", "answerInteger": 7 },
+        { "question": "allergies-any", "operator": "=", "answerBoolean": true }
+      ]
+    }
+  ]
+}
