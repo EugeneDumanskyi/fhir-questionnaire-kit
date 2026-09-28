@@ -1,8 +1,8 @@
 # FHIR Questionnaire Kit — Public API
 
-*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
+*The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element; M8 the complete theme. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-28.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha`: M6 and M7 have both built on it without a new field, and moving it to `@beta` is open (`06-roadmap.md` M7, "Still open"). `@fhirq/react` is complete for M6 and `@fhirq/element` for M7; both stay `@alpha` while the view they expose is (§6, §7). `@fhirq/themes` names its token set as `@beta` from M8 (§8).
+**Status, 2026-09-28.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha`: M6 and M7 have both built on it without a new field, and moving it to `@beta` is open (`06-roadmap.md` M7, "Still open"). `@fhirq/react` is complete for M6 and `@fhirq/element` for M7; both stay `@alpha` while the view they expose is (§6, §7). `@fhirq/themes` is complete for M8: `TOKENS` is `@beta`, and its stylesheets style every row of the DOM contract (§8). The surface is 59 of 60 symbols (§2).
 
 ---
 
