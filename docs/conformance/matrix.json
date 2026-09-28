@@ -1416,6 +1416,96 @@
       "tests": [
         "packages/core/test/view/drafts.test.ts > reads a dateTime’s wall clock in the host zone, keeps a written offset, and assumes no zone (M5 plan D4)"
       ]
+    },
+    {
+      "id": "scope.fhirpath",
+      "feature": "FHIRPath expressions as a whole (Brief §5)",
+      "status": "out of scope",
+      "reason": "No FHIRPath engine: much work for little architectural payoff. A host may evaluate `calculatedExpression` through `ExpressionEvaluator` (ADR-0017); each other expression extension has its own row",
+      "tests": []
+    },
+    {
+      "id": "scope.terminology-server",
+      "feature": "Terminology server and `ValueSet` resolution (Brief §5)",
+      "status": "out of scope",
+      "reason": "The kit expands no value set: the host injects an `OptionResolver` and owns the terminology service behind it (ADR-0012)",
+      "tests": []
+    },
+    {
+      "id": "scope.sdc-advanced-rendering",
+      "feature": "Advanced SDC rendering extensions, such as `rendering-style`, `questionnaire-choiceOrientation` and `questionnaire-sliderStepValue` (Brief §5)",
+      "status": "out of scope",
+      "reason": "A long tail that adds surface without serving the core need: they load without a finding and the form renders as if they were absent",
+      "tests": [
+        "packages/core/test/view/exclusions.test.ts > ignores the SDC rendering extensions the kit does not read, and renders as if they were absent"
+      ]
+    },
+    {
+      "id": "scope.translation",
+      "feature": "`Questionnaire.item.text` translation extensions (`translation` on `_text`) (NFR-I-06)",
+      "status": "not supported",
+      "reason": "Excluded from v1 (03-nfr.md N19): the authored text shows in every locale, and the extension loads without a finding",
+      "tests": [
+        "packages/core/test/view/exclusions.test.ts > shows the authored text and ignores a translation extension, whatever the locale (NFR-I-06)"
+      ]
+    },
+    {
+      "id": "scope.vue-adapter",
+      "feature": "A Vue adapter (Brief §5)",
+      "status": "out of scope",
+      "reason": "React sets the adapter pattern over the view model (ADR-0007); a second adapter only repeats it, and a Vue host can use `<fhir-questionnaire>`",
+      "tests": []
+    },
+    {
+      "id": "scope.response-storage",
+      "feature": "Storing responses, or handling PHI in any other way (Brief §5)",
+      "status": "out of scope",
+      "reason": "Transport is the host's: the kit emits a `QuestionnaireResponse` and has no storage, network, auth, tenancy, encryption or retention surface (NFR-X-01, NFR-X-02)",
+      "tests": [
+        "packages/core/test/safety/no-io.test.ts > no network, no storage, no telemetry (AC-14.6.1, NFR-X-01, NFR-X-02)"
+      ]
+    },
+    {
+      "id": "scope.pdf",
+      "feature": "PDF generation (Brief §5)",
+      "status": "out of scope",
+      "reason": "Owning fonts, pagination and page breaks across repeating groups is a swamp; the default theme has a print stylesheet for printable HTML instead (02-requirements.md §17)",
+      "tests": []
+    },
+    {
+      "id": "scope.authoring-ui",
+      "feature": "A questionnaire authoring UI (Brief §5)",
+      "status": "out of scope",
+      "reason": "Render, don't author: the playground's editor is for evaluating the kit on a form, not for building one",
+      "tests": []
+    },
+    {
+      "id": "scope.hosted-service",
+      "feature": "A hosted service (Brief §5)",
+      "status": "out of scope",
+      "reason": "Not the product: packages, a static playground and static docs, with no server (ADR-0019)",
+      "tests": []
+    },
+    {
+      "id": "scope.fhir-client",
+      "feature": "A full FHIR client: search, read, write, paging, auth (Brief §5)",
+      "status": "out of scope",
+      "reason": "Not the product: the kit takes and emits resources as JSON. The element's one request per `src` or value set is its whole network path (ADR-0012)",
+      "tests": []
+    },
+    {
+      "id": "scope.reference-backend",
+      "feature": "A reference backend (Brief §9.5)",
+      "status": "out of scope",
+      "reason": "Dropped (02-requirements.md R10): a Docker surface and a synthetic-data obligation that serve no principle, while the playground already shows the kit working",
+      "tests": []
+    },
+    {
+      "id": "scope.site-analytics",
+      "feature": "Analytics, telemetry or third-party assets on the playground or the docs site",
+      "status": "out of scope",
+      "reason": "None, by decision (NFR-X-09, ADR-0019): the playground's Content Security Policy sets `connect-src 'none'`, and the docs site's will match it (M10 plan D1)",
+      "tests": []
     }
   ]
 }

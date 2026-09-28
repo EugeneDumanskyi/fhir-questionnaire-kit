@@ -96,6 +96,41 @@ describe('docs/conformance/matrix.json (M2 plan D6)', () => {
     expect(loadTime.filter((code) => !mapped.has(code))).toEqual([]);
   });
 
+  it('keeps a row for every exclusion Brief §5 and 02-requirements.md §17 name, none supported (M10 AC-2)', () => {
+    const REQUIRED = [
+      // Brief §5.
+      'scope.fhirpath',
+      'scope.terminology-server',
+      'scope.sdc-advanced-rendering',
+      'definition.r5',
+      'scope.vue-adapter',
+      'scope.response-storage',
+      'scope.pdf',
+      'scope.authoring-ui',
+      'scope.hosted-service',
+      'scope.fhir-client',
+      // 02-requirements.md §17's boundary clarifications.
+      'scope.reference-backend',
+      'response.status.amended',
+      'enablewhen.question-in-repeat-from-outside',
+      'definition.items-under-question',
+      'definition.initial-values',
+      'options.time-reference',
+      'enablewhen.calculated-question',
+      'extension.enablewhen-expression',
+      'extension.answer-expression',
+      'extension.candidate-expression',
+      'extension.initial-expression',
+      'extension.variable',
+      'extension.launch-context',
+      'scope.site-analytics',
+      // 03-nfr.md NFR-I-06.
+      'scope.translation',
+    ];
+    const statuses = new Map(matrix.rows.map((row) => [row.id, row.status]));
+    for (const id of REQUIRED) expect(['not supported', 'out of scope'], id).toContain(statuses.get(id));
+  });
+
   it('links every conformance fixture case from some row', () => {
     const linked = new Set(matrix.rows.flatMap((row) => row.tests).filter((link) => link.startsWith(`${RUNNER} > `)).map((link) => link.slice(RUNNER.length + 3)));
     expect(fixtureCases.filter((name) => !linked.has(name))).toEqual([]);
