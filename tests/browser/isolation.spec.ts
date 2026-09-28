@@ -201,22 +201,20 @@ test('tokens set on the element reach inside, and ::part() rules apply', async (
 });
 
 /**
- * FINDING, for the themes (M8), and a contradiction to raise: ADR-0014 says
- * tokens inherit "from the host element or any ancestor", and
- * `default.css` that a token set on any ancestor wins. In the element it
- * does not: the embedded preset sets every token on `:host`, and a value on
- * the element itself hides one inherited from above it. Expected to fail
- * until M8 settles which is right; it then fails the other way and has to
- * be looked at.
+ * Where a host sets a token (ADR-0014, 2026-09-28 note): on the element, not
+ * on an ancestor. The embedded preset declares every token on `:host`, and a
+ * value on the element itself hides one inherited from above it, so the
+ * themed page's error colour on `.host-frame` stays the preset's. React takes
+ * a token on any ancestor: `tokens.spec.ts`.
  */
-test('a token set on an ancestor of the element reaches inside, as ADR-0014 says', async ({ page }) => {
-  test.fail(true, 'M8: the preset’s `:host` defaults hide a token set on an ancestor (ADR-0014).');
+test('a token set on an ancestor of the element does not reach inside: tokens go on the element', async ({ page }) => {
   await openIsolation(page, 'themed', true);
   const error = await page.evaluate(() => {
     const required = document.querySelector('fhir-questionnaire')?.shadowRoot?.querySelector('.fhirq-required');
     return required === null || required === undefined ? null : getComputedStyle(required).color;
   });
-  expect(error).toBe('rgb(4, 5, 6)');
+  // `--fhirq-color-error`, light (default.css), not the host's rgb(4, 5, 6).
+  expect(error).toBe('rgb(179, 38, 30)');
 });
 
 /**

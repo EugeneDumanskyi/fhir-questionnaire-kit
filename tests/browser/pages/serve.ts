@@ -9,6 +9,7 @@ import type { Page as BrowserPage } from '@playwright/test';
 import { build, transform, type Plugin } from 'esbuild';
 
 import { ELEMENT_PAGES, ELEMENT_TYPED, HOST_STYLES, PAGES, TYPED, type ElementPage, type ElementTyped, type HostStyle, type Page, type Typed } from './names.js';
+import { SENTINEL_CSS } from './sentinels.js';
 
 /**
  * Test pages for the S1 browser proofs, built in memory with esbuild and served
@@ -32,6 +33,13 @@ export const EMBED = '/embed/';
  * `.intake`, as its README tells a React host to (M8 AC-9).
  */
 export const THEMED_HOST = { element: '/themed-host/', react: '/themed-host-react.html' } as const;
+
+/**
+ * The demo under a host stylesheet that sets every token to a sentinel
+ * (`sentinels.ts`, M8 AC-2): on the element itself, and on an ancestor of
+ * React's form, where ADR-0014's 2026-09-28 note has a host set them.
+ */
+export const TOKEN_PAGES = { element: '/tokens-element.html', react: '/tokens-react.html' } as const;
 
 /**
  * ADR-0020's pair, 26 hours apart: React pages are rendered on a server in
@@ -245,6 +253,28 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
             `<link rel="stylesheet" href="${THEMED_HOST.element}design-system.css"><link rel="stylesheet" href="${THEMED_HOST.element}theme.css">` +
             '<script type="module" src="/react-19.js"></script>',
           `<div class="intake"><div id="root" data-page="demo">${ssr19.pages.demo}</div></div>`,
+        ),
+      ),
+    ],
+    ['/tokens.css', { body: SENTINEL_CSS, type: 'text/css' }],
+    [
+      TOKEN_PAGES.element,
+      page(
+        html(
+          'fhirq tokens',
+          '<link rel="stylesheet" href="/tokens.css"><script type="module" src="/element.js"></script>',
+          '<fhir-questionnaire data-page="demo"></fhir-questionnaire>',
+        ),
+      ),
+    ],
+    [
+      TOKEN_PAGES.react,
+      page(
+        html(
+          'fhirq tokens',
+          '<link rel="stylesheet" href="/default.css"><link rel="stylesheet" href="/base.css"><link rel="stylesheet" href="/tokens.css">' +
+            '<script type="module" src="/react-19.js"></script>',
+          `<div class="sentinel"><div id="root" data-page="demo">${ssr19.pages.demo}</div></div>`,
         ),
       ),
     ],
