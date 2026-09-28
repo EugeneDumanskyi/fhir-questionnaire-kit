@@ -1,0 +1,21 @@
+/* Tier 4's own stylesheet: the kit's classes and stylesheets are not used. */
+
+.headless {
+  display: grid;
+  gap: 1rem;
+}
+
+.headless div,
+.headless fieldset {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.headless :is(button, input, select, textarea) {
+  min-block-size: 44px;
+  font: inherit;
+}
+
+.headless [aria-invalid='true'] {
+  outline: 2px solid;
+}
