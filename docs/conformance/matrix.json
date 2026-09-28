@@ -1,5 +1,5 @@
 {
-  "$comment": "Conformance matrix rows (06-roadmap.md M2 plan D6). A test link is `<test file> > <describe or test name>`. `diagnostics`, where present, lists the diagnostic codes that report the row's behaviour; the playground shows a diagnostic's rows beside it (M9 plan D5). M10 renders this page and enforces every link.",
+  "$comment": "Conformance matrix rows (06-roadmap.md M2 plan D6). A test link is `<test file> > <describe or test name>`. `diagnostics`, where present, lists the diagnostic codes that report the row's behaviour; the playground shows a diagnostic's rows beside it (M9 plan D5). `scripts/check-conformance.mjs` fails CI on any link that names no test, or a test that did not pass (NFR-Q-04); M10 renders this page.",
   "rows": [
     {
       "id": "enablewhen.boolean.eq",

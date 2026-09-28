@@ -1,0 +1,10 @@
+{
+  "$comment": "A matrix the gate passes over report.json: a link to a describe, to a test inside one, to a top-level test; reasons where the status needs one.",
+  "rows": [
+    { "id": "enablewhen.all", "feature": "a describe", "status": "supported", "reason": null, "tests": ["packages/core/test/example.test.ts > enableWhen"] },
+    { "id": "enablewhen.one", "feature": "a test in a describe", "status": "supported", "reason": null, "tests": ["packages/core/test/example.test.ts > shows a question"] },
+    { "id": "top.level", "feature": "a top-level test", "status": "partial", "reason": "Only the first case.", "tests": ["packages/core/test/example.test.ts > a top-level test", "packages/core/test/example.test.ts > rounds the total"] },
+    { "id": "excluded.none", "feature": "an exclusion", "status": "out of scope", "reason": "Belongs to the host.", "tests": [] },
+    { "id": "excluded.diagnosed", "feature": "an exclusion its diagnostic reports", "status": "not supported", "reason": "Reported, not rendered.", "tests": ["packages/core/test/example.test.ts > hides a question"] }
+  ]
+}

@@ -9,8 +9,8 @@ and from M3 stored and expected `QuestionnaireResponse`s.
 case hydrates from (`response.json` and the like), and one a case must emit at
 its end (`expected-response.json` and the like). A scenario names each file it
 uses, and a directory holds no response file that no case names. Each case is
-linked from a row of `docs/conformance/matrix.json`. M10 renders the matrix and
-enforces every link against a passing run (NFR-Q-04, AC-13.4.2).
+linked from a row of `docs/conformance/matrix.json`, and `pnpm test:conformance`
+fails on any link to a test that did not pass (NFR-Q-04, AC-13.4.2).
 
 ## The scenario (`scenario.json`)
 

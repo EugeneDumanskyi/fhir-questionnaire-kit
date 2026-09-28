@@ -6,8 +6,8 @@ import { files, PAIRS } from '../gen-conformance-fixtures.mjs';
 
 /**
  * The conformance matrix's shape (M2 plan D6) and the generated operator
- * fixtures. M10 renders the matrix and enforces every link against a passing
- * run (NFR-Q-04); until then a link must at least name a test that exists.
+ * fixtures. Here a link must name a test that exists in the source; that it
+ * passed is `scripts/check-conformance.mjs`'s check, over a run (NFR-Q-04).
  */
 
 const root = new URL('../../', import.meta.url);
