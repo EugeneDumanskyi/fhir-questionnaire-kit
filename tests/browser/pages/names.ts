@@ -44,3 +44,15 @@ export type ElementPage = (typeof ELEMENT_PAGES)[number];
  */
 export const HOST_STYLES = ['clean', 'hostile', 'inherited', 'themed'] as const;
 export type HostStyle = (typeof HOST_STYLES)[number];
+
+/**
+ * M8's axe matrix (plan D4): the demo and the form of every kind, in each
+ * renderer's tiers. Tier 1 is the default theme, tier 2 the worked example's
+ * tokens (`examples/themed-host`), tier 3 an accessible override of every
+ * answerable kind, tier 4 a headless host, which only React has.
+ */
+export const MATRIX_FORMS = ['demo', 'kinds'] as const;
+export type MatrixForm = (typeof MATRIX_FORMS)[number];
+export const MATRIX_TIERS = { element: [1, 2, 3], react: [1, 2, 3, 4] } as const;
+export type MatrixRenderer = keyof typeof MATRIX_TIERS;
+export type Tier = 1 | 2 | 3 | 4;

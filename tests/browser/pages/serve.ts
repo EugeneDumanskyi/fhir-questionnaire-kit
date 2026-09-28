@@ -8,7 +8,23 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Page as BrowserPage } from '@playwright/test';
 import { build, transform, type Plugin } from 'esbuild';
 
-import { ELEMENT_PAGES, ELEMENT_TYPED, HOST_STYLES, PAGES, TYPED, type ElementPage, type ElementTyped, type HostStyle, type Page, type Typed } from './names.js';
+import {
+  ELEMENT_PAGES,
+  ELEMENT_TYPED,
+  HOST_STYLES,
+  MATRIX_FORMS,
+  MATRIX_TIERS,
+  PAGES,
+  TYPED,
+  type ElementPage,
+  type ElementTyped,
+  type HostStyle,
+  type MatrixForm,
+  type MatrixRenderer,
+  type Page,
+  type Tier,
+  type Typed,
+} from './names.js';
 import { SENTINEL_CSS } from './sentinels.js';
 
 /**
@@ -40,6 +56,14 @@ export const THEMED_HOST = { element: '/themed-host/', react: '/themed-host-reac
  * React's form, where ADR-0014's 2026-09-28 note has a host set them.
  */
 export const TOKEN_PAGES = { element: '/tokens-element.html', react: '/tokens-react.html' } as const;
+
+/**
+ * A page of M8's axe matrix (plan D4): one form in one renderer's tier,
+ * rendered on the client. Tier 2 links the worked example's two stylesheets
+ * after the kit's, and React renders inside its `.intake`; tier 4 links only
+ * the headless host's own stylesheet.
+ */
+export const matrixPage = (renderer: MatrixRenderer, tier: Tier, form: MatrixForm) => `/matrix-${renderer}-${String(tier)}-${form}.html`;
 
 /**
  * ADR-0020's pair, 26 hours apart: React pages are rendered on a server in
@@ -178,7 +202,7 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       .filter((file) => file !== 'fhirq-element.js')
       .map((file): [string, Asset] => [`${served}${file}`, { body: readFileSync(at(`${directory}/${file}`), 'utf8'), type: TYPES[file.split('.').pop() ?? ''] ?? 'text/plain' }]);
   const iife = scriptTagBuild();
-  const [element, elementSrc, elementTyped, react19, react18, typed19, typed18, ssr19, ssr18] = await Promise.all([
+  const [element, elementSrc, elementTyped, react19, react18, typed19, typed18, ssr19, ssr18, matrixElement, matrixReact] = await Promise.all([
     bundle('tests/browser/pages/element-page.ts', null),
     bundle('tests/browser/pages/element-src.ts', null),
     bundle('tests/browser/pages/element-keystroke.ts', null, 'production'),
@@ -188,6 +212,35 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
     bundle('tests/browser/pages/keystroke-page.tsx', 18, 'production'),
     rendered(19),
     rendered(18),
+    bundle('tests/browser/pages/matrix-element.ts', null),
+    bundle('tests/browser/pages/matrix-react.tsx', 19),
+  ]);
+  const TIER_2 = `<link rel="stylesheet" href="${THEMED_HOST.element}design-system.css"><link rel="stylesheet" href="${THEMED_HOST.element}theme.css">`;
+  const KIT = '<link rel="stylesheet" href="/default.css"><link rel="stylesheet" href="/base.css">';
+  const matrixPages = MATRIX_FORMS.flatMap((form) => [
+    ...MATRIX_TIERS.element.map((tier): [string, Asset] => [
+      matrixPage('element', tier, form),
+      page(
+        html(
+          'fhirq matrix',
+          `${tier === 2 ? TIER_2 : ''}<script type="module" src="/matrix-element.js"></script>`,
+          `<fhir-questionnaire data-form="${form}" data-tier="${String(tier)}"></fhir-questionnaire>`,
+        ),
+      ),
+    ]),
+    ...MATRIX_TIERS.react.map((tier): [string, Asset] => {
+      const mount = `<div id="root" data-form="${form}" data-tier="${String(tier)}"></div>`;
+      return [
+        matrixPage('react', tier, form),
+        page(
+          html(
+            'fhirq matrix',
+            `${tier === 4 ? '<link rel="stylesheet" href="/headless.css">' : KIT}${tier === 2 ? TIER_2 : ''}<script type="module" src="/matrix-react.js"></script>`,
+            tier === 2 ? `<div class="intake">${mount}</div>` : mount,
+          ),
+        ),
+      ];
+    }),
   ]);
   const reactPages = (major: 18 | 19, ssr: Rendered) =>
     PAGES.map((name): [string, Asset] => [
@@ -257,6 +310,10 @@ async function buildAssets(): Promise<ReadonlyMap<string, Asset>> {
       ),
     ],
     ['/tokens.css', { body: SENTINEL_CSS, type: 'text/css' }],
+    ...matrixPages,
+    ['/matrix-element.js', js(matrixElement)],
+    ['/matrix-react.js', js(matrixReact)],
+    ['/headless.css', css('tests/browser/pages/headless.css')],
     [
       TOKEN_PAGES.element,
       page(

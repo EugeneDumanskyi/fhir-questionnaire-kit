@@ -1,0 +1,21 @@
+.headless {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.headless div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.headless :is(button, input, select, textarea) {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+}
+
+.headless a {
+  display: inline-block;
+  min-block-size: 24px;
+  color: inherit;
+}
