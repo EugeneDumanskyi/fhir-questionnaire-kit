@@ -14,9 +14,11 @@ const linter = new Linter({ configType: 'flat', cwd: root });
 
 /**
  * Lints a fixture file on disk, exactly as `pnpm lint` would, so the "fixture
- * that must fail" of AC-6 is a real file and not a string in a test.
+ * that must fail" of AC-6 is a real file and not a string in a test. `as`
+ * lints it as though it lived at another repository path, for rules that read
+ * where a file is.
  */
-function lintFixture(relativePath, rule, options) {
+function lintFixture(relativePath, rule, options, as = relativePath) {
   const code = readFileSync(`${root}/${relativePath}`, 'utf8');
   const jsx = relativePath.endsWith('.tsx');
   return linter.verify(
@@ -32,7 +34,7 @@ function lintFixture(relativePath, rule, options) {
       },
       rules: { [`fhirq/${rule}`]: options === undefined ? 'error' : ['error', options] },
     },
-    `${root}/${relativePath}`,
+    `${root}/${as}`,
   );
 }
 
@@ -153,6 +155,31 @@ describe('no-deep-imports', () => {
 
   it('passes on published entry points and same-package relative imports', () => {
     expect(lintFixture(`${fixtures}/${rule}/must-pass.ts`, rule, options)).toEqual([]);
+  });
+
+  describe('in an app, which runs on the published dist (M9 AC-8, ADR-0019)', () => {
+    const app = { ...options, entryPoints: { ...options.entryPoints, '@fhirq/themes': ['@fhirq/themes/default.css'] }, appOutside: ['fixtures/**'] };
+    const lintApp = (file) => lintFixture(`${fixtures}/${rule}/${file}`, rule, app, 'apps/playground/src/__lint-fixture__.ts');
+
+    it('fails on a climb into sources, a climb out of the app, and sources by absolute or /@fs/ path', () => {
+      const messages = lintApp('app-must-fail.ts');
+      expect(messages.map((message) => message.message.split(' ').slice(1, 3).join(' '))).toEqual([
+        'climbs out',
+        'leaves apps/playground',
+        'names a',
+        'names a',
+      ]);
+      expect(messages[1].message).toContain('only for fixtures/**');
+    });
+
+    it('passes on entry points, the app\'s own files and the fixtures it bundles', () => {
+      expect(lintApp('app-must-pass.ts')).toEqual([]);
+    });
+
+    it('allows nothing outside the app when no path is given', () => {
+      const messages = lintFixture(`${fixtures}/${rule}/app-must-pass.ts`, rule, { entryPoints: app.entryPoints }, 'apps/playground/src/__lint-fixture__.ts');
+      expect(messages.map((message) => message.message)).toEqual([expect.stringContaining("leaves apps/playground for fixtures/demo/questionnaire.json. An app imports packages by name, from their built dist (ADR-0019), and reaches outside itself only for nothing.")]);
+    });
   });
 });
 

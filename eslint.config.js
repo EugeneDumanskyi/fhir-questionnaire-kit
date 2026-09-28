@@ -12,6 +12,13 @@ const ENTRY_POINTS = {
 };
 
 /**
+ * What an app may import from outside itself by relative path: the fixtures it
+ * bundles as data. Packages come by name, from their built `dist` (ADR-0019,
+ * M9 AC-8).
+ */
+const APP_OUTSIDE = ['fixtures/**'];
+
+/**
  * ADR-0012's single exception. It does not exist yet — the element is M7 — and
  * it is listed here now so that the rule has to be edited, visibly, if a second
  * file ever wants the network.
@@ -192,9 +199,9 @@ export default tseslint.config(
     // seconds more in the fast lane, well inside NFR-M-07's 3 minutes. They need
     // the project graph, so they cover the TypeScript the tsconfig projects
     // include, plus the root config files through the default project. The
-    // playground is an app with its own dependencies and joins in M9; the
-    // examples, consumer code with a project of their own, join in M6.
-    files: ['packages/**/*.{ts,tsx}', 'examples/**/*.{ts,tsx}', 'tests/**/*.ts', '*.config.ts'],
+    // examples, consumer code with a project of their own, joined in M6; the
+    // playground, an app with its own dependencies, in M9.
+    files: ['packages/**/*.{ts,tsx}', 'examples/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'tests/**/*.ts', '*.config.ts'],
     // Lint tests lint virtual files that no project includes.
     ignores: ['**/__lint-fixture__.ts'],
     extends: [tseslint.configs.recommendedTypeCheckedOnly],
@@ -240,7 +247,7 @@ export default tseslint.config(
 
       /* NFR-M-06. */
       'fhirq/no-network': ['error', { allow: NETWORK_ALLOWED }],
-      'fhirq/no-deep-imports': ['error', { entryPoints: ENTRY_POINTS }],
+      'fhirq/no-deep-imports': ['error', { entryPoints: ENTRY_POINTS, appOutside: APP_OUTSIDE }],
     },
   },
 
