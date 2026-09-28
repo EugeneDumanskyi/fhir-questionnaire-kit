@@ -1,0 +1,42 @@
+/* The playground's own page. System fonts only, no images (ADR-0019); the
+   form takes its look from the kit's preset. */
+
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.4;
+}
+
+body {
+  margin: 0;
+}
+
+.playground {
+  box-sizing: border-box;
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  padding: 0.75rem 1rem 2rem;
+}
+
+.intro h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.pitch {
+  margin-block: 0.25rem;
+}
+
+.privacy {
+  margin-block: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.score {
+  margin-block: 1rem;
+}
+
+.host pre {
+  overflow-x: auto;
+  font-size: 0.8125rem;
+}

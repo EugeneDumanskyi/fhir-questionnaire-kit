@@ -125,6 +125,7 @@ export default defineConfig({
       },
       {
         // The playground's build tooling and pure modules, in Node (M9).
+        resolve: { alias: workspaceSources },
         test: {
           name: 'playground',
           root: './apps/playground',

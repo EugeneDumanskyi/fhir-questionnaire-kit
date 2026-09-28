@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": [],
+    /* Vite's client types: `?raw` imports and stylesheet side-effect imports. */
+    "types": ["vite/client"],
     "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": ".tsbuild/app"
