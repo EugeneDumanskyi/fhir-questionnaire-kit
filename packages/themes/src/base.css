@@ -235,6 +235,23 @@ textarea.fhirq-control {
   white-space: nowrap;
 }
 
+/* Print (M8 plan D7): what acts only on screen goes; every instance, answer
+   and error stays, and an instance, a choice or the summary keeps to a page. */
+@media print {
+  .fhirq-add,
+  .fhirq-remove,
+  .fhirq-retry,
+  .fhirq-status {
+    display: none;
+  }
+
+  .fhirq-instance,
+  .fhirq-choice,
+  .fhirq-summary {
+    break-inside: avoid;
+  }
+}
+
 /* The theme moves nothing; this keeps a host's additions still too. */
 @media (prefers-reduced-motion: reduce) {
   .fhirq-form,

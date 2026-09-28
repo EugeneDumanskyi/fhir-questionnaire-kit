@@ -7,7 +7,7 @@ import { TOKENS } from '../src/index.js';
 const read = (name: string) => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const base = read('base.css');
 const preset = read('default.css');
-const [light = '', dark = ''] = preset.split('@media (prefers-color-scheme: dark)');
+const [light = '', dark = ''] = preset.split('@media screen and (prefers-color-scheme: dark)');
 
 const declared = (css: string) => new Set([...css.matchAll(/(--fhirq-[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
 

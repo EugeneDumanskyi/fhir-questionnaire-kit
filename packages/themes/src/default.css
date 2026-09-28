@@ -1,6 +1,7 @@
 /*
  * @fhirq/themes/default.css — the default token preset: values only
- * (ADR-0013). Light by default, dark under prefers-color-scheme.
+ * (ADR-0013). Light by default, dark under prefers-color-scheme on screen:
+ * paper is light, so a dark scheme would print light text on it.
  *
  * `:root` serves light DOM (React); `:host` serves the element's shadow root.
  * In React, a token set on any ancestor wins. In the element, `:host` hides an
@@ -39,7 +40,7 @@
   --fhirq-color-error: #b3261e;
 }
 
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
   :root,
   :host {
     --fhirq-color-text: #e8e8ec;
