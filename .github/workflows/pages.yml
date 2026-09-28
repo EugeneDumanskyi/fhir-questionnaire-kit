@@ -1,0 +1,80 @@
+name: Pages
+
+# The playground on GitHub Pages under /playground/ (ADR-0019, M9 plan D2).
+# Every push to main has passed CI as a pull request, so the deploy builds and
+# publishes; it does not re-run the gates. M11 adds the docs at the site's
+# root and ties both to the release. Until then the root is empty.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time, and none cut off halfway: a later push waits.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the playground
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the packages, then the playground from their dist
+        run: pnpm build:playground
+
+      # The build's asset paths are relative (base './'), so it is published
+      # as built, one directory down.
+      - name: Lay out the site
+        run: |
+          mkdir -p site
+          cp -R apps/playground/dist site/playground
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}playground/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
