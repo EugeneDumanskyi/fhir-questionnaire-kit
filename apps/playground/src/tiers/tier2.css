@@ -1,0 +1,49 @@
+/*
+ * The host's design system, as `examples/themed-host/design-system.css` has
+ * it, kept to the form's container so the rest of the page keeps its own.
+ * `theme.css` maps these onto the kit's tokens. It follows the page's scheme:
+ * the system's, or the one chosen above the code.
+ */
+
+.intake {
+  --ds-font: Georgia, 'Times New Roman', serif;
+  --ds-text: 1.0625rem;
+  --ds-unit: 0.375rem;
+  --ds-radius: 0.5rem;
+  --ds-ink: #14213d;
+  --ds-ink-soft: #4a5568;
+  --ds-paper: #fbfaf7;
+  --ds-surface: #ffffff;
+  --ds-line: #6b7280;
+  --ds-brand: #0f766e;
+  --ds-danger: #b42318;
+
+  padding: calc(var(--ds-unit) * 4);
+  border-radius: var(--ds-radius);
+  font-family: var(--ds-font);
+  font-size: var(--ds-text);
+  color: var(--ds-ink);
+  background-color: var(--ds-paper);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-scheme='light']) .intake {
+    --ds-ink: #f1f5f9;
+    --ds-ink-soft: #cbd5e1;
+    --ds-paper: #0b1220;
+    --ds-surface: #111a2e;
+    --ds-line: #94a3b8;
+    --ds-brand: #5eead4;
+    --ds-danger: #fda29b;
+  }
+}
+
+:root[data-scheme='dark'] .intake {
+  --ds-ink: #f1f5f9;
+  --ds-ink-soft: #cbd5e1;
+  --ds-paper: #0b1220;
+  --ds-surface: #111a2e;
+  --ds-line: #94a3b8;
+  --ds-brand: #5eead4;
+  --ds-danger: #fda29b;
+}

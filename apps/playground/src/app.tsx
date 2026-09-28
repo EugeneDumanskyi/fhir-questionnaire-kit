@@ -1,13 +1,15 @@
 import type { Session } from '@fhirq/core';
-import { Questionnaire } from '@fhirq/react';
 import { lazy, Suspense, useCallback, useEffect, useState, useSyncExternalStore, type JSX } from 'react';
 
 import hostSource from './host.ts?raw';
-import { messages } from './host.js';
+import type { Tier } from './switcher.js';
+import { Tier1 } from './tiers/tier1.js';
 
 /** Everything past the first screen comes in its own chunk, after it (ADR-0019, plan S3). */
 const Panes = lazy(() => import('./panes.js').then(({ Panes: component }) => ({ default: component })));
 const Editor = lazy(() => import('./editor.js').then(({ Editor: component }) => ({ default: component })));
+const Switcher = lazy(() => import('./switcher.js').then(({ Switcher: component }) => ({ default: component })));
+const TierForm = lazy(() => import('./switcher.js').then(({ TierForm: component }) => ({ default: component })));
 
 /** ADR-0019, where the policy the page runs under is written down. */
 const POLICY = 'https://github.com/EugeneDumanskyi/fhir-questionnaire-kit/blob/main/docs/adr/0019-static-client-only-playground-and-docs.md';
@@ -23,11 +25,13 @@ interface Shown {
 /**
  * The first screen (M9 AC-1, AC-2, AC-5): one sentence, the privacy
  * statement, and the demo form, working, with nothing to set up first. The
- * editor replaces the session; the form and the panes follow it.
+ * editor replaces the session; the form and the panes follow it. The switcher
+ * draws the form in another tier, over the same session.
  */
 export function App({ demo, session: initial }: { readonly demo: string; readonly session: Session }): JSX.Element {
   const idle = useIdle();
   const [{ session, hostCode, key }, setShown] = useState<Shown>({ session: initial, hostCode: true, key: 0 });
+  const [tier, setTier] = useState<Tier>(1);
   const onLoad = useCallback((next: Session, nextHostCode: boolean) => setShown(({ key: last }) => ({ session: next, hostCode: nextHostCode, key: last + 1 })), []);
   return (
     <main className="playground">
@@ -39,7 +43,13 @@ export function App({ demo, session: initial }: { readonly demo: string; readonl
         </p>
       </header>
       <section className="demo" aria-label="Demonstration form">
-        <Questionnaire key={key} session={session} messages={messages} />
+        {tier === 1 ? (
+          <Tier1 key={key} session={session} />
+        ) : (
+          <Suspense fallback={null}>
+            <TierForm key={key} tier={tier} session={session} />
+          </Suspense>
+        )}
         {hostCode && (
           <>
             <Score session={session} />
@@ -54,6 +64,7 @@ export function App({ demo, session: initial }: { readonly demo: string; readonl
       </section>
       {idle && (
         <Suspense fallback={null}>
+          <Switcher tier={tier} onTier={setTier} />
           <Panes session={session} />
           <Editor initial={demo} onLoad={onLoad} />
         </Suspense>

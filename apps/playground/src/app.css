@@ -185,3 +185,52 @@ body {
   max-inline-size: 100%;
   font: inherit;
 }
+
+/* The tier and scheme switcher (M9 AC-6). */
+
+.switcher {
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  margin-block-start: 2rem;
+}
+
+.switcher h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.choices fieldset {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.code figure {
+  margin-block: 0.75rem 0;
+  margin-inline: 0;
+}
+
+.code figcaption,
+.switcher details figcaption {
+  font-size: 0.875rem;
+}
+
+.switcher pre {
+  overflow: auto;
+  max-block-size: 24rem;
+  margin: 0;
+  padding: 0.5rem;
+  border: 1px solid GrayText;
+  font-size: 0.8125rem;
+}
+
+.switcher details {
+  margin-block-start: 0.75rem;
+}

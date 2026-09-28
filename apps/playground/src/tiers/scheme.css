@@ -1,0 +1,30 @@
+/*
+ * A scheme chosen on the page rather than by the system: the preset's own
+ * light or dark colours, set as tier-2 tokens on the root (M8 plan D6). The
+ * attribute outranks the preset's `prefers-color-scheme` block, so either
+ * holds whatever the system prefers.
+ */
+
+:root[data-scheme='light'] {
+  color-scheme: light;
+  --fhirq-color-text: #1b1b1f;
+  --fhirq-color-text-muted: #5c5f66;
+  --fhirq-color-background: #ffffff;
+  --fhirq-color-control-background: #ffffff;
+  --fhirq-color-border: #5c5f66;
+  --fhirq-color-accent: #1d4ed8;
+  --fhirq-color-focus: #1d4ed8;
+  --fhirq-color-error: #b3261e;
+}
+
+:root[data-scheme='dark'] {
+  color-scheme: dark;
+  --fhirq-color-text: #e8e8ec;
+  --fhirq-color-text-muted: #b4b6bd;
+  --fhirq-color-background: #121316;
+  --fhirq-color-control-background: #1c1d21;
+  --fhirq-color-border: #9a9ca3;
+  --fhirq-color-accent: #93b4ff;
+  --fhirq-color-focus: #93b4ff;
+  --fhirq-color-error: #ffb4ab;
+}
