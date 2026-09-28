@@ -833,6 +833,75 @@ Also recorded: radio and checkbox insides drawn by the platform (G3), `text-deco
 
 Every run shipped one JavaScript file, 306.8 kB raw and 99.1 kB transferred (97.2 kB gzipped), plus 5.3 kB of CSS. The LCP element is the positioning sentence, and the whole demo form rendered, at 135 DOM elements. No kill criterion triggered, and the spike took about 30 minutes of its 2 h. No deferral beyond ADR-0019's lazy editor, panes and tier switcher is needed, and no ADR-0019 note either. **The margin to watch is TBT on CI.** These runs were on a fast workstation (Lighthouse benchmark index 1,752). Simulated throttling scales the observed main-thread work, so a slower shared runner will report a higher TBT for the same page. Step 11 records the runner's own median before it makes the gate blocking; if that median is within 5 points of 90 or 50 ms of 200 ms TBT, it comes back to the maintainer first.
 
+**Built on 2026-09-28, in PRs #94–#107.** Every criterion is met in CI. The maintainer's check of the live page on a phone is still to do. Evidence per acceptance criterion:
+- **AC-1.** `tests/browser/playground-first-screen.spec.ts` runs at 375 × 667 (D11). The sentence, the statement that nothing leaves the browser (linking the policy), and the demo form's first question, enabled, are each wholly inside the viewport. There is no dialog and no sideways scroll. The page opens on the demo, so there is no empty state and no setup step.
+- **AC-2.** Demo v3 (#98, D3) puts the `pain` group right after `notice`. In the same spec, a tap on "Yes" to "Are you in pain today?" reveals the score question inside the viewport, with `scrollY` still 0. The spec also runs the host code the page shows: the scorer and the cross-field rule, moved out of `demo.test.ts` into `apps/playground/src/host.ts`.
+- **AC-3.** `playground-panes.spec.ts`: on a wide screen the emitted response and `getSnapshot()` sit side by side. Answering "No" to pain hides the score, which leaves the response and stays in the state, and answering "Yes" brings it back. On a phone the panes are one at a time, with a toggle.
+- **AC-4.** `playground-editor.spec.ts`: pasted JSON reloads the form once typing pauses. Text that is not JSON shows the parser's message, and the last form stays. Strict mode, the default (D6), shows every finding of the rejection. Lenient mode shows the form beside the same finding as a warning. Each finding shows its code, path and detail, never an answer, with its conformance rows inline: feature, status and reason, linked to the row's line in `matrix.json` on GitHub (D5).
+  - Matrix rows gain an optional `diagnostics` field, and a new row, `definition.r4-shape`, covers the shape codes.
+  - The matrix test fails on a listed code that does not exist, and on any code raised by the codec, the compiler or the session's opening that maps to no row.
+- **AC-5.** `playground-privacy.spec.ts`, in Chromium, Firefox and WebKit:
+  - The built HTML and the parsed page both carry ADR-0019's policy as the first element of `<head>`, once, with `connect-src 'none'`.
+  - `fetch`, XHR, `sendBeacon`, `EventSource` and `WebSocket`, each attempted from the page, are refused or reported as `connect-src` violations, and none reaches the server.
+  - Across load, a paste carrying a sentinel, answers, all four tiers, all three schemes, a share link and the option-resolution sample, every request is D4's kind: a same-origin `GET` for a file in the build, with no query and no body. No request carries the sentinel, none starts after the lazy chunks settle, and there are zero `securitypolicyviolation` events.
+
+  The statement is on the first screen (AC-1).
+- **AC-6.** `playground-tiers.spec.ts`: answers made in tier 1 hold through tiers 2, 3 and 4 and back to tier 1, all over one `Session`. An answer hidden in tier 3 is still held in tier 4 and comes back when its question shows. Each tier shows its own source files, imported with `?raw`, so the code shown is the code that runs. The scheme control forces light or dark whatever the system prefers (D8). On a phone every tier and its code fit with no sideways scroll.
+- **AC-7.** The `Playground gates` job (#105) builds the packages, then the playground from their `dist`, and runs the playground specs. `@lhci/cli` 0.15.1 then runs Lighthouse three times on the default mobile preset and asserts NFR-P-06 on the median run. Each run's numbers go to the job summary. On the CI runner, for the three pushes to `main` since the gate landed:
+
+  | Commit | Performance | LCP | TBT | CLS | Benchmark index |
+  |---|---|---|---|---|---|
+  | #105 | 100 | 1.52 s | 16 ms | 0 | 2,456 |
+  | #106 | 100 | 1.51 s | 1 ms | 0 | 4,016 |
+  | #107 | 99 | 1.67 s | 22 ms | 0 | 2,422 |
+  | **NFR-P-06** | ≥ 90 | ≤ 2.50 s | ≤ 200 ms | ≤ 0.1 | |
+
+  Every figure is the median run. S3's worry did not come true: the runner's TBT is under the workstation's 69 ms, and its benchmark index is higher (2,400–4,000 against 1,752), so step 11 did not come back to the maintainer. **The single runs spread wider.** #107's first run read 97 and **189 ms TBT**, within 11 ms of the threshold, while the median read 22 ms. So the gate rests on the median of three, and should not be cut to one run.
+- **AC-8.** `pnpm build` (#95) writes every JavaScript target the `exports` maps name, and fails naming any it cannot find. Vite builds the playground from that `dist`, and its build fails if any module came from a package's sources. `no-deep-imports` fails in an app on any of these, each held by a must-fail fixture:
+  - a relative climb into `packages/*/src`;
+  - a relative climb out of the app, except into `fixtures/`;
+  - sources reached by an absolute or `/@fs/` path.
+
+  Type-aware lint now covers `apps/playground`.
+
+**Beyond the criteria.**
+- **The in-memory resolver (D9).** `playground-samples.spec.ts`: the option-resolution sample resolves its `urn:` value sets from the page. A canonical the page does not hold fails, with the kit's retry and the failure among the diagnostics.
+- **Share links (D7, AC-12.5.1)** were built, since the hours stayed far under the 16 h drop line (#106). `playground-share.spec.ts` runs in Chromium, Firefox and WebKit. The details:
+  - **What a link holds.** The questionnaire as loaded, the load mode, the tier and the scheme, deflated with `CompressionStream` into the fragment, never an answer.
+  - **The length limit.** A link over 8,192 characters is refused with its length, never cut short. The decoder refuses a fragment that long before inflating it.
+  - **The address bar.** The page shows the link to copy, never writes it into the address bar or history, and hides a link made for an earlier state.
+  - **Opening a link.** A refused questionnaire opens on its refusal, beside the demo. A fragment the page did not make opens the page as it is, with a note. A link pasted into the open page reloads it on `hashchange`.
+
+  This is ADR-0019's design and its "says so rather than truncating" consequence, so it needs no note. The 8,192 figure and the load mode in the link are implementation choices, recorded here.
+- **The Pages deploy (D2)** is `.github/workflows/pages.yml` (#107). Every push to `main` builds the playground and publishes it under `/playground/`, and the site's root stays empty until M11. The maintainer enabled Pages with the GitHub Actions source. The environment deploys from `main` only.
+  - The first deploy failed, because Pages was not yet on. The rerun deployed.
+  - **Checked 2026-09-28** at <https://eugenedumanskyi.github.io/fhir-questionnaire-kit/playground/>. It returns 200 with the policy first in `<head>`. In headless Chromium at 375 × 667, the first screen, the tier switcher and the editor load, with no failed request and no console error.
+
+**Effort.** The 12 h assumption held with room. From the plan's approval to the deploy was 6 h 38 min of session time, including CI waits and the wait before each merge. About 1 h 30 min of it was an interruption inside step 12, which leaves **about 5 h 10 min**, close-out not counted. The longest steps were:
+- the paste editor with the matrix field (34 min);
+- demo v3 (30 min);
+- share links (about 50 min, less the interruption).
+
+D1, D3 and the lint check were not in the 12 h and came to about an hour together. This is session time on the maintainer's clock, not §7's focused hours, so it is a reading for P1, not a calibration.
+
+**CI.** `Playground gates` took 2 min 7 s at #105 and 2 min 30 s at #107, in parallel with the other jobs.
+
+**Still open: for the maintainer.**
+- **Open the live URL on a real phone.** The automated check was headless Chromium at phone size.
+- **Branch protection:** add `Playground gates`, with M8's `Accessibility gates`, `Engine gates`, `React gates` and `Element gates`. Until then each fails its own job, not the merge.
+- **Carried from M8:** the three screen-reader passes. M8 closes on them.
+
+**Not covered by M9.**
+- An axe run on the playground's own chrome. The form inside it is covered by M8's matrix.
+- HL7 value sets (D9b), and the syntax-highlighting editor (`Could`).
+- Consumer smoke tests on the new `dist` (M11).
+- The docs site and its conformance page (M10), which is where the diagnostic links will point.
+
+**Found on the way.**
+- **Firefox now and then never reports `networkidle`** once the page has refused a connection. The privacy spec waits for the served files and a fixed quiet period instead.
+- **Pages must be enabled before the first deploy.** Until it is, `configure-pages` fails with "Not Found". That was a one-time setup failure, not a workflow bug.
+- **The deploy's actions run on Node 20,** which GitHub has deprecated. That is a warning today. Moving `checkout`, `setup-node`, `cache` and `configure-pages` to their Node 24 majors belongs with the same move in `ci.yml`.
+
 ---
 
 ### M10 — Docs, conformance matrix, adoption pack
