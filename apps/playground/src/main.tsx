@@ -14,5 +14,5 @@ const session = createSession(JSON.parse(demo) as Questionnaire, { scorers, rule
 
 const host = document.querySelector('#root');
 if (host !== null) {
-  createRoot(host).render(<App session={session} />);
+  createRoot(host).render(<App demo={demo} session={session} />);
 }

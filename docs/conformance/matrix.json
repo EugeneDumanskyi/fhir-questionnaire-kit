@@ -1,5 +1,5 @@
 {
-  "$comment": "Conformance matrix rows (06-roadmap.md M2 plan D6). A test link is `<test file> > <describe or test name>`. M10 renders this page and enforces every link.",
+  "$comment": "Conformance matrix rows (06-roadmap.md M2 plan D6). A test link is `<test file> > <describe or test name>`. `diagnostics`, where present, lists the diagnostic codes that report the row's behaviour; the playground shows a diagnostic's rows beside it (M9 plan D5). M10 renders this page and enforces every link.",
   "rows": [
     {
       "id": "enablewhen.boolean.eq",
@@ -509,6 +509,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > meaningless-condition: strict loads with a warning; the condition is false",
         "packages/core/test/conformance/fixtures.test.ts > meaningless-condition: lenient: the same"
+      ],
+      "diagnostics": [
+        "meaningless-condition"
       ]
     },
     {
@@ -555,6 +558,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > missing-enable-behavior: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > missing-enable-behavior: lenient applies all, with a diagnostic"
+      ],
+      "diagnostics": [
+        "missing-enable-behavior"
       ]
     },
     {
@@ -583,6 +589,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > condition-crosses-repeat: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > condition-crosses-repeat: lenient: the condition is false, with a diagnostic"
+      ],
+      "diagnostics": [
+        "condition-crosses-repeat"
       ]
     },
     {
@@ -593,6 +602,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > condition-on-calculated: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > condition-on-calculated: lenient: false, and the calculated item refuses answers"
+      ],
+      "diagnostics": [
+        "condition-on-calculated"
       ]
     },
     {
@@ -603,6 +615,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > cycle: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > cycle: lenient rejects too"
+      ],
+      "diagnostics": [
+        "dependency-cycle"
       ]
     },
     {
@@ -613,6 +628,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > dangling-condition: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > dangling-condition: lenient: the condition is false, with a diagnostic"
+      ],
+      "diagnostics": [
+        "dangling-condition"
       ]
     },
     {
@@ -623,6 +641,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > duplicate-link-id: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > duplicate-link-id: lenient rejects too"
+      ],
+      "diagnostics": [
+        "duplicate-link-id"
       ]
     },
     {
@@ -633,6 +654,24 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > depth-ceilings: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > depth-ceilings: lenient rejects too"
+      ],
+      "diagnostics": [
+        "nesting-too-deep",
+        "chain-too-deep"
+      ]
+    },
+    {
+      "id": "definition.r4-shape",
+      "feature": "Input that is not an R4 `Questionnaire`, is malformed, or breaks an R4 rule-severity constraint is rejected in both modes, with every finding (INV-D-01)",
+      "status": "supported",
+      "reason": null,
+      "tests": [
+        "packages/core/test/fhir/parse.test.ts > INV-D-01: anything that is not an R4 Questionnaire is rejected in both modes, with every finding"
+      ],
+      "diagnostics": [
+        "not-a-questionnaire",
+        "malformed",
+        "r4-constraint"
       ]
     },
     {
@@ -643,6 +682,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > not-r4: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > not-r4: lenient rejects too"
+      ],
+      "diagnostics": [
+        "not-r4"
       ]
     },
     {
@@ -653,6 +695,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > modifier-extension: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > modifier-extension: lenient rejects too"
+      ],
+      "diagnostics": [
+        "modifier-extension"
       ]
     },
     {
@@ -663,6 +708,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > items-under-question: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > items-under-question: lenient: the children become placeholders"
+      ],
+      "diagnostics": [
+        "items-under-question"
       ]
     },
     {
@@ -673,6 +721,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > initial-values: strict: ignored, with a warning",
         "packages/core/test/conformance/fixtures.test.ts > initial-values: lenient: ignored, with a warning"
+      ],
+      "diagnostics": [
+        "initial-value-ignored"
       ]
     },
     {
@@ -693,6 +744,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > option-value-types: strict lists each item and value type once",
         "packages/core/test/conformance/fixtures.test.ts > option-value-types: lenient keeps placeholders that accept no answer"
+      ],
+      "diagnostics": [
+        "unsupported-option-type"
       ]
     },
     {
@@ -703,6 +757,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ],
+      "diagnostics": [
+        "unsupported-item-type"
       ]
     },
     {
@@ -713,6 +770,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ],
+      "diagnostics": [
+        "unsupported-item-type"
       ]
     },
     {
@@ -723,6 +783,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ],
+      "diagnostics": [
+        "unsupported-item-type"
       ]
     },
     {
@@ -733,6 +796,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: strict lists every unsupported linkId with its type",
         "packages/core/test/conformance/fixtures.test.ts > unsupported-item-type: lenient keeps placeholders that accept no answer"
+      ],
+      "diagnostics": [
+        "unsupported-item-type"
       ]
     },
     {
@@ -743,6 +809,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: strict rejects each, naming the extension",
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ],
+      "diagnostics": [
+        "unsupported-extension"
       ]
     },
     {
@@ -753,6 +822,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: strict rejects each, naming the extension",
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ],
+      "diagnostics": [
+        "unsupported-extension"
       ]
     },
     {
@@ -762,6 +834,9 @@
       "reason": "FHIRPath is out of scope (02-requirements.md §17): strict rejects; lenient: the item has no options, with a diagnostic (INV-D-15)",
       "tests": [
         "packages/core/test/definition/compile.test.ts > the strict/lenient matrix (04-domain.md §5.1)"
+      ],
+      "diagnostics": [
+        "unsupported-extension"
       ]
     },
     {
@@ -772,6 +847,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: strict rejects each, naming the extension",
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ],
+      "diagnostics": [
+        "unsupported-extension"
       ]
     },
     {
@@ -781,6 +859,9 @@
       "reason": "FHIRPath is out of scope (02-requirements.md §17): loads with a diagnostic in both modes (INV-D-15)",
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > expression-extensions: lenient disables the gated item and reports the rest"
+      ],
+      "diagnostics": [
+        "context-extension-ignored"
       ]
     },
     {
@@ -790,6 +871,9 @@
       "reason": "Loads with a diagnostic in both modes (INV-D-15)",
       "tests": [
         "packages/core/test/definition/compile.test.ts > the strict/lenient matrix (04-domain.md §5.1)"
+      ],
+      "diagnostics": [
+        "context-extension-ignored"
       ]
     },
     {
@@ -828,6 +912,9 @@
         "packages/core/test/conformance/fixtures.test.ts > inapplicable-constraint: strict rejects",
         "packages/core/test/conformance/fixtures.test.ts > inapplicable-constraint: lenient ignores it with a diagnostic",
         "packages/core/test/definition/constraints.test.ts > constraint extensions at load (INV-D-20)"
+      ],
+      "diagnostics": [
+        "inapplicable-constraint"
       ]
     },
     {
@@ -948,6 +1035,9 @@
       "reason": null,
       "tests": [
         "packages/core/test/validation/rules.test.ts > cross-field rules (US-04.3, M3 plan D5)"
+      ],
+      "diagnostics": [
+        "rule-threw"
       ]
     },
     {
@@ -1059,6 +1149,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
         "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ],
+      "diagnostics": [
+        "orphan-answer"
       ]
     },
     {
@@ -1080,6 +1173,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
         "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ],
+      "diagnostics": [
+        "hydrated-answer-disabled"
       ]
     },
     {
@@ -1090,6 +1186,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
         "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ],
+      "diagnostics": [
+        "version-drift"
       ]
     },
     {
@@ -1101,6 +1200,9 @@
         "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
         "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)",
         "packages/core/test/property/leak.test.ts > no answer value outside the response and the snapshot (NFR-X-04)"
+      ],
+      "diagnostics": [
+        "quarantined-answer"
       ]
     },
     {
@@ -1111,6 +1213,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > hydration: resume a completed response from an older version",
         "packages/core/test/resume/hydrate.test.ts > hydration (US-06.1, 04-domain.md §8)"
+      ],
+      "diagnostics": [
+        "quarantined-answer"
       ]
     },
     {
@@ -1121,6 +1226,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > option-resolution: a resolver that fulfils: coded answers go in, on a branch opened later too",
         "packages/core/test/session/options.test.ts > option resolution (SM-04, ADR-0005, ADR-0012)"
+      ],
+      "diagnostics": [
+        "unresolved-options"
       ]
     },
     {
@@ -1142,6 +1250,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > option-resolution: a resolver that rejects: failed until a retry, and pending blocks nothing else",
         "packages/core/test/session/options.test.ts > option resolution (SM-04, ADR-0005, ADR-0012)"
+      ],
+      "diagnostics": [
+        "resolver-failed"
       ]
     },
     {
@@ -1182,6 +1293,9 @@
       "tests": [
         "packages/core/test/conformance/fixtures.test.ts > scores: a throwing scorer is cleared and reported once; the others still score",
         "packages/core/test/validation/scores.test.ts > scoring functions (US-07.2, ADR-0006, M4 plan D5)"
+      ],
+      "diagnostics": [
+        "scorer-threw"
       ]
     },
     {
@@ -1193,6 +1307,10 @@
         "packages/core/test/conformance/fixtures.test.ts > calculated-values: no evaluator: loads, reports each item, and has no value",
         "packages/core/test/conformance/fixtures.test.ts > calculated-values: an evaluator: values in document order, one cycle behind for a later item",
         "packages/core/test/session/calculated.test.ts > the expression evaluator seam (US-07.3, ADR-0017, M4 plan D8)"
+      ],
+      "diagnostics": [
+        "no-evaluator",
+        "evaluator-threw"
       ]
     },
     {
@@ -1213,6 +1331,10 @@
       "tests": [
         "packages/core/test/definition/sanitize.test.ts > authored rich text (INV-X-06, AC-01.4.2)",
         "packages/core/test/view/ids.test.ts > carries the host-sanitized rich label, never raw markup (INV-X-06)"
+      ],
+      "diagnostics": [
+        "no-sanitizer",
+        "sanitizer-threw"
       ]
     },
     {
@@ -1260,6 +1382,9 @@
       "reason": "R4 carries help as a `display` item nested under a question, which INV-D-17 rejects; a node's `description` is always `null` in v1 (M5 plan D5)",
       "tests": [
         "packages/core/test/view/ids.test.ts > keeps help text empty in v1, since R4 carries it where the kit rejects items (M5 plan D5)"
+      ],
+      "diagnostics": [
+        "items-under-question"
       ]
     },
     {
