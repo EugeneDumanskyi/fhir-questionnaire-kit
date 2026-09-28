@@ -24,6 +24,8 @@ const MATRIX = 'a11y-matrix.spec.ts';
 const A11Y = ['pass-pages.spec.ts', 'print.spec.ts', 'rtl.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts', 'visual-a11y.spec.ts'];
 /** The built playground (M9), served from `apps/playground/dist`: `pnpm build:playground` first. */
 const PLAYGROUND = ['playground-*.spec.ts'];
+/** Its privacy claim, in every engine as well (M9 AC-5, plan step 10). */
+const PRIVACY = 'playground-privacy.spec.ts';
 /** Timings, report-only (M6 AC-10, M7 AC-5). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -51,7 +53,9 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   test:browser:a11y`), which replaced M1's axe proof on the slice.
  * - `playground`: the built playground under Pages' project path, from its
  *   `dist` rather than in memory (M9; `pnpm test:playground`, after `pnpm
- *   build:playground`). It joins CI in the `Playground gates` job.
+ *   build:playground`); `playground-firefox`, `playground-webkit`: its
+ *   privacy and CSP spec in the other two engines. They join CI in the
+ *   `Playground gates` job.
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
  *
@@ -76,6 +80,8 @@ export default defineConfig({
     { name: 'a11y-firefox', use: { ...devices['Desktop Firefox'] }, testMatch: A11Y },
     { name: 'a11y-webkit', use: { ...devices['Desktop Safari'] }, testMatch: A11Y },
     { name: 'playground', use: { ...devices['Desktop Chrome'] }, testMatch: PLAYGROUND },
+    { name: 'playground-firefox', use: { ...devices['Desktop Firefox'] }, testMatch: PRIVACY },
+    { name: 'playground-webkit', use: { ...devices['Desktop Safari'] }, testMatch: PRIVACY },
     { name: 'keystroke', use: { ...devices['Desktop Chrome'] }, testMatch: KEYSTROKE },
   ],
 });
