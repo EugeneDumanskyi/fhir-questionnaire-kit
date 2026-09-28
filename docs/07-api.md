@@ -490,7 +490,7 @@ The core calls the resolver once per distinct canonical per session, and again o
 
 ## 8. `@fhirq/themes` (`@beta`)
 
-Two stylesheets and one constant. `@fhirq/themes/base.css` is the structure: it styles the DOM contract's classes (`08-dom-contract.md`) and reads nothing but `--fhirq-*` tokens. `@fhirq/themes/default.css` is the preset: values for every token and nothing else, light, with the colours redeclared for dark under `prefers-color-scheme`. A React host imports both (§6); the element embeds both (ADR-0014).
+Two stylesheets and one constant. `@fhirq/themes/base.css` is the structure: it styles the DOM contract's classes (`08-dom-contract.md`) and reads nothing but `--fhirq-*` tokens. `@fhirq/themes/default.css` is the preset: values for every token and nothing else, light, with the colours redeclared for dark under `prefers-color-scheme` on screen only, so a form always prints light. `base.css` also carries the print styles: the add, remove and retry buttons and the status region are not printed, and a repeat instance, a choice or the error summary is kept to one page (M8 plan D7). A React host imports both (§6); the element embeds both (ADR-0014).
 
 ```css
 /* Tier 2 (ADR-0013): the element takes tokens on itself, React on any ancestor. */

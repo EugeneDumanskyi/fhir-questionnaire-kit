@@ -14,6 +14,7 @@ const ELEMENT = [
   'element-a11y.spec.ts',
   'embed.spec.ts',
   'isolation.spec.ts',
+  'print.spec.ts',
   'reconnect.spec.ts',
   'resolver.spec.ts',
   'two-elements.spec.ts',
@@ -31,7 +32,7 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   (`pnpm test:browser:react`).
  * - `element-chromium`, `element-firefox`, `element-webkit`: the element's
  *   caret, CSP, resolver, script-tag embed, isolation, tokens and parts,
- *   reconnection, two elements, and axe specs, in every engine NFR-C-07
+ *   reconnection, two elements, print, and axe specs, in every engine NFR-C-07
  *   names (M7 plan D8, `pnpm test:browser:element`), and the DOM contract on
  *   the demo across both renderers (M7 plan step 4). Firefox is a browser
  *   binary Playwright installs, not a dependency. Blocking from M7 in CI's
