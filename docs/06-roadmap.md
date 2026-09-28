@@ -822,6 +822,17 @@ Also recorded: radio and checkbox insides drawn by the platform (G3), `text-deco
 
 **Spike S3's plan.** It runs right after step 1, with a 2 h timebox. A throwaway page holds the sentence, the privacy line and `<Questionnaire>` on the demo, built by Vite from `dist`. Lighthouse runs three times on the mobile preset, and the median of performance, LCP, TBT, CLS and JavaScript bytes is recorded here. The editor, panes and tier switcher are lazy from the start either way, as ADR-0019 decides. **Kill criteria,** on the form-only page: median performance under 90, LCP over 2.5 s, TBT over 200 ms, CLS over 0.1, or the timebox running out. Any of them stops the milestone after step 3 and goes to the maintainer with the numbers. The likely options are build-time prerendering of the first screen with `hydrateRoot`, which would need an ADR-0019 note, or trimming what the first screen imports.
 
+**Spike S3's result, 2026-09-28: go.** The throwaway page held the sentence, the privacy line and `<Questionnaire>` on the demo (demo v2's order), with `base.css` and `default.css`. Vite built it from `dist`, `fromDist()` passed, and the page loaded under the CSP with no violations. `@lhci/cli` 0.15.1 (Lighthouse 12.6.1) ran it three times on the default mobile preset: simulated throttling, 4× CPU slowdown.
+
+| Metric | Run 1 | Run 2 | Run 3 | Median | NFR-P-06 |
+|---|---|---|---|---|---|
+| Performance | 99 | 100 | 99 | **99** | ≥ 90 |
+| LCP | 1,570 ms | 1,510 ms | 1,512 ms | **1,512 ms** | ≤ 2,500 ms |
+| TBT | 85 ms | 69 ms | 68 ms | **69 ms** | ≤ 200 ms |
+| CLS | 0 | 0 | 0 | **0** | ≤ 0.1 |
+
+Every run shipped one JavaScript file, 306.8 kB raw and 99.1 kB transferred (97.2 kB gzipped), plus 5.3 kB of CSS. The LCP element is the positioning sentence, and the whole demo form rendered, at 135 DOM elements. No kill criterion triggered, and the spike took about 30 minutes of its 2 h. No deferral beyond ADR-0019's lazy editor, panes and tier switcher is needed, and no ADR-0019 note either. **The margin to watch is TBT on CI.** These runs were on a fast workstation (Lighthouse benchmark index 1,752). Simulated throttling scales the observed main-thread work, so a slower shared runner will report a higher TBT for the same page. Step 11 records the runner's own median before it makes the gate blocking; if that median is within 5 points of 90 or 50 ms of 200 ms TBT, it comes back to the maintainer first.
+
 ---
 
 ### M10 — Docs, conformance matrix, adoption pack
