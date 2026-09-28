@@ -81,3 +81,11 @@ The licence gate reads each direct dev dependency's `license` field against the 
 - The pipeline's own p95 wall-clock time is tracked from Actions run data. NFR-M-07 is a target, so it is reviewed monthly rather than gated.
 - Negative fixtures for each in-repo gate (dependency, budget, packed contents, licence, API report) run in CI and must fail for the right reason.
 - A PR template check links each PR to a story or ADR (NFR-M-08).
+
+**Amendment note, accepted 2026-09-28 (`06-roadmap.md` M8 plan D3): a CSS linter.** M8's AC-3 asks for a stylelint rule to prove that `base.css` holds no literal colour or length and no physical-direction property (NFR-I-05). One row joins the Decision's table:
+
+| Concern | Tool | Licence |
+|---|---|---|
+| CSS lint for the themes (NFR-I-05, ADR-0013's tokens-only rule) | stylelint, exact-pinned, built-in rules only | MIT |
+
+It runs over `packages/themes/src/*.css` in `pnpm lint`, so in the fast lane. The config uses no plugin and no shared config, so it adds one direct dev dependency, and the count stays well inside NFR-S-06. Like every gate, it has fixtures that must fail. It replaces the Vitest regex checks over the stylesheets, which were a stand-in until now.
