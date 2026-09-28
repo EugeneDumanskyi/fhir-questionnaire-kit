@@ -35,6 +35,7 @@
     "api:check": "tsc --build packages/core packages/react packages/element packages/themes && api-extractor run -c packages/core/api-extractor.json && api-extractor run -c packages/core/api-extractor.view.json && api-extractor run -c packages/core/api-extractor.resume.json && api-extractor run -c packages/react/api-extractor.json && api-extractor run -c packages/element/api-extractor.json && api-extractor run -c packages/themes/api-extractor.json",
     "api:update": "tsc --build packages/core packages/react packages/element packages/themes && api-extractor run --local -c packages/core/api-extractor.json && api-extractor run --local -c packages/core/api-extractor.view.json && api-extractor run --local -c packages/core/api-extractor.resume.json && api-extractor run --local -c packages/react/api-extractor.json && api-extractor run --local -c packages/element/api-extractor.json && api-extractor run --local -c packages/themes/api-extractor.json",
     "measure": "node scripts/measure-bundles.mjs",
+    "build": "tsc --build packages/core packages/react packages/element packages/themes && node scripts/build-packages.mjs",
     "build:element": "tsc --build packages/element && node scripts/build-element.mjs",
     "changeset": "changeset",
     "clean": "tsc --build --clean tsconfig.json"

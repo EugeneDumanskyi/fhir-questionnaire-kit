@@ -1,7 +1,7 @@
 /**
- * The element's build (NFR-C-05, M7 plan D9). `pnpm build` for the other
- * packages is M11; the element is built now because its script-tag embed is
- * what M7 ships and measures.
+ * The element's build (NFR-C-05, M7 plan D9). `pnpm build` runs it with the
+ * other packages' (`scripts/build-packages.mjs`); `pnpm build:element` runs it
+ * alone.
  *
  *   node scripts/build-element.mjs
  *

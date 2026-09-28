@@ -5,9 +5,9 @@ import { defineConfig } from 'vitest/config';
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 /**
- * The published entry points resolve to `dist/`, which M1 does not build
- * (`pnpm build` is M11). Tests import the same specifiers and are pointed at
- * the sources here, so no test reaches past a front door.
+ * The published entry points resolve to `dist/`, which only `pnpm build`
+ * writes. Tests import the same specifiers and are pointed at the sources
+ * here, so no test needs a build first and none reaches past a front door.
  */
 const workspaceSources = [
   { find: /^@fhirq\/core$/, replacement: here('./packages/core/src/index.ts') },

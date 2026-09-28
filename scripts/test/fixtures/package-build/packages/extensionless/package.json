@@ -1,0 +1,4 @@
+{
+  "name": "extensionless",
+  "exports": { ".": { "import": "./dist/index.js" } }
+}
