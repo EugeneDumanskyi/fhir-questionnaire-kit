@@ -643,13 +643,13 @@ About 0.54 kB of step 5 is core's emission, which the events need. The renderer 
 **CI.** `Element gates` took 2 min 45 s on its first run on the default branch, in parallel with the other jobs, so R7's pipeline time is unchanged. `spike-proofs` is retired, and keystroke to paint is its own non-blocking job. Only the fast lane and the PR-link check are required checks today; adding `Element gates` (and `Engine gates` and `React gates`) to branch protection is the maintainer's.
 
 **Still open: decisions for the maintainer.**
-- **A token set on an ancestor does not reach the element.** ADR-0014 says tokens inherit "from the host element or any ancestor", and `default.css` says a token set on any ancestor wins. In the element, the embedded preset sets every token on `:host`, which hides an ancestor's value; a token set on the element itself works. An Accepted ADR and the behaviour disagree, so this was raised, not picked. `isolation.spec.ts` states ADR-0014's claim as a `test.fail` that flips when M8 decides.
+- **A token set on an ancestor does not reach the element.** ADR-0014 says tokens inherit "from the host element or any ancestor", and `default.css` says a token set on any ancestor wins. In the element, the embedded preset sets every token on `:host`, which hides an ancestor's value; a token set on the element itself works. An Accepted ADR and the behaviour disagree, so this was raised, not picked. `isolation.spec.ts` states ADR-0014's claim as a `test.fail` that flips when M8 decides. **Decided by M8 plan D1:** tokens are set on the element (ADR-0014 note).
 - **Inheritance crosses the shadow boundary.** These reach the form from a host page:
   - `letter-spacing`, `word-spacing`, `text-transform`, `text-align`, `font-style` and `cursor`;
   - a `text-decoration` on an in-flow ancestor;
   - the root font size, since every token is in `rem`: `html { font-size: 10px }` makes a 44 px target 27.5 px.
 
-  ADR-0014 isolates selectors, not inheritance. `rem` is also what honours a user's font-size setting, so M8 has a choice to make, not an obvious fix. The test records the exact list, so it can only shrink on purpose.
+  ADR-0014 isolates selectors, not inheritance. `rem` is also what honours a user's font-size setting, so M8 has a choice to make, not an obvious fix. The test records the exact list, so it can only shrink on purpose. **Decided by M8 plan D2:** six are reset on `:host`, `rem` stays, and `text-decoration` goes on the gap list.
 - **`@fhirq/core/view` to `@beta`.** `07-api.md` held it at `@alpha` until M6 and M7 had built on it; both have, with no new field.
 - **Carried from M6:** NFR-U-01's 13 lines and a completion control (the element's `requestCompletion()` does not change that), NFR-P-03's wording (the element's reading is now beside React's), `id` and `meta` in the echo compare, `Diagnostic.path` ordinals, and JSON imports widening `resourceType`.
 
@@ -707,6 +707,22 @@ About 0.54 kB of step 5 is core's emission, which the events need. The renderer 
 **Spike.** None. The residue here is findings, not unknowns about approach.
 
 **Effort.** ASSUMPTION: 16 h — plus manual screen-reader time, which recurs every release (N11) and is not in the build budget.
+
+**Plan decisions, 2026-09-28.** Taken with the M8 plan, D1–D9 as recommended. D1 resolved M7's contradiction between ADR-0014 and the element, which was raised rather than picked. D3's dev dependency was approved with it. The three screen-reader passes and adding `Accessibility gates` to branch protection are the maintainer's. The whole theme fits inside ADR-0024's 3.21 kB allowance. Every PR reports the element's bytes, and if the theme's share passes about 2.8 kB, the work stops to trim. An overrun needs an ADR; the margin is not spent quietly.
+
+| # | Decision | Resolution |
+|---|---|---|
+| D1 | Where tokens are set | On the element: `fhir-questionnaire { --fhirq-…: … }`, as AC-09.2.2 and ADR-0013's tier-2 row say. In React, any ancestor. No private-default chain in `base.css`, since it would cost bytes and a second namespace. ADR-0014 note. `isolation.spec.ts`'s `test.fail` becomes a test of the documented rule, and `default.css`'s header comment is corrected at step 1 |
+| D2 | Inheritance across the shadow boundary | `base.css` resets `letter-spacing`, `word-spacing`, `text-transform`, `text-align`, `font-style` and `cursor` on `:host`. Tokens stay in `rem`, which honours the user's font-size setting, and the root-font-size effect is documented. `text-decoration` from an in-flow ancestor cannot be reset and goes on the gap list. ADR-0014 note |
+| D3 | AC-3's stylelint rule | `stylelint` (MIT), exact-pinned, built-in rules only (`color-no-hex`, `color-named`, `unit-allowed-list`, `property-disallowed-list`, `declaration-property-value-disallowed-list`), over `packages/themes/src/*.css` in `pnpm lint`, with must-fail fixtures. It takes over the Vitest regex checks. ADR-0018 note |
+| D4 | The axe matrix | Forms: the demo fixture and the all-kinds page, each loaded, answered and refused. Tiers: 1 is the default; 2 is the NFR-U-02 worked example's tokens; 3 is an accessible override of every overridable kind; 4 is a small headless page on `useQuestionnaire`, React only, since the element has no headless tier. × light and dark × 375 and 1280 px × both renderers. Chromium only, since axe's results do not depend on the engine. React 19 only, since 18 is covered by hydration. About 170 runs in one blocking job, `Accessibility gates`, sharded by renderer if it passes about 10 min. It replaces M1's `a11y.spec.ts` |
+| D5 | The RTL "snapshot" | Geometric: every part's box under `dir="rtl"` mirrors its box under `ltr`, and the ARIA snapshot is the same. Both renderers, 3 engines, no binary baselines |
+| D6 | Presets | One `default.css`: light, and dark under `prefers-color-scheme`. That is what the element embeds and what AC-11.4.2 asks for. A host that forces one scheme does it with tier-2 tokens, as the docs show; there is no `light.css` or `dark.css` |
+| D7 | Print | `@media print` in `base.css`, so the element prints too. It hides add, remove and retry and the status region, and keeps repeat instances and errors. Checked with `emulateMedia({ media: 'print' })` in both renderers |
+| D8 | NFR-A-05's primary controls | Text entries, selects, whole choice rows (`label.fhirq-choice`) and the add, remove and retry buttons are at least 44 px. Summary links and other inline links are at least 24 px, or fall under WCAG's inline exception |
+| D9 | The manual record | `docs/accessibility.md`: the script, the automated evidence, a dated record per pair, the WCAG 2.2 AA criteria checked, and the complete gap list. The maintainer runs NVDA + Firefox, JAWS + Chrome and VoiceOver + iOS Safari; JAWS needs a licence or its 40-minute demo mode. M8 closes only when those passes are filled in |
+
+**Carried, and not M8.** These are behaviour or API, not theme or accessibility: the view to `@beta`, NFR-U-01's 13 lines and a completion control, NFR-P-03's wording, `id` and `meta` in the echo compare, `Diagnostic.path` ordinals, and JSON imports widening `resourceType`. Nested repeat instances that share the landmark name "Time 1" are an axe best-practice finding, not a WCAG A or AA failure. That goes on the gap list, because fixing it would be view behaviour. Any finding from the matrix, visual or RTL gates that does need behaviour gets its own fix PR in `packages/core/src/view/`, starting with a failing test.
 
 ---
 
