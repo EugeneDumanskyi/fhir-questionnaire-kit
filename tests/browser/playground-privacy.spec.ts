@@ -10,8 +10,8 @@ import { ORIGIN } from './pages/serve.js';
  * The playground's privacy claim (M9 AC-5, AC-12.3.2; ADR-0019 and its
  * 2026-09-28 note), in Chromium, Firefox and WebKit. The policy is the first
  * element of `<head>` and forbids connections; the browser enforces it; and
- * across load, a paste carrying a sentinel, answers and every tier and
- * scheme, the page makes only D4's requests: a same-origin `GET`, with no
+ * across load, a paste carrying a sentinel, answers, every tier and scheme
+ * and a share link, the page makes only D4's requests: a same-origin `GET`, with no
  * query and no body, for a file in the build, none carrying the sentinel and
  * none after the lazy chunks settle. The page breaks none of the policy.
  */
@@ -62,12 +62,22 @@ const editor = (page: Page) => page.getByRole('region', { name: 'Paste your own 
 const form = (page: Page) => page.getByRole('region', { name: 'Demonstration form', exact: true });
 const switcher = (page: Page) => page.getByRole('region', { name: 'Customization tiers', exact: true });
 
-/** The lazy chunks are in: the switcher, the panes and the editor are on the page, and the network is quiet. */
-async function settled(page: Page): Promise<void> {
+/**
+ * Time for a request the page started to reach the log or the server, before
+ * a check that none did. A fixed wait, not `networkidle`, which Firefox now
+ * and then never reports once a connection has been refused.
+ */
+const QUIET = 1_000;
+
+/**
+ * The lazy chunks are in: the switcher, the panes and the editor are on the
+ * page, and every file in the build has been served.
+ */
+async function settled(page: Page, served: Served): Promise<void> {
   await expect(switcher(page)).toBeVisible();
   await expect(page.getByRole('region', { name: 'The response and the engine state', exact: true })).toBeAttached();
   await expect(editor(page)).toBeVisible();
-  await page.waitForLoadState('networkidle');
+  await expect.poll(() => new Set(served.requests.map((request) => request.url.slice(PLAYGROUND.length)))).toEqual(built);
 }
 
 const pasted = JSON.stringify(
@@ -100,7 +110,7 @@ test('the browser refuses every connection the page could open, and reports each
   const log = await record(page);
   const violations = await watchViolations(page);
   await page.goto(PLAYGROUND);
-  await settled(page);
+  await settled(page, log.served);
   // Each channel is refused on the spot (some engines throw) or reported as a `connect-src` violation.
   const thrown = await page.evaluate(() => {
     const to = (kind: string) => new URL(`./leak-${kind}`, location.href).href;
@@ -133,15 +143,15 @@ test('the browser refuses every connection the page could open, and reports each
   };
   await expect.poll(unrefused).toEqual([]);
   // Chromium starts a request object for some before blocking it; none reaches the server.
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(QUIET);
   expect([...log.served.requests.map((request) => request.url), ...log.sockets].filter((url) => url.includes('leak-'))).toEqual([]);
 });
 
-test('makes only D4 requests across load, paste, answers and every tier, and breaks none of the policy (AC-5)', async ({ page }) => {
+test('makes only D4 requests across load, paste, answers, every tier and a share link, and breaks none of the policy (AC-5)', async ({ page }) => {
   const log = await record(page);
   const violations = await watchViolations(page);
   await page.goto(PLAYGROUND);
-  await settled(page);
+  await settled(page, log.served);
   const initial = log.requests.length;
   // Everything the build holds is in by now, the lazy chunks among them.
   expect(new Set(log.requests.map((request) => request.url.slice(PLAYGROUND.length)))).toEqual(built);
@@ -164,10 +174,15 @@ test('makes only D4 requests across load, paste, answers and every tier, and bre
   }
   for (const name of ['Light', 'Dark', 'System']) await switcher(page).getByRole('radio', { name, exact: true }).check();
 
+  // A share link for it, made in the page.
+  const share = page.getByRole('region', { name: 'Share this state', exact: true });
+  await share.getByRole('button', { name: 'Make a link' }).click();
+  await expect(share.getByLabel('Link to this state')).toHaveValue(/#v1\./);
+
   // The samples, with the in-memory resolver.
   await editor(page).getByLabel('Sample').selectOption({ label: 'Value sets (option-resolution)' });
   await form(page).getByRole('radiogroup', { name: 'How do you take it?' }).getByRole('radio', { name: 'B' }).check();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(QUIET);
 
   expect(log.sockets).toEqual([]);
   expect(log.requests.slice(initial), 'a request after the lazy chunks settled').toEqual([]);

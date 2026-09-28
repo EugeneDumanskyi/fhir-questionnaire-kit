@@ -2,6 +2,12 @@ import { createSession, FhirqError, type Diagnostic, type FhirqErrorCode, type L
 
 import { rules, scorers } from './host.js';
 
+/** Text to load, and how: what the editor holds, and what a share link carries. */
+export interface Source {
+  readonly text: string;
+  readonly mode: LoadMode;
+}
+
 /** What pasted text became: not JSON, a questionnaire the kit refused, or a session. */
 export type Loaded =
   | { readonly kind: 'not-json'; readonly message: string }

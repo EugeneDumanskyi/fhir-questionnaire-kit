@@ -234,3 +234,37 @@ body {
 .switcher details {
   margin-block-start: 0.75rem;
 }
+
+/* Share this state (M9 plan D7). */
+
+.share {
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  margin-block-start: 2rem;
+}
+
+.share h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.share button {
+  font: inherit;
+  padding-block: 0.375rem;
+  padding-inline: 0.75rem;
+}
+
+.share-link {
+  display: block;
+  margin-block-start: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.share-link input {
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  margin-block-start: 0.25rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+}
