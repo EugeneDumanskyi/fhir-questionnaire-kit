@@ -1,0 +1,19 @@
+/* Must pass: tokens, `0`, `%`, logical properties and symmetric shorthands. */
+.fhirq-item {
+  margin: 0 var(--fhirq-space-2);
+  padding: var(--fhirq-space-1);
+  inset: 0;
+  inline-size: 100%;
+  border-inline-start: var(--fhirq-error-bar-width) solid var(--fhirq-color-error);
+  border-radius: var(--fhirq-radius);
+  text-align: start;
+  transition-duration: 0.01ms;
+  color: currentcolor;
+  background-color: transparent;
+}
+
+.fhirq-choice {
+  margin: calc(var(--fhirq-space-1) + var(--fhirq-space-2)) 0;
+  padding: max(var(--fhirq-space-1), calc(var(--fhirq-space-2) * 2));
+  border-radius: calc(var(--fhirq-radius) * 2) / var(--fhirq-radius);
+}

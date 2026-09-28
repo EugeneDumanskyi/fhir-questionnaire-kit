@@ -1,0 +1,6 @@
+/* Must fail: unit-allowed-list. */
+.fhirq-item {
+  gap: 8px;
+  margin-block: 1rem;
+  padding-inline: 0.5em;
+}

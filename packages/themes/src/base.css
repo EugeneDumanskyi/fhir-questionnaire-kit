@@ -1,8 +1,8 @@
 /*
  * @fhirq/themes/base.css — the structural stylesheet (ADR-0013, ADR-0014).
  *
- * Reads --fhirq-* tokens only: no literal colour or spacing values, logical
- * properties only (NFR-I-05). Class names are the DOM contract's
+ * Reads --fhirq-* tokens only: no literal colour or length, logical
+ * properties only (NFR-I-05), held by stylelint.config.js in `pnpm lint`. Class names are the DOM contract's
  * (docs/08-dom-contract.md), shared by the React renderer in light DOM and the
  * element in its shadow root. S1 slice: the tokens two controls need.
  */
@@ -120,12 +120,13 @@
   color: var(--fhirq-color-error);
 }
 
-/* Visually hidden, still announced. The one-pixel box is the technique, not a
-   spacing value. */
+/* Visually hidden, still announced. */
 .fhirq-status {
   position: absolute;
+  /* stylelint-disable unit-allowed-list -- the one-pixel box is the technique, not a length: a zero box is skipped by some screen readers */
   inline-size: 1px;
   block-size: 1px;
+  /* stylelint-enable unit-allowed-list */
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;

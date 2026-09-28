@@ -1,0 +1,5 @@
+/* Must fail: color-no-hex. */
+.fhirq-label {
+  color: #1b1b1f;
+  border-color: #fff;
+}
