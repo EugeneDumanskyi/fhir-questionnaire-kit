@@ -65,10 +65,9 @@ jobs:
   # from its own Node suite (NFR-Q-01), the bundle budgets of @fhirq/core, and
   # from M3 @fhirq/core/resume with the resume bundle-inputs check (NFR-S-02,
   # ADR-0021), from M5 the view, from M6 @fhirq/react and from M7 the element
-  # and its IIFE (ADR-0024), and the API reports (NFR-M-04): a public surface
-  # that differs from packages/*/etc/*.api.md fails until the PR commits the
-  # new report. The theme stylesheets are measured and reported, and are gated
-  # from M8 (scripts/budgets.json `gated`).
+  # and its IIFE (ADR-0024), from M8 the theme's stylesheets, and the API
+  # reports (NFR-M-04): a public surface that differs from
+  # packages/*/etc/*.api.md fails until the PR commits the new report.
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest

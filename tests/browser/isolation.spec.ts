@@ -90,16 +90,16 @@ for (const state of ['loaded', 'refused'] as const) {
 }
 
 /**
- * FINDING, for the themes (M8): what the host page sets on its root, body or
- * everything reaches the element, and from it every part of the form that
- * does not set its own. ADR-0014 isolates selectors, not inheritance, and
- * the embedded slice of the theme sets the form's font, line height and
- * colours and no other text property. So the host's inherited ones cross, its
- * text decoration propagates, and every rem token is read against the host's
- * root font size. Recorded here exactly, so that the list can only shrink
- * on purpose; the font family crosses by design (ADR-0014) and is not set.
+ * What the host page sets on its root, body or everything reaches the
+ * element: ADR-0014 isolates selectors, not inheritance. M7 recorded every
+ * inherited text property crossing. Since M8 `base.css` resets them on the
+ * form inside the shadow root (ADR-0014, 2026-09-28 note, D2), where a page
+ * rule on the element cannot win. What still crosses is deliberate or out of
+ * reach: every rem token is read against the host's root font size, and a
+ * text decoration propagates (on the accessibility record's gap list). The
+ * font family crosses by design (ADR-0014) and is not read here.
  */
-const CROSSES = ['cursor', 'font-size', 'font-style', 'letter-spacing', 'min-block-size', 'text-align', 'text-transform', 'word-spacing'];
+const CROSSES = ['font-size', 'min-block-size'];
 
 /** The properties `inherited.css` sets, read on a label and a control, and the one a decoration shows in where an engine exposes it. */
 function inheritable(page: Page) {
@@ -120,7 +120,7 @@ function inheritable(page: Page) {
   });
 }
 
-test('inherited values from the host page reach the form: the recorded finding (M8)', async ({ browser, browserName }) => {
+test('only the root font size and a text decoration reach the form from the host page (M8 plan D2)', async ({ browser, browserName }) => {
   const read = async (style: HostStyle) => {
     const page = await browser.newPage();
     await openIsolation(page, style, true);
