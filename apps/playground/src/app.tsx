@@ -1,9 +1,12 @@
 import type { Session } from '@fhirq/core';
 import { Questionnaire } from '@fhirq/react';
-import { useSyncExternalStore, type JSX } from 'react';
+import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type JSX } from 'react';
 
 import hostSource from './host.ts?raw';
 import { messages } from './host.js';
+
+/** Everything past the first screen comes in its own chunk, after it (ADR-0019, plan S3). */
+const Panes = lazy(() => import('./panes.js').then(({ Panes: component }) => ({ default: component })));
 
 /** ADR-0019, where the policy the page runs under is written down. */
 const POLICY = 'https://github.com/EugeneDumanskyi/fhir-questionnaire-kit/blob/main/docs/adr/0019-static-client-only-playground-and-docs.md';
@@ -13,6 +16,7 @@ const POLICY = 'https://github.com/EugeneDumanskyi/fhir-questionnaire-kit/blob/m
  * statement, and the demo form, working, with nothing to set up first.
  */
 export function App({ session }: { readonly session: Session }): JSX.Element {
+  const idle = useIdle();
   return (
     <main className="playground">
       <header className="intro">
@@ -32,6 +36,11 @@ export function App({ session }: { readonly session: Session }): JSX.Element {
           </pre>
         </details>
       </section>
+      {idle && (
+        <Suspense fallback={null}>
+          <Panes session={session} />
+        </Suspense>
+      )}
     </main>
   );
 }
@@ -44,4 +53,18 @@ function Score({ session }: { readonly session: Session }): JSX.Element {
       Wellbeing score: <output>{typeof score === 'number' ? `${score} of 6` : 'answer both wellbeing questions'}</output>
     </p>
   );
+}
+
+/** `true` once the browser has been idle after the first render, where it can; soon after it otherwise (Safari). */
+function useIdle(): boolean {
+  const [idle, setIdle] = useState(false);
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(() => setIdle(true));
+      return () => window.cancelIdleCallback(handle);
+    }
+    const handle = setTimeout(() => setIdle(true), 0);
+    return () => clearTimeout(handle);
+  }, []);
+  return idle;
 }
