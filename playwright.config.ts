@@ -22,6 +22,8 @@ const ELEMENT = [
 const MATRIX = 'a11y-matrix.spec.ts';
 /** The theme's and accessibility's specs, RTL's (plan D5) and the pass pages' among them, in every engine, blocking in the same job (M8). */
 const A11Y = ['pass-pages.spec.ts', 'print.spec.ts', 'rtl.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts', 'visual-a11y.spec.ts'];
+/** The built playground (M9), served from `apps/playground/dist`: `pnpm build:playground` first. */
+const PLAYGROUND = ['playground-*.spec.ts'];
 /** Timings, report-only (M6 AC-10, M7 AC-5). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -47,10 +49,14 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   visual gates (contrast, focus, targets, reflow, motion), RTL and the
  *   screen-reader pass pages in every engine. Blocking from M8 in CI's `Accessibility gates` job (`pnpm
  *   test:browser:a11y`), which replaced M1's axe proof on the slice.
+ * - `playground`: the built playground under Pages' project path, from its
+ *   `dist` rather than in memory (M9; `pnpm test:playground`, after `pnpm
+ *   build:playground`). It joins CI in the `Playground gates` job.
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
  *
- * `pnpm test:browser` runs all but the timings.
+ * `pnpm test:browser` runs all but the timings and the playground, which
+ * needs a build first.
  */
 export default defineConfig({
   testDir: './tests/browser',
@@ -69,6 +75,7 @@ export default defineConfig({
     { name: 'a11y-chromium', use: { ...devices['Desktop Chrome'] }, testMatch: A11Y },
     { name: 'a11y-firefox', use: { ...devices['Desktop Firefox'] }, testMatch: A11Y },
     { name: 'a11y-webkit', use: { ...devices['Desktop Safari'] }, testMatch: A11Y },
+    { name: 'playground', use: { ...devices['Desktop Chrome'] }, testMatch: PLAYGROUND },
     { name: 'keystroke', use: { ...devices['Desktop Chrome'] }, testMatch: KEYSTROKE },
   ],
 });

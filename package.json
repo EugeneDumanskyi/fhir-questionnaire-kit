@@ -27,6 +27,7 @@
     "test:browser:a11y": "playwright test --project a11y-matrix --project a11y-chromium --project a11y-firefox --project a11y-webkit",
     "a11y:report": "node scripts/a11y-report.mjs",
     "a11y:pages": "node scripts/a11y-pages.mjs",
+    "test:playground": "playwright test --project playground",
     "test:keystroke": "playwright test --project keystroke --workers 1 --reporter list",
     "test:mutation": "stryker run",
     "test:mutation:shard": "node scripts/mutation-shard.mjs",
@@ -36,6 +37,7 @@
     "api:update": "tsc --build packages/core packages/react packages/element packages/themes && api-extractor run --local -c packages/core/api-extractor.json && api-extractor run --local -c packages/core/api-extractor.view.json && api-extractor run --local -c packages/core/api-extractor.resume.json && api-extractor run --local -c packages/react/api-extractor.json && api-extractor run --local -c packages/element/api-extractor.json && api-extractor run --local -c packages/themes/api-extractor.json",
     "measure": "node scripts/measure-bundles.mjs",
     "build": "tsc --build packages/core packages/react packages/element packages/themes && node scripts/build-packages.mjs",
+    "build:playground": "pnpm build && pnpm --filter @fhirq/playground build",
     "build:element": "tsc --build packages/element && node scripts/build-element.mjs",
     "changeset": "changeset",
     "clean": "tsc --build --clean tsconfig.json"

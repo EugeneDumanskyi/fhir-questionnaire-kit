@@ -1,4 +1,4 @@
-import { owningPackage, repoPath } from './paths.js';
+import { matchesPath, owningPackage, repoPath } from './paths.js';
 
 /**
  * `no-deep-imports` — NFR-M-06, ADR-0007, ADR-0013.
@@ -13,7 +13,18 @@ import { owningPackage, repoPath } from './paths.js';
  *    `../../core/src/session/state.js`. Nothing blocks that inside a
  *    workspace, and it is how a monorepo quietly loses its layering: the
  *    import resolves, the types check, and the published package is broken.
+ *
+ * And two more for apps (M9, ADR-0019), which must run on the published
+ * artifact:
+ *
+ * 3. A relative import that leaves an app anywhere but the paths it is
+ *    allowed (`appOutside`: the fixtures it bundles as data).
+ * 4. Any other specifier naming a package's sources — an absolute path or a
+ *    Vite `/@fs/` path to `packages/core/src/…` — anywhere in the repository.
  */
+
+/** A package's sources, as a path segment pair: `packages/core/src`. */
+const SOURCES = /(^|\/)packages\/[^/]+\/src(\/|$)/;
 
 /** @type {import('eslint').Rule.RuleModule} */
 export const noDeepImports = {
@@ -31,6 +42,7 @@ export const noDeepImports = {
             type: 'object',
             additionalProperties: { type: 'array', items: { type: 'string' } },
           },
+          appOutside: { type: 'array', items: { type: 'string' } },
         },
         additionalProperties: false,
       },
@@ -42,11 +54,16 @@ export const noDeepImports = {
         "'{{source}}' names no known @fhirq package. Add its entry points to the no-deep-imports options when the package is real.",
       escapes:
         "'{{source}}' climbs out of {{pkg}} into {{target}}. Cross-package imports go through the package name, so the published artifact matches what the tests ran against.",
+      leaves:
+        "'{{source}}' leaves {{pkg}} for {{target}}. An app imports packages by name, from their built dist (ADR-0019), and reaches outside itself only for {{allowed}}.",
+      sources:
+        "'{{source}}' names a package's sources. Import the package by name, through a published entry point (ADR-0019, NFR-M-06).",
     },
   },
 
   create(context) {
     const entryPoints = context.options[0]?.entryPoints ?? {};
+    const appOutside = context.options[0]?.appOutside ?? [];
     const path = repoPath(context);
     const pkg = owningPackage(path);
 
@@ -73,12 +90,22 @@ export const noDeepImports = {
         return;
       }
 
-      if (!source.startsWith('.') || pkg === null) return;
+      if (!source.startsWith('.')) {
+        if (SOURCES.test(source)) context.report({ node, messageId: 'sources', data: { source } });
+        return;
+      }
+      if (pkg === null) return;
       const dir = path.slice(0, path.lastIndexOf('/'));
-      const resolved = normalise(`${dir}/${source}`);
+      const resolved = normalise(`${dir}/${source.replace(/\?.*$/, '')}`);
       const target = owningPackage(resolved);
-      if (target === null || target === pkg) return;
-      context.report({ node, messageId: 'escapes', data: { source, pkg, target } });
+      if (target !== null && target !== pkg) {
+        context.report({ node, messageId: 'escapes', data: { source, pkg, target } });
+        return;
+      }
+      if (pkg.startsWith('apps/') && target !== pkg && !appOutside.some((pattern) => matchesPath(resolved, pattern))) {
+        const allowed = appOutside.length > 0 ? appOutside.join(' or ') : 'nothing';
+        context.report({ node, messageId: 'leaves', data: { source, pkg, target: resolved, allowed } });
+      }
     };
 
     return {
