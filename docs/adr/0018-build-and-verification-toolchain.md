@@ -94,3 +94,12 @@ It runs over `packages/themes/src/*.css` in `pnpm lint`, so in the fast lane. Th
 
 - **Bundling.** `pnpm build` runs an in-repo esbuild script. It builds every JavaScript target that the packages' `exports` maps name, from the published entry points: ESM and CJS for core, react and themes. `tsc` still emits the declarations, and themes copies its CSS into `dist`. The element keeps `scripts/build-element.mjs`, ESM only (M7 D9). A test checks that every `exports` target exists after a build, so a map can no longer point at a file nothing builds.
 - **Lighthouse CI.** `@lhci/cli` (Apache-2.0), exact-pinned, one direct dev dependency. It runs three times against the built playground with the default mobile preset (simulated slow 4G, 4× CPU slowdown). It asserts NFR-P-06's thresholds on the median, in a blocking `Playground gates` job, which is the pipeline shape's "playground and docs build + Lighthouse" lane for the playground. The docs join it in M10.
+
+**Amendment note, accepted 2026-09-28 (`06-roadmap.md` M10 plan D1 and D5): the docs renderer and the SBOM's timing.** One row joins the Decision's table, and one row is brought forward:
+
+| Concern | Tool | Licence |
+|---|---|---|
+| Markdown to HTML for the docs site (NFR-Q-08, ADR-0019) | marked, exact-pinned, driven by an in-repo Node script | MIT |
+
+- **The docs renderer.** marked has no dependencies of its own, so it adds one direct dev dependency. A framework generator was rejected: it brings a client runtime and inline scripts that ADR-0019's `script-src 'self'` forbids, and many transitive packages.
+- **The SBOM.** `@cyclonedx/cyclonedx-npm` lands in M10, not M11. CI generates the SBOM as an artifact so the adoption pack can link to it; M11 attaches it to releases. The tool expects npm's layout. If it cannot read the pnpm workspace within a 30-minute timebox, an in-repo script writes the CycloneDX JSON instead, which is simple while every package has zero runtime dependencies, and this note is amended to say so.
