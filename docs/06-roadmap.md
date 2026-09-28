@@ -657,7 +657,7 @@ About 0.54 kB of step 5 is core's emission, which the events need. The renderer 
 - **Tier 3 runs in Chromium only.** The tests are Vitest browser mode; no Playwright spec, and no isolation or axe page, runs an override.
 - **An undefined tag in `controls`.** The element sets `props` on an unupgraded element, which then shadows the class's accessor. The docs say to define the tag first, and there is no guard.
 - **A host that replaces the source from inside a control's callback during a paint** is not guarded.
-- **A resolver rejection** reaches the host only as the session's `resolver-failed`, not as `fhirq-diagnostic` (`07-api.md` §8).
+- **A resolver rejection** reaches the host only as the session's `resolver-failed`, not as `fhirq-diagnostic` (`07-api.md` §9).
 - **An invalid `timeZone`** is not checked, and `Intl` throws on it at render. **`lang` on ancestors is not watched** (D6), and is not read across a shadow boundary above the element.
 - **The embed** has not been run from a real CDN, or under a host CSP other than `'self'`.
 - **Hostile CSS** is compared on the demo only. Dark mode and other widths are M8's matrix.

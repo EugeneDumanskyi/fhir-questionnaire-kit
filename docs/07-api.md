@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-25.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha`: M6 and M7 have both built on it without a new field, and moving it to `@beta` is open (`06-roadmap.md` M7, "Still open"). `@fhirq/react` is complete for M6 and `@fhirq/element` for M7; both stay `@alpha` while the view they expose is (§6, §7). `@fhirq/themes` is still M1's spike surface, rewritten in M8.
+**Status, 2026-09-28.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha`: M6 and M7 have both built on it without a new field, and moving it to `@beta` is open (`06-roadmap.md` M7, "Still open"). `@fhirq/react` is complete for M6 and `@fhirq/element` for M7; both stay `@alpha` while the view they expose is (§6, §7). `@fhirq/themes` names its token set as `@beta` from M8 (§8).
 
 ---
 
@@ -31,7 +31,7 @@
 | `@fhirq/core/view` | 15 | `packages/core/etc/core-view.api.md` |
 | `@fhirq/react` | 3, plus `createSession` re-exported | `packages/react/etc/react.api.md` |
 | `@fhirq/element` | 2 | `packages/element/etc/element.api.md` |
-| `@fhirq/themes` | 1 | from M8 |
+| `@fhirq/themes` | 1 | `packages/themes/etc/themes.api.md` |
 | **Total** | **59 of 60** | |
 
 **Allocation (`06-roadmap.md` M3 D3).** M3 had at most 5 symbols and used 5: `emitResponse` and `QuestionnaireResponse` in `@fhirq/core`, and `snapshot`, `restoreSession` and `hydrateSession` in `@fhirq/core/resume`. It paid for the rest in shapes rather than names: cross-field rules are an inline field of `SessionOptions`, the resume functions reuse `SessionOptions`, and a snapshot is typed as JSON. Five symbols remain, for M4's ports and the renderer surfaces. The view's 15 are the likeliest to shrink when M5 replaces the spike's per-control node types; if M4 needs more than five, that is an NFR-U-05 decision, not a quiet overrun.
@@ -41,6 +41,8 @@
 **M5 (`06-roadmap.md` M5 D10)** kept the view at 15: the spike's per-kind node types (`YesNoViewNode`, `ShortTextViewNode`, `YesNoChoice`, `ErrorSummaryEntry`) went, and `ControlView`, `ControlProps`, `ChoiceView` and `InstanceView` came. One `ViewNode` union covers every kind, with its shared fields written inline, so no base type is left unexported. `ItemDefinition.units` is a field, not a symbol. **Two remain** for M6–M8.
 
 **M6 and M7 (`06-roadmap.md` M6 D5, M7 D4)** used one between them. React's `Questionnaire`, `QuestionnaireProps` and `useQuestionnaire` are one more than the two reserved for it; `createSession` is core's own declaration re-exported, listed and not counted. The element kept its reserved two, `FhirQuestionnaireElement` and `defineQuestionnaireElement`, counted from its API report from M7. Its properties, `requestCompletion()`, the `controls` map and its event details are class members or inline types, and its events are typed by an `HTMLElementEventMap` augmentation, a global and not a symbol. **One remains,** kept for M8; the themes' one is already counted from its source entry.
+
+**M8** kept the themes' one, `TOKENS`, and gave it a report; it adds none. **One remains.**
 
 ## 3. `@fhirq/core`
 
@@ -445,7 +447,7 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 **Three ways in** (M7 plan D9). `@fhirq/element` is ESM, with the theme inlined and `@fhirq/core` left to its dependency. Importing `@fhirq/element/define` registers the element. `dist/fhirq-element.js` is one file for a `<script>` tag and no bundler: it holds everything, registers the element as it loads, and exposes `window.fhirq.createSession`. `examples/element-embed/` is a page that uses nothing else. Gzipped, the ESM entry is at most 31.7 kB and the script-tag file 31.9 kB, core, the view and the theme included (NFR-S-02, NFR-S-03, ADR-0024).
 
-**What it draws.** Every control kind, in an open shadow root styled only by adopted stylesheets, as `08-dom-contract.md` sets out. A cycle patches the form in place: a node the view kept is not touched, and the control holding focus is never moved or replaced. `--fhirq-*` tokens set on the element reach the form, and each part's `part` name is its class stem, for `::part()`. A token set on an ancestor of the element does not reach it yet (§8).
+**What it draws.** Every control kind, in an open shadow root styled only by adopted stylesheets, as `08-dom-contract.md` sets out. A cycle patches the form in place: a node the view kept is not touched, and the control holding focus is never moved or replaced. `--fhirq-*` tokens set on the element reach the form, and each part's `part` name is its class stem, for `::part()`. A token set on an ancestor of the element does not: the embedded preset declares every token on `:host` (§8).
 
 **Where the form comes from.** Whichever of these was set last (M7 plan D6):
 
@@ -486,11 +488,39 @@ The core calls the resolver once per distinct canonical per session, and again o
 
 **`controls` (tier 3, ADR-0013, ADR-0014).** A property, since it needs script: a custom element tag the host has defined, per control kind, for any of the 13 answerable kinds: `el.controls = { 'calendar-date': 'my-date-picker' }`. Kinds left out, and the five that are not answerable, render the default. The element makes the host's element inside its shadow root, between the kit's label (`for` = `ids.control`) with its required marker and the error container (`08-dom-contract.md` §3.9), and sets its `props` property to `ControlProps` (§5.3) each time the item renders. The control answers by calling `props.set`, `props.clear` and `props.leave`, or by dispatching `fhirq-set` (its `detail` what `set` takes), `fhirq-clear` and `fhirq-leave` on itself; they need not bubble. A kind's other commands, such as `toggle` or `setUnit`, are called on `props.node`. The host defines the tag before the item renders. A new map draws every item again, over the same view, so drafts stay; setting the same map does nothing, and `null` restores the defaults. In development, in a microtask after each render of an overridden item, so a control that draws in a microtask of its own is seen drawn, the element checks that an element in its shadow root carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` once per item and missing attribute, through `fhirq-diagnostic` and `console.warn` (code and kind only). A production build, the script-tag bundle among them, has no check.
 
-## 8. Not in the API yet
+## 8. `@fhirq/themes` (`@beta`)
+
+Two stylesheets and one constant. `@fhirq/themes/base.css` is the structure: it styles the DOM contract's classes (`08-dom-contract.md`) and reads nothing but `--fhirq-*` tokens. `@fhirq/themes/default.css` is the preset: values for every token and nothing else, light, with the colours redeclared for dark under `prefers-color-scheme`. A React host imports both (§6); the element embeds both (ADR-0014).
+
+```css
+/* Tier 2 (ADR-0013): the element takes tokens on itself, React on any ancestor. */
+fhir-questionnaire, .intake {
+  --fhirq-color-accent: #0b5cad;
+  --fhirq-radius: 0;
+}
+```
+
+**Where a token is set** (ADR-0014, 2026-09-28 note). The preset declares every token on `:root` and `:host`. In React there is no shadow root, so a token set on any ancestor of the form wins over `:root`. In the element, the declaration on `:host` hides whatever the element would inherit, so a host sets tokens on `fhir-questionnaire` itself. Tokens are in `rem`, so the form follows the page's root font size, which is also what honours a user's font-size setting.
+
+**`TOKENS`** lists the token names, as a `readonly` tuple, for a host that generates or checks its own values. It is the whole set; `base.css` reads no other.
+
+| Group | Tokens | Default (light) |
+|---|---|---|
+| Type | `font-family`, `font-size`, `font-size-heading` (the error summary), `font-size-subheading` (a repeat instance's name), `font-weight-strong`, `line-height` | `inherit`, `1rem`, `1.25rem`, `1.125rem`, `600`, `1.5` |
+| Spacing | `space-1` to `space-4` | `0.25rem`, `0.5rem`, `0.75rem`, `1rem` |
+| Shape | `radius`, `border-width`, `error-bar-width` | `0.25rem`, `1px`, `4px` |
+| Focus ring | `focus-width`, `focus-offset` | `3px`, `2px` |
+| Targets | `target-size` (the least block size of a control or choice row), `radio-size` | `2.75rem`, `1.5rem` |
+| Colour | `color-text`, `color-text-muted`, `color-background`, `color-control-background`, `color-border`, `color-accent`, `color-focus`, `color-error` | `#1b1b1f`, `#5c5f66`, `#ffffff`, `#ffffff`, `#5c5f66`, `#1d4ed8`, `#1d4ed8`, `#b3261e` |
+
+Each name above takes the `--fhirq-` prefix. Dark redeclares the eight colours only: `#e8e8ec`, `#b4b6bd`, `#121316`, `#1c1d21`, `#9a9ca3`, `#93b4ff`, `#93b4ff`, `#ffb4ab`.
+
+**Contrast is the host's once it sets a colour** (ADR-0013). The preset's own pairs are tested, in both schemes, against both `background` and `control-background`. Text, muted text, error and accent are at least 4.5:1. Border and focus are at least 3:1. A host that forces one scheme sets the colour tokens itself; there is no `light.css` or `dark.css` (M8 plan D6).
+
+## 9. Not in the API yet
 
 - **US-07.3's `Should`:** scheduling an evaluator from the inputs an expression declares. Calculated values are re-run on every cycle that changed answers or enablement.
 - **Checking a coded answer against the resolved options.** It is not required by any M4 criterion, and a resumed code must load whatever the set holds (T8).
-- **M8:** the theme tokens. On the element, a token set on an ancestor is hidden by the preset's defaults on `:host`, where ADR-0014 says it inherits; M8 decides (`06-roadmap.md` M7, "Still open").
 - **A resolver rejection on the element.** It reaches the host only as the session's `resolver-failed` diagnostic, since the element passes no `onCollaboratorError`; `fhirq-diagnostic` carries only what the element raises itself, as React's `onDiagnostic` does.
 - **A completion control.** Neither the view nor the default UI offers one, so a `<Questionnaire questionnaire>` cannot be completed and the quickstart needs the hook and the host's own button: 13 lines against NFR-U-01's 10 (M6 close-out).
 - **Help text** (M5 plan D5): R4 carries it as a `display` item nested under a question, which the kit rejects (INV-D-17), so `description` is always `null`.
