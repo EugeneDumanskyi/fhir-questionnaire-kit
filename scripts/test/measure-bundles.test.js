@@ -79,9 +79,9 @@ describe('measure-bundles', () => {
     expect(resume.externals.every((path) => path.startsWith('./packages/core/src/'))).toBe(true);
   });
 
-  it('gates @fhirq/core from M2, @fhirq/core/resume from M3, @fhirq/core/view from M5, @fhirq/react from M6 and the element and its IIFE from M7, and only entries that have a budget', () => {
+  it('gates @fhirq/core from M2, @fhirq/core/resume from M3, @fhirq/core/view from M5, @fhirq/react from M6 the element and its IIFE from M7 and the theme stylesheets from M8, and only entries that have a budget', () => {
     const { entries, gated } = JSON.parse(readFileSync(new URL('../budgets.json', import.meta.url), 'utf8'));
-    expect(gated).toEqual(['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume', '@fhirq/react', '@fhirq/element', '@fhirq/element (IIFE)']);
+    expect(gated).toEqual(['@fhirq/core', '@fhirq/core/view', '@fhirq/core/resume', '@fhirq/react', '@fhirq/element', '@fhirq/element (IIFE)', '@fhirq/themes/base.css', '@fhirq/themes/default.css']);
     for (const name of gated) expect(entries[name]).toBeTypeOf('number');
   });
 

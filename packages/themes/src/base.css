@@ -2,13 +2,30 @@
  * @fhirq/themes/base.css — the structural stylesheet (ADR-0013, ADR-0014).
  *
  * Reads --fhirq-* tokens only: no literal colour or length, logical
- * properties only (NFR-I-05), held by stylelint.config.js in `pnpm lint`. Class names are the DOM contract's
- * (docs/08-dom-contract.md), shared by the React renderer in light DOM and the
- * element in its shadow root. S1 slice: the tokens two controls need.
+ * properties only (NFR-I-05), held by stylelint.config.js in `pnpm lint`.
+ * Class names are the DOM contract's (docs/08-dom-contract.md), shared by the
+ * React renderer in light DOM and the element in its shadow root. Every
+ * primary control is at least the target size (NFR-A-05, M8 plan D8), and
+ * every focusable part inside the form shows one focus ring (NFR-A-04).
  */
 
 :host {
   display: block;
+}
+
+/* Shadow DOM isolates selectors, not inheritance: these would otherwise
+   reach the form from the host page (ADR-0014, 2026-09-28 note). They are
+   reset on the form, not on `:host`, because a page rule on the element
+   itself (`*`, `fhir-questionnaire`) beats `:host`. React's light DOM is
+   left to the host. Tokens stay in rem, so the root font size still scales
+   the form, on purpose. */
+:host .fhirq-form {
+  cursor: auto;
+  font-style: normal;
+  letter-spacing: normal;
+  text-align: start;
+  text-transform: none;
+  word-spacing: normal;
 }
 
 .fhirq-form {
@@ -22,7 +39,17 @@
   background-color: var(--fhirq-color-background);
 }
 
-.fhirq-item {
+.fhirq-form :focus-visible {
+  outline: var(--fhirq-focus-width) solid var(--fhirq-color-focus);
+  outline-offset: var(--fhirq-focus-offset);
+}
+
+/* Items and groups (§3, §3.7, §3.8) */
+
+.fhirq-item,
+.fhirq-entries,
+.fhirq-instance,
+.fhirq-unsupported {
   display: flex;
   flex-direction: column;
   gap: var(--fhirq-space-2);
@@ -30,6 +57,44 @@
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+/* A quantity's value and unit share a row; the label and error keep theirs. */
+.fhirq-item:has(> .fhirq-unit) {
+  flex-flow: row wrap;
+}
+
+.fhirq-item:has(> .fhirq-unit) > :not(.fhirq-control, .fhirq-unit) {
+  flex-basis: 100%;
+}
+
+.fhirq-group,
+.fhirq-repeat {
+  gap: var(--fhirq-space-4);
+}
+
+.fhirq-group {
+  padding-inline-start: var(--fhirq-space-3);
+  border-inline-start: var(--fhirq-border-width) solid var(--fhirq-color-border);
+}
+
+.fhirq-group > .fhirq-label,
+.fhirq-repeat > .fhirq-label {
+  margin-block-end: var(--fhirq-space-2);
+  font-size: var(--fhirq-font-size-subheading);
+}
+
+.fhirq-instance {
+  gap: var(--fhirq-space-4);
+  padding: var(--fhirq-space-3);
+  border: var(--fhirq-border-width) solid var(--fhirq-color-border);
+  border-radius: var(--fhirq-radius);
+}
+
+.fhirq-instance-label {
+  margin: 0;
+  font-size: var(--fhirq-font-size);
+  font-weight: var(--fhirq-font-weight-strong);
 }
 
 .fhirq-label {
@@ -42,7 +107,14 @@
   color: var(--fhirq-color-error);
 }
 
-.fhirq-control {
+/* Controls (§3.1–§3.5) */
+
+.fhirq-control,
+.fhirq-unit,
+.fhirq-other-text,
+.fhirq-retry,
+.fhirq-add,
+.fhirq-remove {
   box-sizing: border-box;
   min-block-size: var(--fhirq-target-size);
   max-inline-size: 100%;
@@ -55,32 +127,47 @@
   border-radius: var(--fhirq-radius);
 }
 
+textarea.fhirq-control {
+  min-block-size: calc(var(--fhirq-target-size) * 2);
+  resize: block;
+}
+
+.fhirq-retry,
+.fhirq-add,
+.fhirq-remove {
+  align-self: flex-start;
+  min-inline-size: var(--fhirq-target-size);
+  cursor: pointer;
+}
+
+.fhirq-add[aria-disabled='true'] {
+  color: var(--fhirq-color-text-muted);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
 .fhirq-choices {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--fhirq-space-4);
+  gap: var(--fhirq-space-2) var(--fhirq-space-4);
 }
 
-.fhirq-choice {
+.fhirq-choice,
+.fhirq-other {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--fhirq-space-2);
   min-block-size: var(--fhirq-target-size);
 }
 
-.fhirq-radio {
+.fhirq-radio,
+.fhirq-checkbox {
+  flex-shrink: 0;
   inline-size: var(--fhirq-radio-size);
   block-size: var(--fhirq-radio-size);
   margin: 0;
   accent-color: var(--fhirq-color-accent);
-}
-
-.fhirq-control:focus-visible,
-.fhirq-radio:focus-visible,
-.fhirq-summary:focus-visible,
-.fhirq-summary-link:focus-visible {
-  outline: var(--fhirq-focus-width) solid var(--fhirq-color-focus);
-  outline-offset: var(--fhirq-focus-offset);
 }
 
 .fhirq-control[aria-invalid='true'],
@@ -90,14 +177,26 @@
   padding-inline-start: var(--fhirq-space-3);
 }
 
+/* Text around the controls (§3, §3.5, §3.6, §3.8) */
+
+.fhirq-options-status,
+.fhirq-reason,
+.fhirq-notice {
+  margin: 0;
+  color: var(--fhirq-color-text-muted);
+}
+
+.fhirq-statement,
+.fhirq-error-message {
+  margin: 0;
+}
+
 .fhirq-error {
   color: var(--fhirq-color-error);
   font-weight: var(--fhirq-font-weight-strong);
 }
 
-.fhirq-error-message {
-  margin: 0;
-}
+/* The error summary (§2) */
 
 .fhirq-summary {
   padding: var(--fhirq-space-4);
@@ -111,7 +210,11 @@
   font-size: var(--fhirq-font-size-heading);
 }
 
+/* Entries a line apart keep each link's 24 px target clear of the next. */
 .fhirq-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fhirq-space-2);
   margin: 0;
   padding-inline-start: var(--fhirq-space-4);
 }
@@ -130,4 +233,27 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* The theme moves nothing; this keeps a host's additions still too. */
+@media (prefers-reduced-motion: reduce) {
+  .fhirq-form,
+  .fhirq-form * {
+    scroll-behavior: auto;
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Forced colours replace every token. System colours keep the focus ring
+   distinct from borders, and an inert add control reading as inert. */
+@media (forced-colors: active) {
+  .fhirq-form :focus-visible {
+    outline-color: Highlight;
+  }
+
+  .fhirq-add[aria-disabled='true'] {
+    color: GrayText;
+    border-color: GrayText;
+  }
 }
