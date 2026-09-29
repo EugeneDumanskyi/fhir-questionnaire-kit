@@ -1,0 +1,236 @@
+/*
+ * The docs site's one stylesheet (ADR-0019, M10 plan D1). Loaded through
+ * style-src 'self': no page carries a <style> or a style attribute. System
+ * fonts only, no third-party asset. Logical properties, as the themes use.
+ */
+
+:root {
+  color-scheme: light dark;
+  --text: #1b1f24;
+  --muted: #57606a;
+  --background: #fff;
+  --surface: #f6f8fa;
+  --border: #d0d7de;
+  --link: #0a58ca;
+  --focus: #0a58ca;
+  --supported: #1a7f37;
+  --partial: #9a6700;
+  --excluded: #57606a;
+  --measure: 72rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #e6edf3;
+    --muted: #9da7b1;
+    --background: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --link: #58a6ff;
+    --focus: #58a6ff;
+    --supported: #3fb950;
+    --partial: #d29922;
+    --excluded: #9da7b1;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--link);
+}
+
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.skip {
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: -3rem;
+  padding: 0.5rem 1rem;
+  background: var(--background);
+}
+
+.skip:focus {
+  inset-block-start: 0.5rem;
+}
+
+header,
+main,
+footer {
+  max-inline-size: var(--measure);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+  padding-block: 1rem;
+  border-block-end: 1px solid var(--border);
+}
+
+.site {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav a[aria-current='page'] {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+main {
+  padding-block: 1rem 3rem;
+}
+
+footer {
+  padding-block: 1rem 2rem;
+  border-block-start: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  margin-block: 2rem 0.75rem;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  padding-block-end: 0.25rem;
+  border-block-end: 1px solid var(--border);
+  font-size: 1.5rem;
+}
+
+p,
+ul,
+ol,
+blockquote,
+pre,
+table {
+  margin-block: 0 1rem;
+}
+
+blockquote {
+  margin-inline: 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 4px solid var(--border);
+  color: var(--muted);
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+}
+
+:not(pre) > code {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+pre {
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  line-height: 1.45;
+}
+
+img {
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+main > table,
+.scroll {
+  display: block;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--surface);
+}
+
+td ul {
+  margin: 0;
+  padding-inline-start: 1rem;
+}
+
+tr:target {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.summary {
+  min-inline-size: 16rem;
+}
+
+.status {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-supported {
+  color: var(--supported);
+}
+
+.status-partial {
+  color: var(--partial);
+}
+
+.status-not-supported,
+.status-out-of-scope {
+  color: var(--excluded);
+}

@@ -8,7 +8,6 @@ import { PLAYGROUND, servePlayground } from './pages/playground.js';
  * its conformance rows linked. Strict by default, lenient on request (plan D6).
  */
 
-const MATRIX = 'https://github.com/EugeneDumanskyi/fhir-questionnaire-kit/blob/main/docs/conformance/matrix.json#L';
 
 const editor = (page: Page) => page.getByRole('region', { name: 'Paste your own Questionnaire', exact: true });
 const text = (page: Page) => editor(page).getByLabel('Questionnaire JSON');
@@ -51,7 +50,7 @@ test('refuses unsupported input in strict mode, with every finding and its confo
   const rows = finding.getByRole('list', { name: 'Conformance rows' });
   await expect(rows.getByRole('link')).toHaveText(['item-type.attachment']);
   await expect(rows.getByRole('listitem')).toContainText('Item type attachment. not supported. Outside the supported item types');
-  await expect(rows.getByRole('link', { name: 'item-type.attachment' })).toHaveAttribute('href', new RegExp(`^${MATRIX.replaceAll('.', '\\.')}\\d+$`));
+  await expect(rows.getByRole('link', { name: 'item-type.attachment' })).toHaveAttribute('href', '../conformance.html#item-type.attachment');
   // Refused, so the form is still the demo.
   await expect(form(page).getByLabel('A photo of the rash')).toHaveCount(0);
 });

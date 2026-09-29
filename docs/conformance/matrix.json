@@ -1504,7 +1504,7 @@
       "id": "scope.site-analytics",
       "feature": "Analytics, telemetry or third-party assets on the playground or the docs site",
       "status": "out of scope",
-      "reason": "None, by decision (NFR-X-09, ADR-0019): the playground's Content Security Policy sets `connect-src 'none'`, and the docs site's will match it (M10 plan D1)",
+      "reason": "None, by decision (NFR-X-09, ADR-0019): the playground and the docs site both run under a Content Security Policy that sets `connect-src 'none'`",
       "tests": []
     }
   ]

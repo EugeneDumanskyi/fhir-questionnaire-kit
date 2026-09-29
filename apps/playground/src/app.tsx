@@ -13,8 +13,8 @@ const Switcher = lazy(() => import('./switcher.js').then(({ Switcher: component 
 const TierForm = lazy(() => import('./switcher.js').then(({ TierForm: component }) => ({ default: component })));
 const Share = lazy(() => import('./share.js').then(({ Share: component }) => ({ default: component })));
 
-/** ADR-0019, where the policy the page runs under is written down. */
-const POLICY = 'https://github.com/EugeneDumanskyi/fhir-questionnaire-kit/blob/main/docs/adr/0019-static-client-only-playground-and-docs.md';
+/** ADR-0019, where the policy the page runs under is written down, on the docs site one level up (M10 plan D2). */
+const POLICY = '../adr/0019-static-client-only-playground-and-docs.html';
 
 /** The questionnaire the page shows, and whether the demo's host code runs with it. */
 interface Shown {
