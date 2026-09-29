@@ -36,7 +36,16 @@ pnpm lint        # ESLint, including the four architectural rules
 pnpm test        # Vitest, Node only
 ```
 
+## Not a medical device
+
+The kit renders a questionnaire and records the answers; it does not interpret
+them, and it is not a medical device. Validating an instrument, its wording and
+any score for clinical use is the adopter's responsibility.
+
 ## Documentation
+
+The [guides](docs/guides/README.md) go task by task, from a first form to a
+scored one, and every code block in them is compiled and run in CI.
 
 `docs/` carries the reasoning, and it is meant to be read rather than skimmed:
 the brief, requirements and acceptance criteria, the NFRs and their gates, the

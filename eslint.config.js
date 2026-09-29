@@ -203,7 +203,7 @@ export default tseslint.config(
     // examples, consumer code with a project of their own, joined in M6; the
     // playground, an app with its own dependencies, in M9; the docs' examples
     // in M10.
-    files: ['packages/**/*.{ts,tsx}', 'examples/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'docs/examples/**/*.ts', 'tests/**/*.ts', '*.config.ts'],
+    files: ['packages/**/*.{ts,tsx}', 'examples/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'docs/examples/**/*.{ts,tsx}', 'tests/**/*.ts', '*.config.ts'],
     // Lint tests lint virtual files that no project includes.
     ignores: ['**/__lint-fixture__.ts'],
     extends: [tseslint.configs.recommendedTypeCheckedOnly],

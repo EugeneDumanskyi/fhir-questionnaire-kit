@@ -101,6 +101,16 @@ describe('the docs site build (ADR-0019, M10 plan D1 and D9)', () => {
     for (const link of [PLAYGROUND_MATRIX, policy]) expect(outputs, link).toContain(posix.join('playground', link));
   });
 
+  it('publishes every guide, linked from the guides index (M10 plan step 5)', () => {
+    const guides = site.pages.map((page) => page.output).filter((output) => output.startsWith('guides/') && output !== 'guides/index.html');
+    expect(guides).toEqual(expect.arrayContaining(['guides/react.html', 'guides/element.html', 'guides/tiers.html', 'guides/save-and-resume.html', 'guides/retention.html', 'guides/value-sets.html', 'guides/scoring.html']));
+    for (const guide of guides) expect(html('guides/index.html'), guide).toContain(`href="${posix.basename(guide)}"`);
+  });
+
+  it('says on the site index, and beside the worked example, that the kit is not a medical device (AC-13.5.1)', () => {
+    for (const output of ['index.html', 'guides/index.html', 'guides/scoring.html']) expect(html(output), output).toMatch(/not a medical device/i);
+  });
+
   it('names the commit it was built from on every page', () => {
     for (const { output, html: text } of site.pages) expect(text, output).toContain(`<a href="${REPO}/tree/${commit}"><code>0123456</code></a>`);
   });
