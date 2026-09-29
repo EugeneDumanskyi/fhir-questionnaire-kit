@@ -1,9 +1,9 @@
 name: Pages
 
-# The playground on GitHub Pages under /playground/ (ADR-0019, M9 plan D2).
-# Every push to main has passed CI as a pull request, so the deploy builds and
-# publishes; it does not re-run the gates. M11 adds the docs at the site's
-# root and ties both to the release. Until then the root is empty.
+# The docs at the site's root and the playground under /playground/ on GitHub
+# Pages (ADR-0019; M9 plan D2, M10 plan D2). Every push to main has passed CI
+# as a pull request, so the deploy builds and publishes; it does not re-run
+# the gates. M11 ties both sites to the release.
 on:
   push:
     branches: [main]
@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   build:
-    name: Build the playground
+    name: Build the docs and the playground
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -51,12 +51,21 @@ jobs:
       - name: Build the packages, then the playground from their dist
         run: pnpm build:playground
 
-      # The build's asset paths are relative (base './'), so it is published
-      # as built, one directory down.
+      # Links to the repository go to the commit being deployed.
+      - name: Build the docs
+        run: pnpm build:docs
+
+      # Both builds use relative paths, so each is published as built: the
+      # docs at the root, the playground one directory down. The deploy stops
+      # if either is missing, rather than publish one over the other.
       - name: Lay out the site
         run: |
           mkdir -p site
+          cp -R apps/docs/dist/. site/
           cp -R apps/playground/dist site/playground
+          test -f site/index.html
+          test -f site/conformance.html
+          test -f site/playground/index.html
 
       - uses: actions/configure-pages@v5
 
@@ -74,7 +83,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}playground/
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

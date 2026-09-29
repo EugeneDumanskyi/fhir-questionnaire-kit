@@ -6,7 +6,7 @@ export interface Row {
   readonly feature: string;
   readonly status: string;
   readonly reason: string | null;
-  /** Where the row starts on GitHub. */
+  /** The row on the docs site's matrix page. */
   readonly href: string;
 }
 
@@ -18,21 +18,23 @@ interface MatrixRow {
   readonly diagnostics?: readonly DiagnosticCode[];
 }
 
-/** The matrix on GitHub, until M10 publishes it as a page (M9 plan D5). */
-export const MATRIX = 'https://github.com/EugeneDumanskyi/fhir-questionnaire-kit/blob/main/docs/conformance/matrix.json';
+/**
+ * The matrix's page on the docs site (M9 plan D5), which Pages publishes at
+ * the site's root, one level above the playground (M10 plan D2). Relative,
+ * so it holds under any path the two are served from together.
+ */
+export const MATRIX = '../conformance.html';
 
 /**
  * The conformance rows for each diagnostic code, from the matrix's own text
  * (`docs/conformance/matrix.json`, its `diagnostics` field). Each row links
- * to its line, found in the same text, so the link is to the row as bundled.
+ * to its anchor on the matrix page, which is its id.
  */
 export function rowsByCode(text: string): ReadonlyMap<DiagnosticCode, readonly Row[]> {
   const { rows } = JSON.parse(text) as { readonly rows: readonly MatrixRow[] };
-  const lines = text.split('\n');
   const byCode = new Map<DiagnosticCode, Row[]>();
   for (const { id, feature, status, reason, diagnostics = [] } of rows) {
-    const line = lines.findIndex((candidate) => candidate.trim() === `"id": ${JSON.stringify(id)},`) + 1;
-    const row: Row = { id, feature, status, reason, href: line > 0 ? `${MATRIX}#L${line}` : MATRIX };
+    const row: Row = { id, feature, status, reason, href: `${MATRIX}#${id}` };
     for (const code of diagnostics) byCode.set(code, [...(byCode.get(code) ?? []), row]);
   }
   return byCode;

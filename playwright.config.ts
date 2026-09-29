@@ -22,10 +22,14 @@ const ELEMENT = [
 const MATRIX = 'a11y-matrix.spec.ts';
 /** The theme's and accessibility's specs, RTL's (plan D5) and the pass pages' among them, in every engine, blocking in the same job (M8). */
 const A11Y = ['pass-pages.spec.ts', 'print.spec.ts', 'rtl.spec.ts', 'themed-host.spec.ts', 'tokens.spec.ts', 'visual-a11y.spec.ts'];
-/** The built playground (M9), served from `apps/playground/dist`: `pnpm build:playground` first. */
-const PLAYGROUND = ['playground-*.spec.ts'];
-/** Its privacy claim (M9 AC-5, plan step 10) and its share links (plan D7), in every engine as well. */
-const ENGINES = ['playground-privacy.spec.ts', 'playground-share.spec.ts'];
+/**
+ * The built playground (M9), served from `apps/playground/dist`, and the built
+ * docs (M10), from `apps/docs/dist`: `pnpm build:playground` and `pnpm
+ * build:docs` first.
+ */
+const PLAYGROUND = ['playground-*.spec.ts', 'docs-site.spec.ts'];
+/** Its privacy claim (M9 AC-5, plan step 10), its share links (plan D7) and the docs' policy (M10 plan step 4), in every engine as well. */
+const ENGINES = ['playground-privacy.spec.ts', 'playground-share.spec.ts', 'docs-site.spec.ts'];
 /** Timings, report-only (M6 AC-10, M7 AC-5). */
 const KEYSTROKE = 'keystroke.spec.ts';
 
@@ -56,7 +60,8 @@ const KEYSTROKE = 'keystroke.spec.ts';
  *   build:playground`); `playground-firefox`, `playground-webkit`: its
  *   privacy and CSP spec and its share links in the other two engines.
  *   Blocking from M9 in CI's `Playground gates` job, with Lighthouse on the
- *   same build.
+ *   same build. From M10 the built docs' policy spec runs in all three, in
+ *   the same job (M10 plan D10).
  * - `keystroke`: run by `pnpm test:keystroke` on one worker, since a proof
  *   running beside it would be in the reading.
  *

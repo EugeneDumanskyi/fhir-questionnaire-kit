@@ -35,7 +35,7 @@ test('shows the sentence, the privacy statement and a working form above the fol
   const privacy = page.getByText('Nothing leaves your browser');
   await expect(privacy).toBeVisible();
   await inView(page, privacy);
-  await expect(page.getByRole('link', { name: 'The policy' })).toHaveAttribute('href', /docs\/adr\/0019-static-client-only-playground-and-docs\.md$/);
+  await expect(page.getByRole('link', { name: 'The policy' })).toHaveAttribute('href', '../adr/0019-static-client-only-playground-and-docs.html');
 
   const first = page.getByRole('radiogroup', { name: 'Are you in pain today?' });
   await inView(page, first);

@@ -61,15 +61,12 @@ describe('load', () => {
 
 describe('rowsByCode', () => {
   const rows = rowsByCode(matrix);
-  const lines = matrix.split('\n');
 
-  it('gives each code its rows, each linked to the line of its id', () => {
+  it("gives each code its rows, each linked to its anchor on the docs site's matrix page (M9 plan D5)", () => {
     const found = rows.get('unsupported-item-type') ?? [];
     expect(found.map((row) => row.id)).toEqual(['item-type.attachment', 'item-type.reference', 'item-type.url', 'item-type.time']);
-    for (const row of found) {
-      const line = Number(row.href.slice(`${MATRIX}#L`.length));
-      expect(lines[line - 1]?.trim(), row.id).toBe(`"id": "${row.id}",`);
-    }
+    expect(MATRIX).toBe('../conformance.html');
+    for (const row of found) expect(row.href, row.id).toBe(`../conformance.html#${row.id}`);
   });
 
   it('has none for a code no row lists', () => {

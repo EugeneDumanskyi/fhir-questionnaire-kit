@@ -478,6 +478,9 @@ jobs:
   # default mobile preset, with NFR-P-06 asserted on the median run (AC-7).
   # Every run's numbers go to the job summary and the reports to an artifact,
   # whether or not the thresholds held. Its lint rules are in the fast lane.
+  # From M10 the docs site's gates run here too (M10 plan D10): the build, the
+  # link checker over it, and its policy spec in all three engines. The name
+  # stays, so branch protection is unaffected.
   playground-gates:
     name: Playground gates
     runs-on: ubuntu-latest
@@ -514,7 +517,14 @@ jobs:
       - name: Build the packages, then the playground from their dist
         run: pnpm build:playground
 
-      - name: Playground specs in Chromium, and the privacy claim in Chromium, Firefox and WebKit
+      # ADR-0019's link checker, over the docs as pages.yml lays them out,
+      # the playground under playground/ (M10 plan D10).
+      - name: Build the docs, then check every link in them
+        run: |
+          pnpm build:docs
+          pnpm docs:links
+
+      - name: Playground specs in Chromium, the privacy claim and the docs' policy in Chromium, Firefox and WebKit
         run: pnpm test:playground
 
       # The runner's Google Chrome, not Playwright's: Lighthouse's own launcher

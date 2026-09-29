@@ -41,6 +41,8 @@
     "measure": "node scripts/measure-bundles.mjs",
     "build": "tsc --build packages/core packages/react packages/element packages/themes && node scripts/build-packages.mjs",
     "build:playground": "pnpm build && pnpm --filter @fhirq/playground build",
+    "build:docs": "node scripts/build-docs.mjs",
+    "docs:links": "node scripts/check-docs-links.mjs",
     "build:element": "tsc --build packages/element && node scripts/build-element.mjs",
     "changeset": "changeset",
     "clean": "tsc --build --clean tsconfig.json"
@@ -60,6 +62,7 @@
     "esbuild": "0.28.2",
     "eslint": "9.39.5",
     "fast-check": "4.10.1",
+    "marked": "18.0.14",
     "playwright": "1.63.0",
     "stylelint": "17.15.0",
     "typescript": "5.9.3",
