@@ -29,7 +29,9 @@ is not to be read as one. The kit does not interpret it: `demo.test.ts` scores
 it with a test-only scorer that adds the ordinals (US-07.2), and holds the
 demo's cross-field rule there too: the date someone stopped smoking may not
 come after the visit date (M3's rule shape, AC-15.1.1). The rule lives in the test, not
-the form, since R4 has no standard way to author one.
+the form, since R4 has no standard way to author one. The scoring guide,
+`docs/guides/scoring.md`, is the worked example over this block (M10 plan D8),
+run by `docs/examples/test/examples.test.ts`.
 
 **Version 3 (M9)** moves the `pain` group up, straight after `notice`, and
 changes nothing else. The playground opens on this form, and its first

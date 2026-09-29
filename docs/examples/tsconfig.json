@@ -4,11 +4,12 @@
     /* The docs' examples and their Node test, under the repository's own
        strictness. They emit nothing anyone ships: the declarations go to a
        scratch directory only because `composite` requires an output. */
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
+    "jsx": "react-jsx",
     "rootDir": ".",
     "outDir": ".tsbuild"
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "references": [{ "path": "../../packages/core" }]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx"],
+  "references": [{ "path": "../../packages/core" }, { "path": "../../packages/react" }, { "path": "../../packages/element" }]
 }
