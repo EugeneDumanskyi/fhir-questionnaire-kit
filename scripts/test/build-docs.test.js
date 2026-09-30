@@ -111,6 +111,14 @@ describe('the docs site build (ADR-0019, M10 plan D1 and D9)', () => {
     for (const output of ['index.html', 'guides/index.html', 'guides/scoring.html']) expect(html(output), output).toMatch(/not a medical device/i);
   });
 
+  it('carries the front door onto the site index: the demo image, and the security policy it links (AC-13.1.1, NFR-X-08)', () => {
+    expect(site.images).toContain('docs/media/demo.png');
+    expect(html('index.html')).toMatch(/<img src="files\/docs\/media\/demo\.png" alt="[^"]+">/);
+    expect(html('index.html')).toMatch(/<a href="security\.html">/);
+    expect(html('security.html')).toMatch(/7 days/);
+    expect(html('security.html')).toMatch(/30 days/);
+  });
+
   it('names the commit it was built from on every page', () => {
     for (const { output, html: text } of site.pages) expect(text, output).toContain(`<a href="${REPO}/tree/${commit}"><code>0123456</code></a>`);
   });

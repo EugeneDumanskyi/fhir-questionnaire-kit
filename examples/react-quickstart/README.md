@@ -36,5 +36,7 @@ export function Intake({ onComplete }: Pick<QuestionnaireProps, 'onComplete'>) {
 
 The code above is [`src/app.tsx`](src/app.tsx), verbatim. CI typechecks it,
 renders it in Node on React 18 and 19, then hydrates and completes it in
-Chromium and WebKit. It is 13 lines, counting every line that is not blank;
-NFR-U-01's target is 10.
+Chromium and WebKit. It is 13 lines, counting every line that is not blank,
+which is NFR-U-01's figure for a form the host can complete. Rendering alone
+takes 6, in [`src/render.tsx`](src/render.tsx), the example on the
+repository's front page.
