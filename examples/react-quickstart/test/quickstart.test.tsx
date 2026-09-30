@@ -5,6 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { Intake } from '../src/app.js';
+import { Form } from '../src/render.js';
 
 /**
  * M6 AC-1 (NFR-U-01, NFR-Q-08, AC-13.2.1) in Node, on React 18 and 19: the
@@ -15,12 +16,13 @@ import { Intake } from '../src/app.js';
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const APP = read('../src/app.tsx');
+const RENDER = read('../src/render.tsx');
 
 /** Every line that is not blank. The sample holds no comments, so none are left out. */
 const counted = (source: string) => source.split('\n').filter((line) => line.trim() !== '');
 
 describe('the React quickstart (M6 AC-1)', () => {
-  it('is 13 lines of consumer code: NFR-U-01 asks for 10, and the 3 over are recorded', () => {
+  it('is 13 lines of consumer code, NFR-U-01\'s figure for a form the host can complete (restated in M10)', () => {
     expect(APP).not.toMatch(/\/\/|\/\*/);
     expect(counted(APP)).toHaveLength(13);
   });
@@ -44,5 +46,26 @@ describe('the React quickstart (M6 AC-1)', () => {
     expect(all(/data-path="([^"]+)"/g)).toEqual(['notice', 'name', 'born', 'smoker', 'contact']);
     expect(all(/class="fhirq-label"[^>]*>([^<]+)</g)).toEqual(['Full name', 'Date of birth', 'Do you smoke?', 'How should we contact you?']);
     expect(all(/class="fhirq-choice-label"[^>]*>([^<]+)</g)).toEqual(['Yes', 'No', 'Phone', 'Email', 'Post']);
+  });
+});
+
+describe('the front door\'s example (M10 AC-4, plan D3)', () => {
+  it('is at most 10 lines, NFR-U-01\'s figure for a rendered form, which the host cannot complete', () => {
+    expect(RENDER).not.toMatch(/\/\/|\/\*/);
+    expect(counted(RENDER).length).toBeLessThanOrEqual(10);
+  });
+
+  it('is what the repository\'s README shows, verbatim (NFR-Q-08)', () => {
+    const shown = read('../../../README.md').match(/<!-- snippet: examples\/react-quickstart\/src\/render\.tsx -->\n```tsx\n([\s\S]*?)```/)?.[1];
+
+    expect(shown).toBe(RENDER);
+  });
+
+  it('renders the same questions on a server, with no submit button of its own', () => {
+    const html = renderToString(<Form />);
+
+    expect(html).toMatch(/^<div class="fhirq-form" part="form">/);
+    expect(html).not.toMatch(/<button/);
+    expect([...html.matchAll(/data-path="([^"]+)"/g)].map(([, path]) => path)).toEqual(['notice', 'name', 'born', 'smoker', 'contact']);
   });
 });
