@@ -54,6 +54,34 @@ repository. See the [roadmap](docs/06-roadmap.md).
 | `@fhirq/element` | `<fhir-questionnaire>`, a custom element in shadow DOM, no framework |
 | `@fhirq/themes` | `base.css` and token presets, as `--fhirq-*` custom properties |
 
+## Published numbers
+
+Bundle sizes are minified and gzipped, in kB of 1,000 bytes; CI fails the build
+on a published entry point over its figure. The scale and depth figures are the
+ceiling the engine is tested and benchmarked at, and loading past a depth figure
+is refused. Every figure here is checked in CI against its source, so this
+table cannot drift from what is enforced. The 50 instances are tested headroom,
+not a size drawn from real responses.
+
+<!-- numbers:start -->
+| Figure | Published | Source |
+|---|---|---|
+| `@fhirq/core` | ≤ 15 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/core/resume`, beyond core | ≤ 4 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/core/view` | ≤ 8.2 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/react`, beyond React and core | ≤ 6 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/element`, with core, view and the default theme | ≤ 31.7 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/element` as one `<script>` (IIFE) | ≤ 31.9 kB | NFR-S-03, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/themes/base.css` | ≤ 4 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| `@fhirq/themes` preset, each | ≤ 3 kB | NFR-S-02, [`budgets.json`](scripts/budgets.json) |
+| Items in one questionnaire | 1,000 | NFR-P-04, [`ceiling.json`](fixtures/bench/ceiling.json) |
+| `enableWhen` conditions | 500 | NFR-P-04, [`ceiling.json`](fixtures/bench/ceiling.json) |
+| Instances of one repeating group | 50 | NFR-P-04, [`ceiling.test.ts`](packages/core/test/property/ceiling.test.ts) |
+| Items in one repeat instance | 20 | NFR-P-04, [`ceiling.json`](fixtures/bench/ceiling.json) |
+| Groups nested inside one another | 10 | NFR-P-05, [`graph.ts`](packages/core/src/definition/graph.ts) |
+| Conditions in one `enableWhen` chain | 10 | NFR-P-05, [`graph.ts`](packages/core/src/definition/graph.ts) |
+<!-- numbers:end -->
+
 ## Documentation
 
 - [Docs site](https://eugenedumanskyi.github.io/fhir-questionnaire-kit/) and
@@ -95,7 +123,7 @@ Node 25 and later no longer bundle Corepack, so install it once:
 npm install --global corepack && corepack enable pnpm
 pnpm install
 pnpm typecheck   # tsc --build across the workspace
-pnpm lint        # ESLint, including the architectural rules, and the docs snippet check
+pnpm lint        # ESLint, including the architectural rules, and the docs and numbers checks
 pnpm test        # Vitest, Node only
 ```
 
