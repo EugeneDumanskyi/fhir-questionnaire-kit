@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "pnpm --filter @fhirq/playground dev",
     "typecheck": "tsc --build --force tsconfig.json && tsc -p tests/browser && tsc -p packages/react/test/browser && tsc -p packages/element/test/browser",
-    "lint": "eslint . && stylelint \"packages/themes/src/*.css\" && node scripts/docs-snippets.mjs --check",
+    "lint": "eslint . && stylelint \"packages/themes/src/*.css\" && node scripts/docs-snippets.mjs --check && node scripts/check-published-numbers.mjs",
     "docs:snippets": "node scripts/docs-snippets.mjs --write",
     "test": "vitest run",
     "test:watch": "vitest",
