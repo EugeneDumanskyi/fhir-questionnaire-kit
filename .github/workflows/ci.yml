@@ -115,6 +115,16 @@ jobs:
       - name: Package build, ESM and CJS, and every exports target exists
         run: pnpm build
 
+      - name: SBOMs, one per published package, naming nothing outside the kit
+        run: pnpm sbom
+
+      - name: Upload the SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: reports/sbom/
+          retention-days: 90
+
       - name: Upload the coverage summary and the bundle report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

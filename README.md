@@ -92,6 +92,9 @@ not a size drawn from real responses.
   supported or not, with the reason and the test behind each row.
 - [API reference](docs/07-api.md), [architecture decisions](docs/adr/README.md)
   and the [accessibility record](docs/accessibility.md).
+- [Adoption pack](docs/adoption.md), for a regulated team's review: the
+  dependency inventory with licences, the SBOM, the no-PHI evidence, browser
+  support, the versioning policy and the not-a-medical-device statement.
 
 `docs/` also carries the reasoning, meant to be read rather than skimmed: the
 brief, requirements and acceptance criteria, the NFRs and their gates, the

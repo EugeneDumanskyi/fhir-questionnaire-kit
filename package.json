@@ -12,7 +12,9 @@
   "scripts": {
     "dev": "pnpm --filter @fhirq/playground dev",
     "typecheck": "tsc --build --force tsconfig.json && tsc -p tests/browser && tsc -p packages/react/test/browser && tsc -p packages/element/test/browser",
-    "lint": "eslint . && stylelint \"packages/themes/src/*.css\" && node scripts/docs-snippets.mjs --check && node scripts/check-published-numbers.mjs",
+    "lint": "eslint . && stylelint \"packages/themes/src/*.css\" && node scripts/docs-snippets.mjs --check && node scripts/check-published-numbers.mjs && node scripts/inventory.mjs --check",
+    "inventory": "node scripts/inventory.mjs --write",
+    "sbom": "node scripts/sbom.mjs",
     "docs:snippets": "node scripts/docs-snippets.mjs --write",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -51,6 +53,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "@changesets/cli": "2.31.1",
+    "@cyclonedx/cyclonedx-npm": "6.0.1",
     "@eslint/js": "9.39.5",
     "@lhci/cli": "0.15.1",
     "@microsoft/api-extractor": "7.59.1",
