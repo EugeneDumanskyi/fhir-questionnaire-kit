@@ -117,7 +117,7 @@ Each published package has a CycloneDX 1.6 SBOM, made by
 this workspace ([`sbom.mjs`](../scripts/sbom.mjs)). Each run of CI's
 `Engine gates` job builds them, fails if one names a component outside the
 kit, and uploads them as its `sbom` artifact, kept for 90 days. Locally:
-`pnpm build && pnpm sbom` writes them to `reports/sbom/`. The output is
+`pnpm build && pnpm build:sbom` writes them to `reports/sbom/`. The output is
 reproducible, so two runs over the same commit give identical files.
 
 Today each SBOM names at most one component: `@fhirq/react` and

@@ -116,7 +116,7 @@ jobs:
         run: pnpm build
 
       - name: SBOMs, one per published package, naming nothing outside the kit
-        run: pnpm sbom
+        run: pnpm build:sbom
 
       - name: Upload the SBOMs
         uses: actions/upload-artifact@v4
