@@ -16,6 +16,9 @@
  * Peer dependencies are omitted: they are the host's (`docs/adoption.md`'s
  * inventory lists them). Output is reproducible: no timestamp, no serial.
  *
+ * Run it as `pnpm build:sbom`: pnpm has a `pnpm sbom` command of its own,
+ * which a script of that name cannot shadow.
+ *
  *   pnpm build && node scripts/sbom.mjs [out]    writes out/<package>.cdx.json, default reports/sbom
  */
 
@@ -74,7 +77,13 @@ export function verify(bom, name) {
   return problems;
 }
 
-const run = (command, args, cwd) => execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+/**
+ * The environment the tool runs in. Under `pnpm run`, `npm_execpath` names
+ * pnpm, and the tool reads it to find npm; without it, npm is found on the
+ * path.
+ */
+const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) => name !== 'npm_execpath'));
+const run = (command, args, cwd) => execFileSync(command, args, { cwd, env: environment, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 
 /** Packs, lays out and describes each published package, writing `<stem>.cdx.json` into `out`; returns each package's components. */
 export function sbom(out, base = root) {
