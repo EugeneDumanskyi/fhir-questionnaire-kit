@@ -50,3 +50,5 @@ The brief excludes R5 ("version abstraction documented, not implemented"), and N
 - Codec round-trip tests: `decodeResponse(encodeResponse(p))` preserves every answer type, including `Quantity` units and `open-choice` free text.
 - Load tests: `fhirVersion: "5.0.0"` and an R5-shaped item are each rejected with an error naming the rule and the `linkId` path.
 - The conformance matrix has an `R5` row marked `out of scope`, with this ADR linked as the reason.
+
+**Amendment note, 2026-10-02 (`06-roadmap.md` M10 plan step 9, the ADR audit): why R4.** The Context says R4 "is where the deployed base of clinical systems is". No one can count a deployed base, so the claim is replaced by two that can be checked. In the United States, the certification criterion for patient and population API access adopts FHIR Release 4.0.1 by rule (45 CFR 170.215), and every published US Core implementation guide is built on R4. The R5 differences named in the Context can be read in the R5 specification: `coding` with `answerConstraint`, and `disabledDisplay`. The decision stands on those, and on the brief's exclusion of R5.

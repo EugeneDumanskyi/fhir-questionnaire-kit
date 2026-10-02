@@ -2,6 +2,8 @@
 
 Each ADR states context, decision, alternatives with rejection reasons, and consequences including costs accepted (AC-13.3.1). Every claim must be arguable from first principles by the maintainer, unaided (AC-13.3.2).
 
+`pnpm lint` checks the first half ([`check-adrs.mjs`](../../scripts/check-adrs.mjs)): each ADR has its sections in one of the two layouts below, its Consequences state the costs accepted, its status is Proposed, Accepted or Superseded, every amendment note is dated, and this index lists each ADR under its own title and status. The second half is a reading. The M10 audit (2026-10-02) amended nine ADRs whose claims rested on other systems' behaviour, each by a dated note, and the maintainer's sign-off is its record.
+
 Numbers are assigned in order of writing and never reused. A superseded ADR stays in place with its status changed and a link to its replacement.
 
 ## Index
