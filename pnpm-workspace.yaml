@@ -7,6 +7,9 @@ packages:
 
 # Lifecycle scripts are blocked by default. Anything set to true here has been
 # looked at: esbuild's postinstall fetches its platform binary, and esbuild is
-# the bundler ADR-0018 chose. Nothing in this list reaches a published package.
+# the bundler ADR-0018 chose. libxmljs2 is set to false: it is the SBOM tool's
+# optional XML validator, it compiles native code, and the SBOMs are JSON.
+# Nothing in this list reaches a published package.
 allowBuilds:
   esbuild: true
+  libxmljs2: false
