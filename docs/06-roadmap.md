@@ -942,6 +942,109 @@ D1, D3 and the lint check were not in the 12 h and came to about an hour togethe
 | D9 | What the site publishes, and what counts as docs for NFR-Q-08 | README, guides (React and element quickstarts, tiers, save/resume, retention, resolver, scoring), `07-api.md`, every ADR, the matrix, the accessibility record, the adoption pack and the security policy. Design docs 01–06 link to GitHub and are not rendered. Every `ts`, `tsx`, `js`, `jsx` or `html` block in the published pages is included from a compiled, tested file, or marked `<!-- signature -->` when it shows only a type shape |
 | D10 | Where the site's gates run | The docs build, the link checker and the docs CSP spec join the `Playground gates` job. The name stays, so branch protection is unaffected. No Lighthouse assert on the docs: NFR-P-06 is the playground's figure |
 
+**Built between 2026-09-28 and 2026-10-02, in PRs #109–#118.** Criteria 1, 2, 3, 4, 6 and 8 are met in CI. Three wait on the maintainer:
+- **AC-5:** the clean-machine walkthrough (D6).
+- **AC-7:** the sign-off of the ADR audit.
+- **AC-9:** private vulnerability reporting, which is still off. `SECURITY.md`'s channel works once it is on.
+
+Evidence per acceptance criterion:
+- **AC-1.** `scripts/check-conformance.mjs` (#110) reads the core project's Vitest JSON report in `Engine gates`, and `pnpm test:conformance` runs it locally. It fails on any of these:
+  - a `supported` or `partial` row with no test link;
+  - a link to a missing file, or to a title the file does not hold;
+  - a linked test that failed, was skipped or is a todo;
+  - a status outside the four;
+  - an excluded row with no one-line reason.
+
+  Must-fail fixtures are in `scripts/test/fixtures/conformance/`. No link had drifted since M2. The docs site renders the matrix as `conformance.html` (#113): status counts, each row anchored by its id with its reason, and each test linked to its line on GitHub at the built commit. The link checker fails on a link to a path the repository does not hold. **Today: 143 rows (101 supported, 9 partial, 21 not supported, 12 out of scope) and 256 links, all passing.**
+- **AC-2.** Twelve rows were added (#111), each `not supported` or `out of scope`, with its reason from Brief §5, `02-requirements.md` §17 or NFR-I-06:
+  - FHIRPath as a whole, terminology server, advanced SDC rendering, and translation extensions;
+  - Vue adapter, response storage, PDF, authoring UI, hosted service, full FHIR client and reference backend;
+  - playground and docs analytics.
+
+  `scripts/test/conformance.test.js` names 25 required exclusion rows: those, plus R5, `amended`, cross-repeat and calculated conditions, the non-`calculatedExpression` expression extensions, items under a question, initial values, and time and Reference options. The test fails if any is deleted or marked supported. `exclusions.test.ts` pins that translation and SDC rendering extensions load with no diagnostic, and that the view is as if they were absent.
+- **AC-3.** `docs/examples/` (#112) is a private workspace package. It is typechecked, type-aware linted and run by the `docs-examples` Vitest project in `pnpm test`. Its tests check what the prose beside each example claims.
+  - **The snippet check.** `scripts/docs-snippets.mjs --check`, in `pnpm lint`, fails on a stale copy, a missing file or region, or a `ts`, `tsx`, `js`, `jsx` or `html` block that is neither a snippet nor marked `<!-- signature -->`. Must-fail fixtures hold each reason.
+  - **What it covers.** It checks the README, `SECURITY.md`, `07-api.md`, the accessibility record, the adoption pack, the ADRs, the guides (#114), and the example and package READMEs: **41 files, all in step.**
+  - **Signatures.** The four ADR interface sketches (0012, 0013, 0017, 0020) are marked as signatures.
+  - **Found on the way.** Two of `07-api.md`'s hand-written examples did not compile; the doc was fixed, not the code.
+- **AC-4.** The README (#115) opens with:
+  - the positioning line;
+  - `docs/media/demo.png`, a four-frame APNG of the demo's rules (D4);
+  - the three claims, each linked to its gate, lint rule or test;
+  - the install command;
+  - a 6-line render-only example from `examples/react-quickstart/src/render.tsx`. It is typechecked, rendered on React 18 and 19, and held to ≤ 10 lines and to the README's copy (D3).
+
+  `scripts/capture-demo.mjs` drives the built playground at 375 × 667, and assembles the frames with `node:zlib` only, under 1 h. Tests cover the assembler, and check that the committed file is animated and shown before the README's first `##`. The completable 13-line quickstart is linked from the caption. The docs site's index is this README.
+- **AC-5. Not met: the maintainer's.** No clean-machine walkthrough has been run. NFR-U-01's line counts are read (6 and 13), and its 5 minutes is still untimed. M11 re-runs it from npm either way.
+- **AC-6.** `docs/adoption.md` (#117), published as `adoption.html`, holds:
+  - the dependency inventory generated by `scripts/inventory.mjs`, with its drift check in `pnpm lint`. Each published package has 0 direct and 0 transitive runtime dependencies outside the kit, and each of the 30 dev dependency entries is listed with its licence against NFR-S-07's allowlist;
+  - one CycloneDX 1.6 SBOM per published package, from `@cyclonedx/cyclonedx-npm` run over the packed tarballs (`pnpm build:sbom`). They are reproducible, fail on anything outside the kit, and are uploaded by `Engine gates` as the `sbom` artifact. The tool held inside D5's 30-minute timebox;
+  - each no-PHI and no-network claim beside the lint rule or test that holds it, and what does carry answers (the response and the snapshot);
+  - the accessibility record, with the screen-reader passes stated as not run;
+  - the browser target (NFR-C-01) against the engines CI runs, with iOS Safari and older majors named as untested;
+  - semver, fixed versioning and the snapshot format major (A5);
+  - not a medical device, with clinical validation the adopter's.
+- **AC-7. Built; the sign-off is the maintainer's.** `scripts/check-adrs.mjs` (#118), in `pnpm lint`, holds every ADR to one of the two layouts in `docs/adr/README.md`. It fails on:
+  - a section missing, unknown, empty or out of order;
+  - no rejected option;
+  - no **Costs accepted**, or from ADR-0007 on, no **Verification** in the Consequences;
+  - a status outside Proposed, Accepted and Superseded;
+  - an undated amendment note;
+  - an index row out of step with its ADR.
+
+  All 24 pass. The audit read every ADR for claims resting on other systems' behaviour. **Nine got a dated note** (0007, 0008, 0013, 0016, 0017, 0018, 0019, 0020, 0021), each rewording the claim or grounding it in something a reviewer can check. **No decision changed.**
+  - **One claim was wrong.** ADR-0017 said SDC expressions run "over the resource in hand", but `x-fhir-query` and `launchContext` exist. The seam stands for a narrower reason.
+  - **For the maintainer to check.** ADR-0008's IEC 62304 clause numbers (§8.1.2, §5.3.3, §5.3.4), against their copy of the standard. And its peer range: the note reads M6's `^18.2.0 || ^19.0.0` as the ADR's `>=18` limited to tested majors. Read as a change, it needs its own ADR.
+- **AC-8.** The README's "Published numbers" table (#116) sits between markers. It holds eight bundle budgets (NFR-S-02/03), four scale figures (NFR-P-04) and two depth figures (NFR-P-05), each linked to its source. `scripts/check-published-numbers.mjs`, in `pnpm lint`, reads each figure from what enforces it:
+  - the budgets from `scripts/budgets.json`;
+  - the depths from `NESTING_CEILING` and `CHAIN_CEILING`;
+  - the scale figures as measured from `fixtures/bench/ceiling.json`, and the 50 instances from `ceiling.test.ts`.
+
+  It fails on a wrong, missing, unsourced, unknown or reordered row, and when the ceiling fixture's depths leave the constants. NFR-P-01/02's runner-relative milliseconds are not published.
+- **AC-9. Written; the channel is the maintainer's.** `SECURITY.md` (#115) and the README state the NFR-M-09 non-commitment beside NFR-X-08's 7-day acknowledge and 30-day patch windows. `SECURITY.md` also gives the supported versions and the scope, and points at GitHub private vulnerability reporting (D7), with no email address published. **Private reporting is still disabled on the repository**, checked 2026-10-03, so the reporting address does not work yet.
+
+**Beyond the criteria.**
+- **The docs site (D1, D2, D9, D10)** is `scripts/build-docs.mjs` (#113), using `marked` 18.0.14. It publishes 39 pages: the README, guides, `07-api.md`, the accessibility record, the adoption pack, `SECURITY.md`, every ADR with its index, and the matrix.
+  - **Build guards.** Every page opens `<head>` with ADR-0019's policy, asserted equal to the playground's, and uses one stylesheet. The build throws rather than write a script, a `<style>`, a `style` attribute or an event handler.
+  - **Gates.** `scripts/check-docs-links.mjs` is ADR-0019's offline link checker. `docs-site.spec.ts` checks every page in Chromium, Firefox and WebKit: the policy first, nothing inline, only the site's own files, no `securitypolicyviolation`, and 320 px reflow. Both run in `Playground gates`.
+  - **Deploy.** `pages.yml` publishes the docs at the root and the playground under `/playground/`, and checks both exist before upload. The playground's diagnostic rows now link to `../conformance.html#<row id>` (M9 D5).
+  - **Checked live** at <https://eugenedumanskyi.github.io/fhir-questionnaire-kit/>, most recently after #118 on 2026-10-02: the amended ADR-0017 page carries its note.
+- **Guides (#114).** React and element quickstarts, the four tiers, save and resume, hidden answers, value sets, and scoring. Every code block is a snippet. Not a medical device is stated on the site index, the guides index and the scoring guide, each held by a test.
+- **The worked example (D8)** took fallback (b), since `fixtures/scoring/` holds no HL7 copies. It scores the demo's two-item `wellbeing` block from each option's `ordinalValue`, and returns `null` until both are answered. PHQ-9 and GAD-7 are named only.
+
+**Effort.** The 14 h assumption held with room. From the plan's approval to the last merge was **about 4 h 46 min of session time**, close-out not counted. That includes CI and, from step 5 on, the wait for each merge go-ahead: about 1 h 57 min from PR to go-ahead, CI included. The longest steps were:
+- the guides and worked example (46 min);
+- the examples harness (39 min);
+- the README front door, with the APNG (38 min);
+- the adoption pack (38 min).
+
+The APNG stayed inside its 1 h and the SBOM inside its 30 minutes, so nothing dropped. As for M9, this is session time on the maintainer's clock, not §7's focused hours.
+
+**CI.** At #118, `Playground gates` took 2 min 45 s, against 2 min 30 s at M9's #107, now with the docs build, link check and docs spec. The longest job was `Accessibility gates` at 4 min 24 s. The lint lane's four new checks add no job.
+
+**Still open: for the maintainer.**
+- **The clean-machine walkthrough (AC-5, D6):** `pnpm pack` tarballs on a clean macOS account or a fresh container, timed. Record it under NFR-U-01 with the date and machine.
+- **Sign off the ADR audit (AC-7),** including ADR-0008's clause numbers and peer range.
+- **Enable private vulnerability reporting (AC-9, D7).**
+- **Fetch the HL7 PHQ-9 and GAD-7 copies (D8)** into `fixtures/scoring/` and confirm their free-use terms. Then the worked example moves onto them.
+- **Required checks.** The `main protection` ruleset requires only `Typecheck, lint, unit tests` and `PR body links a story or an ADR`. `Engine gates`, `React gates`, `Element gates`, `Accessibility gates` and `Playground gates` are still not required.
+- **Carried:** the three screen-reader passes (M8), and opening the live playground on a real phone (M9).
+
+**Not covered by M10.**
+- Any behaviour, including a completion control.
+- Package READMEs and packed contents, SBOMs attached to releases, provenance and publish (M11).
+- **Gates the docs describe as M11's.** The adoption pack's zero-dependency and licence claims rest on the bundle gate and the generated inventory. The gates that name an offending package or licence (NFR-S-01, NFR-S-07) are not built yet.
+- The demo APNG is regenerated by command, not checked in CI, since font rendering differs by machine.
+- `03-nfr.md`'s prose copies of the published figures; the README's table is the checked copy.
+- Guides for messages and i18n, and for rich text and sanitizing, which the plan did not list.
+- An axe run on the docs site's own pages. The form is covered by M8's matrix, and the site's pages are prose, tables and links.
+- Whether each ADR's Verification items were all built. The audit covered claims about other systems, not the kit's own test inventory.
+
+**Found on the way.**
+- **`npm ls` rejects pnpm's workspace links,** so the SBOMs are generated over packed tarballs. pnpm 12 has its own `pnpm sbom` command, so ours is `pnpm build:sbom`.
+- **One WebKit share-link spec failed once** in step 6's local run and passed on re-run. It has not recurred in CI. Under NFR-Q-07 it is quarantined if it does.
+- **#114's description was wrong about axe.** It said `docs-site.spec.ts` runs axe on the new pages. It does not: it checks the policy, inline content, requests, violations and reflow. The record above is the corrected one.
+
 ---
 
 ### M11 — Release engineering and 1.0.0
@@ -1010,6 +1113,7 @@ A gate becomes blocking in the milestone that first produces its subject.
 | Contrast, focus, target size, reflow, RTL | M8 | NFR-A-03…06, NFR-I-05 |
 | Lighthouse on the playground | M9 | NFR-P-06 |
 | Docs examples compiled and executed | M10 | NFR-Q-08 |
+| Docs checks: published numbers, dependency inventory and ADR structure in the fast lane; the docs build, its link checker and its CSP spec in `Playground gates` | M10 | NFR-S-02/03, NFR-P-04/05, AC-13.5.1, AC-13.3.1, ADR-0019 |
 | Dependency, packed-contents, licence, API-report gates with negative fixtures | M11 (API report required from M2, in `Engine gates`) | NFR-S-01/07/08, NFR-M-04 |
 | Consumer smoke tests, six environments | M11 | NFR-C-02 |
 
