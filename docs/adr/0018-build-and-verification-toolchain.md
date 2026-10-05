@@ -111,3 +111,26 @@ It runs over `packages/themes/src/*.css` in `pnpm lint`, so in the fast lane. Th
 - **esbuild.** "No transitive runtime tree": its manifest declares no `dependencies`, only 26 `optionalDependencies`, each its own binary for one platform, of which an install takes one.
 - **"About 20 direct dev dependencies."** The inventory in `docs/adoption.md`, generated and checked by `pnpm lint`, lists 28 by name at M10, inside NFR-S-06's 40.
 - **Mutation time.** "A full run will not fit inside 10 minutes on a 2-core runner" was a forecast. It was measured instead: spike S2 and M2 read a full local run at 7–8 minutes over 1,465 mutants, the incremental lane at up to 8.7 minutes before it was split into five shards, and a runner of 4 cores (`06-roadmap.md` R7, `00-s2-mutation-cost.md`). The decision stands on the measurements.
+
+**Amendment note, accepted 2026-10-05 (`06-roadmap.md` M11 plan D3, D4, D5, D6, D7, D9, D10 and D11): the consumer projects, the release workflow and what blocks a release.** The Decision stands. One row joins its table, and the pipeline shape's third item is made concrete:
+
+| Concern | Tool | Licence |
+|---|---|---|
+| Changelog entries that link the merged PR (AC-14.5.1) | @changesets/changelog-github, exact-pinned, as Changesets' changelog module | MIT |
+
+- **Consumer smoke projects (NFR-C-02).** Each environment is a standalone project under `tests/consumers/`, outside the pnpm workspace, with its own committed `package-lock.json`. It installs with `npm ci` and the packed tarballs, as an adopter's project would. Their bundlers and frameworks are therefore not direct dev dependencies of the kit. NFR-S-06's count and the licence gate cover the workspace's toolchain. The consumer projects' packages are listed with their licences when they are added, all within NFR-S-07's allowlist. They run in their own parallel lane on PRs, and as the full matrix nightly.
+- **"The React 18/19 matrix on every environment"** reads as: on every environment where both majors can run. The Next.js App Router needs React 19, so that environment runs on 19 only, and Vite and webpack run on both.
+- **The release workflow.** `release.yml` runs on a pushed `v*` tag. In order, it:
+  1. checks the tag's signature against `.github/allowed_signers`, and that the tag is on `main`. The tag is signed by the maintainer, not created in CI, because a tag created in CI is unsigned (NFR-X-07);
+  2. requires a `nightly.yml` run that succeeded on exactly the tagged commit. A missing run blocks the release just as a red one does;
+  3. builds and packs once, then runs the dependency and packed-contents gates on those tarballs;
+  4. runs the vulnerability audit and generates the SBOMs from the same tarballs;
+  5. publishes those tarballs with npm provenance, so what was gated is what ships;
+  6. creates the GitHub Release with the changelog section and the SBOMs attached;
+  7. redeploys Pages from the tag (ADR-0019 note).
+- **Nightly, as the release blocker.** As well as the full mutation run, it runs:
+  - the property suites at 10× their PR counts through `FHIRQ_PROPERTY_RUNS`, or 5× if 10× does not fit the 60-minute timeout;
+  - the consumer matrix;
+  - `pnpm audit --audit-level high` (NFR-X-06).
+
+  The audit does not run on PRs. An advisory published against an unchanged lockfile says nothing about the PR in hand, and the nightly sees it within a day.

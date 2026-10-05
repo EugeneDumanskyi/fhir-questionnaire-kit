@@ -156,7 +156,7 @@ The remaining-scope figure is a judgement, as S1's were. **Decided 2026-09-17 by
 | ID | Requirement | Number | Type |
 |---|---|---|---|
 | NFR-C-01 | Browser support | Chrome, Edge, Firefox, Safari — last 2 major versions; iOS Safari 16.4+; no IE11, no legacy Edge | Published |
-| NFR-C-02 | Consumer environment smoke tests | Node 20 LTS + Node 22 ESM; Node CJS require; Vite; webpack 5; Next.js App Router (server + client); plain browser script tag — 6 environments, all green | Gate |
+| NFR-C-02 | Consumer environment smoke tests | **Node 22 LTS + Node 24 LTS** ESM (restated 2026-10-05, M11 plan D2: Node 20 reached end of life on 2026-04-30; the published packages' `engines` becomes `>=22`); Node CJS require; Vite; webpack 5; Next.js App Router (server + client); plain browser script tag — 6 environments, all green | Gate |
 | NFR-C-03 | Framework versions | React 18 and 19, both tested | Gate + Published |
 | NFR-C-04 | `@fhirq/core` DOM independence | 0 references to DOM globals; full test suite passes in a Node environment with no DOM shim | Gate |
 | NFR-C-05 | Module formats published | ESM + CJS + `.d.ts` for core/react/themes; ESM + IIFE for element | Published |

@@ -1072,6 +1072,30 @@ The APNG stayed inside its 1 h and the SBOM inside its 30 minutes, so nothing dr
 
 **Effort.** ASSUMPTION: 8 h.
 
+**Plan decisions, 2026-10-05.** Taken with the M11 plan, D1–D12 as recommended. D3's and D5's dev dependencies were approved in principle with it; each package is listed with its licence before it is added. D2 restates NFR-C-02 (`03-nfr.md`). ADR-0018 and ADR-0019 carry notes. Several steps need the maintainer:
+- owning the `@fhirq` npm scope, and the `NPM_TOKEN` secret or trusted publishing (D7);
+- the signing key and `allowed_signers` entry, then signing and pushing `v1.0.0` (D6);
+- dispatching nightly on the tagged SHA (D11);
+- adding the gate jobs to the `main protection` ruleset (step 7);
+- the clean-machine walkthrough from npm (M10 AC-5, carried).
+
+Hours are logged per step, and the overrun is flagged if the total passes about 12 h.
+
+| # | Decision | Resolution |
+|---|---|---|
+| D1 | Release tags at 1.0 | Every exported symbol is `@public`: core, resume, themes, and also `@fhirq/core/view`, react and element, which are `@alpha` today. From 1.0 the view is under semver. The API reports, `07-api.md`, `adoption.md` and a changeset change together (step 4) |
+| D2 | Node versions for NFR-C-02 | NFR-C-02 is restated to the LTS lines, Node 22 and 24, dated. Node 20 reached end of life on 2026-04-30. The published packages' `engines` rises from `>=18.18.0`, which nothing tests, to `>=22`, with a changeset (step 5) |
+| D3 | Where the smoke projects live | Standalone `tests/consumers/<env>/` directories, outside the pnpm workspace. Each has its own committed `package-lock.json`, and is installed with `npm ci` plus the packed tarballs. Their toolchains (vite, @vitejs/plugin-react, webpack, webpack-cli, a loader, next, react and react-dom 18 and 19) stay out of NFR-S-06's 40-entry count and the inventory, which list the workspace's toolchain. Each is listed with its licence before it is added |
+| D4 | Next.js and React 18 | Current Next.js with React 19 only. The App Router needs React 19, and Next 14 is past support. NFR-C-03's React 18 and 19 holds across the matrix through Vite and webpack, each run on both |
+| D5 | A changelog that links merged PRs (AC-6) | `@changesets/changelog-github` (MIT), exact-pinned, one direct dev dependency. It needs `GITHUB_TOKEN` when `changeset version` runs |
+| D6 | Signed tag and publish trigger (NFR-X-07) | The maintainer runs `git tag -s v1.0.0` locally and pushes it. `release.yml` runs on `v*` tags. It checks the signature against a committed `.github/allowed_signers` and that the tag is on `main`, and only then publishes. Tagging from CI was rejected because the tag would be unsigned. The signing method (SSH or GPG) is confirmed before `allowed_signers` is written |
+| D7 | What is published, and how npm authenticates | `pnpm pack` runs once. The same tarballs are gated, SBOM'd and published with `npm publish <tgz> --provenance`, so what is checked is what ships. The first publish uses an npm token, and trusted publishing (OIDC) after that |
+| D8 | Pages tied to the release *(M10 D2's "M11 ties both sites to the release")* | Docs and playground keep deploying on every push to `main`. The release workflow redeploys them from the tag, so the site matches npm at each release. Doc fixes go out without a release. ADR-0019 note |
+| D9 | Vulnerability check (NFR-X-06) | `pnpm audit --audit-level high` runs nightly and blocks the release. It does not run on PRs, so a new advisory against an unchanged lockfile does not fail an unrelated PR |
+| D10 | The high-count property run | 10× today's counts through `FHIRQ_PROPERTY_RUNS`: 10,000 round-trips and 3,000 for the other properties. If that does not fit nightly's 60-minute timeout, 5× is recorded instead |
+| D11 | "Nightly green on the release commit" (AC-7) | `release.yml` requires a `nightly.yml` run that succeeded on exactly the tagged SHA. The maintainer dispatches it before tagging. A scheduled nightly on an earlier commit does not count |
+| D12 | LICENSE, NOTICE and README in the packages (NFR-S-08) | LICENSE and NOTICE are committed into each `packages/*`, with a check that they equal the root's. Each package gets a short README written as snippets. Nothing is copied in at pack time, so git shows what is packed |
+
 ---
 
 ## 4. Dependency order
