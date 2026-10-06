@@ -104,11 +104,14 @@ each installed package declares. `pnpm lint` fails when it is out of step
 
 NFR-S-07's allowlist is MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC and
 0BSD, plus MPL-2.0 for development tools that are never bundled or
-redistributed (here, the accessibility engine's Playwright binding). The gates
-that fail a build on a runtime dependency (NFR-S-01) or on a licence outside
-the allowlist (NFR-S-07), each naming the offender, arrive at M11. Until
-then the bundle gate already fails on any byte from `node_modules` in a
-published bundle ([`measure-bundles.mjs`](../scripts/measure-bundles.mjs)).
+redistributed (here, the accessibility engine's Playwright binding). The
+dependency gate fails a build on any runtime dependency outside the kit,
+direct or transitive, in a packed package, naming it (NFR-S-01,
+[`check-dependencies.mjs`](../scripts/check-dependencies.mjs)), and the bundle
+gate fails on any byte from `node_modules` in a published bundle
+([`measure-bundles.mjs`](../scripts/measure-bundles.mjs)). The gate that fails
+a build on a licence outside the allowlist (NFR-S-07), naming it, arrives at
+M11.
 
 ## SBOM
 

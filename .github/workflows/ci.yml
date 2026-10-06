@@ -71,7 +71,9 @@ jobs:
   # M10 the coverage run's test report also holds every conformance row's
   # links to passing tests (NFR-Q-04, scripts/check-conformance.mjs). From M11
   # each package is packed once, and the tarballs hold package.json, README,
-  # LICENSE, NOTICE and dist only (NFR-S-08, scripts/check-packed.mjs).
+  # LICENSE, NOTICE and dist only (NFR-S-08, scripts/check-packed.mjs), and
+  # their manifests name no runtime dependency outside the kit, directly or
+  # transitively (NFR-S-01, scripts/check-dependencies.mjs).
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest
@@ -119,6 +121,9 @@ jobs:
 
       - name: Packed contents, package.json, README, LICENSE, NOTICE and dist only
         run: pnpm packed:check
+
+      - name: Dependencies, 0 direct and 0 transitive outside the kit, @fhirq pinned exactly
+        run: node scripts/check-dependencies.mjs
 
       - name: SBOMs, one per published package, naming nothing outside the kit
         run: pnpm build:sbom
