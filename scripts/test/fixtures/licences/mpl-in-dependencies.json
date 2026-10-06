@@ -1,0 +1,10 @@
+{
+  "pnpm-workspace.yaml": "packages:\n  - packages/*\n",
+  "pnpm-lock.yaml": "lockfileVersion: '9.0'\n\npackages: {}\n",
+  "package.json": { "name": "fhir-questionnaire-kit", "private": true, "devDependencies": { "axe": "4.0.0" } },
+  "node_modules/axe/package.json": { "name": "axe", "license": "MPL-2.0" },
+  "packages/core/package.json": { "name": "@fhirq/core", "license": "Apache-2.0", "dependencies": { "axe": "4.0.0" } },
+  "packages/core/node_modules/axe/package.json": { "name": "axe", "license": "MPL-2.0" },
+  "packages/element/package.json": { "name": "@fhirq/element", "license": "Apache-2.0", "optionalDependencies": { "copyleft": "1.0.0" } },
+  "packages/element/node_modules/copyleft/package.json": { "name": "copyleft", "license": "GPL-2.0-only" }
+}

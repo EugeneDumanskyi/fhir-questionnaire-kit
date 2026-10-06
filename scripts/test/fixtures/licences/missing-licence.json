@@ -1,0 +1,8 @@
+{
+  "pnpm-workspace.yaml": "packages:\n  - packages/*\n",
+  "pnpm-lock.yaml": "lockfileVersion: '9.0'\n\npackages: {}\n",
+  "package.json": { "name": "fhir-questionnaire-kit", "private": true, "devDependencies": { "unlabelled": "1.0.0", "absent": "1.0.0" } },
+  "node_modules/unlabelled/package.json": { "name": "unlabelled" },
+  "packages/core/package.json": { "name": "@fhirq/core", "license": "Apache-2.0", "dependencies": { "bare": "1.0.0" } },
+  "node_modules/bare/package.json": { "name": "bare", "license": {} }
+}

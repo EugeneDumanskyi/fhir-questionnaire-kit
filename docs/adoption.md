@@ -109,9 +109,11 @@ dependency gate fails a build on any runtime dependency outside the kit,
 direct or transitive, in a packed package, naming it (NFR-S-01,
 [`check-dependencies.mjs`](../scripts/check-dependencies.mjs)), and the bundle
 gate fails on any byte from `node_modules` in a published bundle
-([`measure-bundles.mjs`](../scripts/measure-bundles.mjs)). The gate that fails
-a build on a licence outside the allowlist (NFR-S-07), naming it, arrives at
-M11.
+([`measure-bundles.mjs`](../scripts/measure-bundles.mjs)). The licence gate
+fails `pnpm lint` on a development dependency whose licence is outside the
+allowlist or undeclared, and on MPL-2.0 in anything a published package
+depends on, naming the package and its licence (NFR-S-07,
+[`check-licences.mjs`](../scripts/check-licences.mjs)).
 
 ## SBOM
 
