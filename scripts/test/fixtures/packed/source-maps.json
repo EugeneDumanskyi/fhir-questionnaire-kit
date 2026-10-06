@@ -1,0 +1,10 @@
+{
+  "package.json": "{\"name\":\"@fhirq/fixture\",\"version\":\"0.0.0\"}",
+  "README.md": "# fixture\n",
+  "LICENSE": "Fixture licence.\n",
+  "NOTICE": "Fixture notice.\n",
+  "dist/index.js": "export const a = 1;\n",
+  "dist/index.d.ts": "export declare const a = 1;\n",
+  "dist/index.d.ts.map": "{\"version\":3,\"file\":\"index.d.ts\",\"sourceRoot\":\"\",\"sources\":[\"../src/index.ts\"],\"mappings\":\"\"}",
+  "dist/index.cjs": "exports.a = 1;\n//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9pbmRleC50cyJdLCJtYXBwaW5ncyI6IiJ9\n"
+}

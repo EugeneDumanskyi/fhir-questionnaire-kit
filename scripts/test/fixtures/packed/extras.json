@@ -1,0 +1,12 @@
+{
+  "package.json": "{\"name\":\"@fhirq/fixture\",\"version\":\"0.0.0\"}",
+  "README.md": "# fixture\n",
+  "LICENSE": "Fixture licence.\n",
+  "NOTICE": "Fixture notice.\n",
+  "dist/index.js": "export const a = 1;\n",
+  "dist/index.d.ts": "export declare const a = 1;\n",
+  "src/index.ts": "export const a = 1;\n",
+  "dist/index.test.js": "\n",
+  "dist/fixtures/demo.json": "{}\n",
+  "CHANGELOG.md": "\n"
+}

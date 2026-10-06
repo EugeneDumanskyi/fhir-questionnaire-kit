@@ -15,6 +15,7 @@
     "lint": "eslint . && stylelint \"packages/themes/src/*.css\" && node scripts/docs-snippets.mjs --check && node scripts/check-published-numbers.mjs && node scripts/inventory.mjs --check && node scripts/check-adrs.mjs",
     "inventory": "node scripts/inventory.mjs --write",
     "build:sbom": "node scripts/sbom.mjs",
+    "packed:check": "node scripts/pack.mjs && node scripts/check-packed.mjs",
     "docs:snippets": "node scripts/docs-snippets.mjs --write",
     "test": "vitest run",
     "test:watch": "vitest",

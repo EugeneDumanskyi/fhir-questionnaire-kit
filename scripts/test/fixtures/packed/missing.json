@@ -1,0 +1,5 @@
+{
+  "package.json": "{\"name\":\"@fhirq/fixture\",\"version\":\"0.0.0\"}",
+  "LICENSE": "Some other licence.\n",
+  "dist/index.js": "export const a = 1;\n"
+}

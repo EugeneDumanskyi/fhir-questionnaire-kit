@@ -5,7 +5,8 @@
  * over the workspace.
  *
  * The tool reads the tree through `npm ls`, which does not understand pnpm's
- * workspace links. So each package is packed as it would be published, its
+ * workspace links. So each package is packed as it would be published
+ * (`scripts/pack.mjs`), its
  * tarball unpacked into a scratch directory, and each `@fhirq` package it
  * depends on unpacked under its `node_modules`, exactly where npm would put
  * it. `npm ls` then sees a tree it accepts, and no error is ignored. A
@@ -23,12 +24,13 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { workspace } from './inventory.mjs';
+import { pack } from './pack.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const KIT = /^@fhirq\//;
@@ -88,15 +90,9 @@ const run = (command, args, cwd) => execFileSync(command, args, { cwd, env: envi
 /** Packs, lays out and describes each published package, writing `<stem>.cdx.json` into `out`; returns each package's components. */
 export function sbom(out, base = root) {
   const packages = workspace(base).filter(({ manifest }) => manifest.private !== true);
-  for (const { dir, manifest } of packages) {
-    if (!existsSync(join(base, dir, 'dist'))) throw new Error(`${manifest.name}: no dist; run pnpm build first`);
-  }
   const scratch = mkdtempSync(join(tmpdir(), 'fhirq-sbom-'));
   try {
-    const tarballs = new Map();
-    for (const { dir, manifest } of packages) {
-      tarballs.set(manifest.name, JSON.parse(run('pnpm', ['pack', '--json', '--pack-destination', scratch], join(base, dir))).filename);
-    }
+    const tarballs = pack(join(scratch, 'tarballs'), base);
     mkdirSync(out, { recursive: true });
     const described = new Map();
     for (const [name, placed] of layout(packages.map(({ manifest }) => manifest))) {

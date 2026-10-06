@@ -69,7 +69,9 @@ jobs:
   # reports (NFR-M-04): a public surface that differs from
   # packages/*/etc/*.api.md fails until the PR commits the new report. From
   # M10 the coverage run's test report also holds every conformance row's
-  # links to passing tests (NFR-Q-04, scripts/check-conformance.mjs).
+  # links to passing tests (NFR-Q-04, scripts/check-conformance.mjs). From M11
+  # each package is packed once, and the tarballs hold package.json, README,
+  # LICENSE, NOTICE and dist only (NFR-S-08, scripts/check-packed.mjs).
   engine-gates:
     name: Engine gates
     runs-on: ubuntu-latest
@@ -114,6 +116,9 @@ jobs:
 
       - name: Package build, ESM and CJS, and every exports target exists
         run: pnpm build
+
+      - name: Packed contents, package.json, README, LICENSE, NOTICE and dist only
+        run: pnpm packed:check
 
       - name: SBOMs, one per published package, naming nothing outside the kit
         run: pnpm build:sbom
