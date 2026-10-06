@@ -6,9 +6,11 @@ page and no platform to adopt.
 
 ![The demo form on a phone. Answering yes to pain reveals a 0 to 10 score; a score of 8 reveals when the pain started; an answer there reveals a note to tell reception.](docs/media/demo.png)
 
-- **Zero runtime dependencies.** No published package bundles anything from
-  `node_modules`, and CI fails the build if one does
-  ([bundle gate](scripts/measure-bundles.mjs), [its test](scripts/test/measure-bundles.test.js)).
+- **Zero runtime dependencies.** No published package depends on anything
+  outside the kit, directly or transitively, and none bundles anything from
+  `node_modules`. CI fails the build naming the offender if one does
+  ([dependency gate](scripts/check-dependencies.mjs), [its test](scripts/test/check-dependencies.test.js);
+  [bundle gate](scripts/measure-bundles.mjs), [its test](scripts/test/measure-bundles.test.js)).
 - **No PHI leaves the page.** The kit stores nothing and sends no answer
   anywhere. A lint rule forbids network calls ([`no-network`](tools/eslint-rules/src/no-network.js)),
   and a test runs a whole session with every door trapped ([`no-io.test.ts`](packages/core/test/safety/no-io.test.ts)).
