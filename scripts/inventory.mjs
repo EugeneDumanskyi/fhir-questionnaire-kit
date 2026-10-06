@@ -9,8 +9,8 @@
  * private package declares is development-only, since none of it ships. The
  * kit's own `@fhirq/*` packages are not dependencies of the kit. A licence is
  * read from the installed package's `license` field, as NFR-S-07 reads it.
- * The column it is shown against is NFR-S-07's allowlist; enforcing it is
- * M11's licence gate, not this.
+ * The column it is shown against is NFR-S-07's allowlist; the licence gate,
+ * `scripts/check-licences.mjs`, enforces it over the same entries.
  *
  *   node scripts/inventory.mjs --write    rewrite the section in docs/adoption.md
  *   node scripts/inventory.mjs --check    exit 1 when the section is out of date

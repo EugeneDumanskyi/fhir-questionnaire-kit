@@ -1,0 +1,14 @@
+{
+  "pnpm-workspace.yaml": "packages:\n  - packages/*\n  - apps/*\n",
+  "pnpm-lock.yaml": "lockfileVersion: '9.0'\n\npackages: {}\n",
+  "package.json": { "name": "fhir-questionnaire-kit", "private": true, "devDependencies": { "tool": "1.0.0", "axe": "4.0.0", "either": "2.0.0", "both": "3.0.0" } },
+  "node_modules/tool/package.json": { "name": "tool", "license": "MIT" },
+  "node_modules/axe/package.json": { "name": "axe", "license": "MPL-2.0" },
+  "node_modules/either/package.json": { "name": "either", "license": "(GPL-3.0 OR Apache-2.0)" },
+  "node_modules/both/package.json": { "name": "both", "licenses": [{ "type": "ISC" }] },
+  "packages/core/package.json": { "name": "@fhirq/core", "license": "Apache-2.0", "devDependencies": { "tool": "1.0.0" } },
+  "packages/core/node_modules/tool/package.json": { "name": "tool", "license": "MIT" },
+  "packages/react/package.json": { "name": "@fhirq/react", "license": "Apache-2.0", "dependencies": { "@fhirq/core": "workspace:0.0.0" }, "peerDependencies": { "react": "^19.0.0" } },
+  "apps/playground/package.json": { "name": "@fhirq/playground", "private": true, "dependencies": { "@fhirq/react": "workspace:0.0.0", "bundler": "5.0.0" } },
+  "apps/playground/node_modules/bundler/package.json": { "name": "bundler", "license": "BSD-3-Clause AND MIT" }
+}

@@ -1,0 +1,10 @@
+{
+  "pnpm-workspace.yaml": "packages:\n  - packages/*\n",
+  "pnpm-lock.yaml": "lockfileVersion: '9.0'\n\npackages: {}\n",
+  "package.json": { "name": "fhir-questionnaire-kit", "private": true, "devDependencies": { "copyleft": "2.0.0", "tool": "1.0.0" } },
+  "node_modules/copyleft/package.json": { "name": "copyleft", "license": "GPL-3.0" },
+  "node_modules/tool/package.json": { "name": "tool", "license": "MIT" },
+  "packages/themes/package.json": { "name": "@fhirq/themes", "license": "Apache-2.0", "devDependencies": { "copyleft": "2.0.0", "linter": "1.0.0" } },
+  "packages/themes/node_modules/copyleft/package.json": { "name": "copyleft", "license": "GPL-3.0" },
+  "packages/themes/node_modules/linter/package.json": { "name": "linter", "license": "(MIT AND LGPL-2.1)" }
+}
