@@ -18,6 +18,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
+    "!dist/**/*.map",
+    "README.md",
     "LICENSE",
     "NOTICE"
   ],
