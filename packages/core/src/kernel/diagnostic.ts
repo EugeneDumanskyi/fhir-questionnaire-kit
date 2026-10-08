@@ -8,7 +8,7 @@
  * `error` for a finding that rejects a `strict` load, `warning` for one that
  * never does, `info` for a remark.
  *
- * @beta
+ * @public
  */
 export type Severity = 'error' | 'warning' | 'info';
 
@@ -18,7 +18,7 @@ export type Severity = 'error' | 'warning' | 'info';
  * in both modes, so a lenient host can tell a degraded item from a mere
  * remark; the rest are `warning`.
  *
- * @beta
+ * @public
  */
 export type DiagnosticCode =
   /* INV-D-01: not an R4 Questionnaire, or an R4 rule-severity constraint broken. */
@@ -69,7 +69,7 @@ export type DiagnosticCode =
  * A finding about the questionnaire, or a runtime one such as a listener that
  * threw. Codes and paths only (NFR-X-04).
  *
- * @beta
+ * @public
  */
 export interface Diagnostic {
   /** Which rule: one code per invariant. */

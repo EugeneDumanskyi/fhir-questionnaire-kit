@@ -19,10 +19,10 @@ import { ViewOptions } from '@fhirq/core/view';
 
 export { createSession }
 
-// @alpha
+// @public
 export function Questionnaire(props: QuestionnaireProps): ReactElement;
 
-// @alpha
+// @public
 export type QuestionnaireProps = ({
     readonly questionnaire: Questionnaire_2;
     readonly session?: never;
@@ -45,7 +45,7 @@ export type QuestionnaireProps = ({
     };
 };
 
-// @alpha
+// @public
 export function useQuestionnaire(source: Questionnaire_2 | Session, options?: {
     readonly locale?: string | undefined;
     readonly timeZone?: string | undefined;

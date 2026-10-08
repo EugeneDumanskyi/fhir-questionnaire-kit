@@ -10,7 +10,9 @@
  *   in core's `definition/graph.ts`, the constants the load refuses past;
  * - the scale ceiling (NFR-P-04): measured from `fixtures/bench/ceiling.json`,
  *   the fixture the ceiling test and the benchmarks run, and the instance count
- *   that test adds to its repeating group.
+ *   that test adds to its repeating group;
+ * - the public symbol count (NFR-U-05): counted from the API reports by
+ *   `scripts/check-api.mjs`, which fails past its limit.
  *
  * The ceiling fixture must also sit at NFR-P-05's depths, or it no longer
  * tests what the table says it does.
@@ -21,6 +23,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { LIMIT, symbols } from './check-api.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
@@ -100,6 +104,7 @@ export function figures(base = root) {
   };
   const scale = (label, value, path = CEILING) => ({ label, value: count(value), source: `NFR-P-04, [\`${path.split('/').at(-1)}\`](${path})` });
   const depth = (label, value) => ({ label, value: count(value), source: `NFR-P-05, [\`graph.ts\`](${GRAPH})` });
+  const surface = Object.values(symbols(base)).flat().length;
   return [
     budget('@fhirq/core', '`@fhirq/core`', 'NFR-S-02'),
     budget('@fhirq/core/resume', '`@fhirq/core/resume`, beyond core', 'NFR-S-02'),
@@ -115,6 +120,7 @@ export function figures(base = root) {
     scale('Items in one repeat instance', ceiling.repeats[0]),
     depth('Groups nested inside one another', nestingCeiling),
     depth('Conditions in one `enableWhen` chain', chainCeiling),
+    { label: 'Public symbols, all packages together', value: `${count(surface)} of at most ${count(LIMIT)}`, source: 'NFR-U-05, [`check-api.mjs`](scripts/check-api.mjs)' },
   ];
 }
 

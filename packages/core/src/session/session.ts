@@ -41,7 +41,7 @@ import { recordTrace } from './trace.js';
  * refusal that changes state is `validation-errors`: a refused completion
  * surfaces every issue (SM-01), so it notifies.
  *
- * @beta
+ * @public
  */
 export type CommandResult =
   | { readonly outcome: 'applied' | 'unchanged' | 'deferred' }
@@ -50,7 +50,7 @@ export type CommandResult =
 /**
  * What one cycle did: paths and flags only, never values (NFR-X-04).
  *
- * @beta
+ * @public
  */
 export interface SessionChange {
   /** `OptionsSettled` for the cycle an option set's resolution settling ran (T12). */
@@ -72,7 +72,7 @@ export interface SessionChange {
  * One immutable snapshot. A new object only when a cycle changed something
  * visible.
  *
- * @beta
+ * @public
  */
 export interface SessionState {
   /** `completed` is final (AC-05.1.4). */
@@ -110,7 +110,7 @@ export interface SessionState {
  * The store contract `useSyncExternalStore` needs: `getSnapshot` returns the
  * same reference until a cycle changes something visible.
  *
- * @beta
+ * @public
  */
 export interface Session {
   /** Called once per cycle that changed something visible. Returns the unsubscribe function. A listener that throws becomes a diagnostic. */

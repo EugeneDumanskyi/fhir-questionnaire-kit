@@ -58,4 +58,4 @@ render, and resolve once the component has mounted
 
 - The complete example, with its test:
   [`examples/react-quickstart`](../../examples/react-quickstart).
-- Every option of the hook and the component: [`07-api.md` §6](../07-api.md#6-fhirqreact-alpha).
+- Every option of the hook and the component: [`07-api.md` §6](../07-api.md#6-fhirqreact).

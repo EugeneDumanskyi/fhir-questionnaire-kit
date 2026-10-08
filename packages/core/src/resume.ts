@@ -24,7 +24,7 @@ import { readSnapshot, restore, startFrom, takeSnapshot } from './session/snapsh
  * record: it holds answers the emitted response leaves out. Throws
  * `FhirqError` with `unknown-session` for an object that is not a session.
  *
- * @beta
+ * @public
  */
 export function snapshot(session: Session): { readonly format: 'fhirq-snapshot/1'; readonly [field: string]: unknown } {
   return takeSnapshot(session);
@@ -44,7 +44,7 @@ export function snapshot(session: Session): { readonly format: 'fhirq-snapshot/1
  * mode, retention or host identity that differs from the snapshot's; and
  * `definition-rejected` as `createSession` does.
  *
- * @beta
+ * @public
  */
 export function restoreSession(questionnaire: Questionnaire, snapshot: unknown, options: SessionOptions = {}): Session {
   const saved = readSnapshot(snapshot);
@@ -75,7 +75,7 @@ export function restoreSession(questionnaire: Questionnaire, snapshot: unknown, 
  * `createSession` does, and `response-rejected` with findings for anything that
  * is not an R4 `QuestionnaireResponse`. Never for its content (INV-E-08).
  *
- * @beta
+ * @public
  */
 export function hydrateSession(questionnaire: Questionnaire, response: QuestionnaireResponse, options: SessionOptions = {}): Session {
   const { definition, settings, validate } = open(questionnaire, options);

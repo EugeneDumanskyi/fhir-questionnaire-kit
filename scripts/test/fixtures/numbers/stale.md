@@ -16,5 +16,6 @@
 | Instances of one repeating group | 50 | NFR-P-04, [`ceiling.test.ts`](packages/core/test/property/ceiling.test.ts) |
 | Groups nested inside one another | 10 | NFR-P-05 |
 | Conditions in one `enableWhen` chain | 10 | NFR-P-05, [`graph.ts`](packages/core/src/definition/graph.ts) |
+| Public symbols, all packages together | 59 of at most 60 | NFR-U-05, [`check-api.mjs`](scripts/check-api.mjs) |
 | Time to first render | 50 ms | NFR-P-01 |
 <!-- numbers:end -->

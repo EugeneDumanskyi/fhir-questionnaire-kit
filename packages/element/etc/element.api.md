@@ -10,10 +10,10 @@ import { Questionnaire } from '@fhirq/core';
 import { Session } from '@fhirq/core';
 import { ViewOptions } from '@fhirq/core/view';
 
-// @alpha
+// @public
 export function defineQuestionnaireElement(name?: string): void;
 
-// @alpha
+// @public
 export class FhirQuestionnaireElement extends HTMLElement {
     constructor();
     // (undocumented)

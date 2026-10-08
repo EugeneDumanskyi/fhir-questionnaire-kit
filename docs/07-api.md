@@ -2,7 +2,7 @@
 
 *The contract a host integrates against. Created in M2 with the first public API (`06-roadmap.md` M2 plan D12); M3 added validation, emission and the resume entry point; M4 the ports; M5 the full presentation model; M6 the React adapter; M7 the custom element; M8 the complete theme. The API Extractor reports in `packages/*/etc/` are the exact surface; this document is what it means.*
 
-**Status, 2026-09-28.** `@fhirq/core` and `@fhirq/core/resume` are `@beta`. `@fhirq/core/view` is complete and `@alpha`: M6 and M7 have both built on it without a new field, and moving it to `@beta` is open (`06-roadmap.md` M7, "Still open"). `@fhirq/react` is complete for M6 and `@fhirq/element` for M7; both stay `@alpha` while the view they expose is (§6, §7). `@fhirq/themes` is complete for M8: `TOKENS` is `@beta`, and its stylesheets style every row of the DOM contract (§8). The surface is 59 of 60 symbols (§2).
+**Status, 2026-10-08.** Every export of every entry point is `@public` (`06-roadmap.md` M11 plan D1), so from 1.0 the whole surface is under semver, `@fhirq/core/view` included. M6 and M7 built both renderers on the view without a new field. `@fhirq/react` is complete for M6, `@fhirq/element` for M7, and `@fhirq/themes` for M8, whose stylesheets style every row of the DOM contract (§8). The surface is 59 of 60 symbols (§2), with no `any` (§1).
 
 ---
 
@@ -11,17 +11,16 @@
 | Rule | How it is held |
 |---|---|
 | Every export carries a release tag | API Extractor fails on a missing one (`ae-missing-release-tag`) |
-| A change to the surface shows as a report diff in the PR | `pnpm api:check` in the required `Engine gates` job (NFR-M-04); `pnpm api:update` rewrites the report |
+| A change to the surface shows as a report diff in the PR | `pnpm api:check` in the required `Engine gates` job (NFR-M-04); `pnpm api:update` rewrites the report. A fixture package with a stale report shows that it fails (`scripts/test/check-api.test.js`) |
 | A change to the surface adds a changeset in the same commit | `.changeset/`, fixed mode: all four packages share one version (ADR-0008) |
-| At most 60 public symbols across all packages | `scripts/test/api-surface.test.js` counts them (NFR-U-05) |
-| No `any` in the public surface | `@typescript-eslint/no-explicit-any` everywhere (NFR-M-04) |
+| At most 60 public symbols across all packages | `scripts/check-api.mjs` counts them from the reports in `pnpm lint`, and the README publishes the count (NFR-U-05) |
+| No `any` in the public surface | `@typescript-eslint/no-explicit-any` everywhere, and `scripts/check-api.mjs` fails naming an `any` in any report (NFR-M-04) |
 | Hosts import entry points only | `fhirq/no-deep-imports` (NFR-M-06) |
 | Every example in this document compiles and runs | Each is a region of a file in `docs/examples/`, typechecked, linted and run by its Vitest project; `pnpm docs:snippets` copies it here and `pnpm lint` fails on a copy out of step (NFR-Q-08) |
 
 **Release tags.**
-- **`@beta`:** documented and supported. Before 1.0, a change can land in a minor release, with a report diff and a changeset.
-- **`@alpha`:** a spike surface that will be replaced; no compatibility is promised.
-- **`@public`:** first used at 1.0.
+- **`@public`:** every export, from 1.0 (M11 plan D1). Under semver (NFR-M-01): a breaking change lands only in a major release, and a deprecation is announced at least one minor release before the removal.
+- **`@beta` and `@alpha`** were used before 1.0 and are not used from it. A `@beta` symbol was documented and supported, but could change in a minor release; an `@alpha` one promised nothing.
 
 ## 2. Symbol budget (NFR-U-05)
 
@@ -337,7 +336,7 @@ What does not fit is never loaded and never emitted. It is a `warning` in `sessi
 
 Hydration never fails because of content (INV-E-08). It throws only `definition-rejected` and `invalid-options`, as `createSession` does, and `response-rejected` for something that is not an R4 `QuestionnaireResponse`. A session emitted, hydrated and emitted again gives the same response, `authored` and `status` aside (INV-E-06).
 
-## 5. `@fhirq/core/view` (`@alpha`)
+## 5. `@fhirq/core/view`
 
 The presentation model (ADR-0007): every BC6 behaviour that is not markup, written once, for both renderers and for a headless host (tier 4, ADR-0013). `createView(session, options)` returns a `View` whose `subscribe` and `getSnapshot` go straight into `useSyncExternalStore`. `getSnapshot` returns one `ViewModel` until the session or the text being typed changes. The view holds no domain state: another view over the same session, with another locale or prefix, changes nothing in it (INV-P-01).
 
@@ -411,7 +410,7 @@ const model = view.getSnapshot();
 
 **M6 (`06-roadmap.md` M6 D5)** counts a re-export of another `@fhirq/*` package's declaration once, where it is declared: `@fhirq/react`'s `createSession` is core's, listed in React's report and not counted again. React adds `Questionnaire`, `QuestionnaireProps` and `useQuestionnaire`, with the hook's option and result types written inline, and replaces the spike's two. **One remains** for M7 and M8.
 
-## 6. `@fhirq/react` (`@alpha`)
+## 6. `@fhirq/react`
 
 The React adapter (ADR-0015): a headless hook over the view, and the default UI built on the hook alone. `createSession` is re-exported from `@fhirq/core` for hosts that own their sessions.
 
@@ -458,7 +457,7 @@ In development, a diagnostic the adapter raises is also written to `console.warn
 
 **`controls` (tier 3, ADR-0013).** A host's control per control kind, for any of the 13 answerable kinds: `controls={{ 'calendar-date': MyPicker }}`, where `MyPicker` takes `ControlProps<'calendar-date'>` (§5.3). Kinds left out render the default. The kit renders the item root, the label (`for` = `ids.control`), the required marker and the error container around the host's control (`08-dom-contract.md` §3.9). The map is compared by its entries, so one written inline re-renders nothing. In development, after each render of an overridden item, the kit checks that an element carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` (§3) once per item and missing attribute, through `onDiagnostic` and `console.warn`. A production build has no check. `useQuestionnaire` has no `controls`: a host rendering itself (tier 4) owns its markup.
 
-## 7. `@fhirq/element` (`@alpha`)
+## 7. `@fhirq/element`
 
 `<fhir-questionnaire>`, registered by `defineQuestionnaireElement()` or by importing `@fhirq/element/define`; the script-tag bundle registers it as it loads. The class, `FhirQuestionnaireElement`, and that function are the entry point's two symbols (M7 plan D4). Everything below is a class member or an attribute, and the events are typed by an `HTMLElementEventMap` augmentation, which ships in the package's declarations but, as a global, is not in the API report. Built in M7; ADR-0014, ADR-0012 and their M7 notes are the decision.
 
@@ -505,7 +504,7 @@ The core calls the resolver once per distinct canonical per session, and again o
 
 **`controls` (tier 3, ADR-0013, ADR-0014).** A property, since it needs script: a custom element tag the host has defined, per control kind, for any of the 13 answerable kinds: `el.controls = { 'calendar-date': 'my-date-picker' }`. Kinds left out, and the five that are not answerable, render the default. The element makes the host's element inside its shadow root, between the kit's label (`for` = `ids.control`) with its required marker and the error container (`08-dom-contract.md` §3.9), and sets its `props` property to `ControlProps` (§5.3) each time the item renders. The control answers by calling `props.set`, `props.clear` and `props.leave`, or by dispatching `fhirq-set` (its `detail` what `set` takes), `fhirq-clear` and `fhirq-leave` on itself; they need not bubble. A kind's other commands, such as `toggle` or `setUnit`, are called on `props.node`. The host defines the tag before the item renders. A new map draws every item again, over the same view, so drafts stay; setting the same map does nothing, and `null` restores the defaults. In development, in a microtask after each render of an overridden item, so a control that draws in a microtask of its own is seen drawn, the element checks that an element in its shadow root carries `ids.control`, that it has `aria-invalid` from `node.invalid`, and that its `aria-describedby` names `ids.error` while invalid. It raises `control-contract` once per item and missing attribute, through `fhirq-diagnostic` and `console.warn` (code and kind only). A production build, the script-tag bundle among them, has no check.
 
-## 8. `@fhirq/themes` (`@beta`)
+## 8. `@fhirq/themes`
 
 Two stylesheets and one constant. `@fhirq/themes/base.css` is the structure: it styles the DOM contract's classes (`08-dom-contract.md`) and reads nothing but `--fhirq-*` tokens. `@fhirq/themes/default.css` is the preset: values for every token and nothing else, light, with the colours redeclared for dark under `prefers-color-scheme` on screen only, so a form always prints light. `base.css` also carries the print styles: the add, remove and retry buttons and the status region are not printed, and a repeat instance, a choice or the error summary is kept to one page (M8 plan D7). A React host imports both (§6); the element embeds both (ADR-0014).
 

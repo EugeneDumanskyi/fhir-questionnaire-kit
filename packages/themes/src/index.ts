@@ -11,7 +11,7 @@
  * `fhir-questionnaire` itself for the element, or on any ancestor for React
  * (ADR-0014, 2026-09-28 note).
  *
- * @beta
+ * @public
  */
 export const TOKENS = [
   '--fhirq-font-family',

@@ -4,7 +4,7 @@
 
 ```ts
 
-// @alpha
+// @public
 export interface Announcement {
     // (undocumented)
     readonly cycle: number;
@@ -12,7 +12,7 @@ export interface Announcement {
     readonly text: string;
 }
 
-// @alpha
+// @public
 export interface ChoiceView {
     // (undocumented)
     readonly key: string;
@@ -22,10 +22,10 @@ export interface ChoiceView {
     readonly selected: boolean;
 }
 
-// @alpha
+// @public
 export type ControlKind = 'yes-no' | 'short-text' | 'long-text' | 'integer' | 'decimal' | 'calendar-date' | 'date-time' | 'quantity' | 'single-choice' | 'single-list' | 'single-menu' | 'multi-choice' | 'multi-list' | 'calculated' | 'statement' | 'group' | 'repeating-group' | 'unsupported';
 
-// @alpha
+// @public
 export interface ControlProps<K extends ControlKind> {
     // (undocumented)
     readonly clear: () => void;
@@ -41,17 +41,17 @@ export interface ControlProps<K extends ControlKind> {
     } ? ([C] extends [never] ? never : S) : never) : never;
 }
 
-// @alpha
+// @public
 export type ControlView<K extends ControlKind> = ViewNode & {
     readonly control: K;
 };
 
 // Warning: (ae-forgotten-export) The symbol "Session" needs to be exported by the entry point index.d.ts
 //
-// @alpha
+// @public
 export function createView(session: Session, options: ViewOptions): View;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export interface ErrorSummary {
     readonly entries: readonly {
         readonly path: string | null;
@@ -66,7 +66,7 @@ export interface ErrorSummary {
     readonly id: string;
 }
 
-// @alpha
+// @public
 export interface FocusTarget {
     // (undocumented)
     readonly cycle: number;
@@ -74,7 +74,7 @@ export interface FocusTarget {
     readonly id: string;
 }
 
-// @alpha
+// @public
 export interface InstanceView {
     // (undocumented)
     readonly children: readonly ViewNode[];
@@ -88,7 +88,7 @@ export interface InstanceView {
     readonly removeLabel: string;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export interface NodeIds {
     // (undocumented)
     readonly control: string;
@@ -100,7 +100,7 @@ export interface NodeIds {
     readonly label: string;
 }
 
-// @alpha
+// @public
 export interface View {
     // (undocumented)
     readonly getSnapshot: () => ViewModel;
@@ -108,14 +108,14 @@ export interface View {
     readonly subscribe: (listener: () => void) => () => void;
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export interface ViewIssue {
     readonly message: string;
     // Warning: (ae-forgotten-export) The symbol "IssueCode" needs to be exported by the entry point index.d.ts
     readonly rule: IssueCode | 'not-a-date' | 'not-a-number';
 }
 
-// @alpha (undocumented)
+// @public (undocumented)
 export interface ViewModel {
     // (undocumented)
     readonly announcement: Announcement | null;
@@ -135,7 +135,7 @@ export interface ViewModel {
     readonly requiredMarker: string;
 }
 
-// @alpha
+// @public
 export type ViewNode = {
     readonly path: string;
     readonly control: ControlKind;
@@ -213,7 +213,7 @@ export type ViewNode = {
     readonly add: () => void;
 });
 
-// @alpha (undocumented)
+// @public (undocumented)
 export interface ViewOptions {
     readonly idPrefix: string;
     readonly locale: string;

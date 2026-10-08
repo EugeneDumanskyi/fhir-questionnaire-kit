@@ -3,8 +3,8 @@
  *
  * Every BC6 behaviour that is not markup, written once: control choice, ids,
  * issue text, drafts, formatting, repeats, the error summary, announcements
- * and focus targets (M5). Still `@alpha`: M6 and M7 build the renderers on it
- * and may move a field before it is `@beta`.
+ * and focus targets (M5). `@public` from 1.0 (M11 plan D1): M6 and M7 built
+ * the renderers on it without a new field.
  */
 
 export { createView } from './view.js';

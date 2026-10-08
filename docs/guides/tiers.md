@@ -53,7 +53,7 @@ fhir-questionnaire,
 - **Contrast is yours** once you set a colour. The preset's own pairs are
   tested in light and dark; yours are not.
 
-The full list, with the defaults, is in [`07-api.md` §8](../07-api.md#8-fhirqthemes-beta).
+The full list, with the defaults, is in [`07-api.md` §8](../07-api.md#8-fhirqthemes).
 The worked example is [`examples/themed-host`](../../examples/themed-host).
 
 ## 3. A control of your own
@@ -95,7 +95,7 @@ the kit checks these after each render and reports `control-contract` through
 
 The element takes the same map as a property, naming custom elements you have
 defined: `form.controls = { 'yes-no': 'my-switch' }`. Your element gets the
-props as its `props` property ([`07-api.md` §7](../07-api.md#7-fhirqelement-alpha)).
+props as its `props` property ([`07-api.md` §7](../07-api.md#7-fhirqelement)).
 
 ## 4. Headless
 
@@ -120,7 +120,7 @@ Each node carries its `control` kind, its label, its four `ids`, whether it is
 `required` or `invalid`, its surfaced `issues` with their messages, and the
 commands to answer it. The model also has the `announcement` to put in a live
 region, the `errorSummary` after a refused completion, and the `focusTarget`
-to move focus to ([`07-api.md` §5](../07-api.md#5-fhirqcoreview-alpha)).
+to move focus to ([`07-api.md` §5](../07-api.md#5-fhirqcoreview)).
 
 At this tier the markup's accessibility is yours: the model tells you what
 to say and where focus goes, but not how to build the elements.

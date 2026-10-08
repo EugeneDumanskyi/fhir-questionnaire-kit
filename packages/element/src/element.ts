@@ -73,7 +73,7 @@ function adopt(root: ShadowRoot): void {
  * answerable kind (`controls`, ADR-0013 tier 3), inside the kit's label and
  * errors.
  *
- * @alpha Until M7 closes.
+ * @public
  */
 export class FhirQuestionnaireElement extends HTMLElement {
   static readonly observedAttributes = ['src', 'lang'];
@@ -426,7 +426,7 @@ export class FhirQuestionnaireElement extends HTMLElement {
 /**
  * Registers `<fhir-questionnaire>` once.
  *
- * @alpha As the class.
+ * @public
  */
 export function defineQuestionnaireElement(name = 'fhir-questionnaire'): void {
   if (customElements.get(name) === undefined) customElements.define(name, FhirQuestionnaireElement);

@@ -31,7 +31,7 @@ import {
  * conditions, and restores them if the item is enabled again; `discard`
  * erases them, and resets a repeating group to one empty instance.
  *
- * @beta
+ * @public
  */
 export type RetentionPolicy = 'retain-exclude' | 'discard';
 

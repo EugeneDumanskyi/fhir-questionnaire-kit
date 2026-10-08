@@ -26,7 +26,7 @@ declare global {
  * instances in position order, with their answers (INV-X-04). A disabled
  * node and its retained answers are absent. Deeply frozen.
  *
- * @beta
+ * @public
  */
 export interface VisibleProjection {
   /** The session's status in the cycle being run. */
@@ -47,7 +47,7 @@ export interface VisibleProjection {
  * `onCollaboratorError`; the session never retries or logs on its own
  * (INV-X-03).
  *
- * @beta
+ * @public
  */
 export type OptionResolver = (
   valueSet: string,
@@ -59,7 +59,7 @@ export type OptionResolver = (
  * inside the cycle, in document order, and returns the item's value, or
  * `undefined` for none. It must return the same value for the same projection.
  *
- * @beta
+ * @public
  */
 export interface ExpressionEvaluator {
   /** The value of `expression` for the calculated node at `context.path`, read from `context.projection`. */

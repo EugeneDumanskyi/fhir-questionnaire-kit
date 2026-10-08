@@ -170,10 +170,10 @@ React 18 and 19 are both tested (NFR-C-03).
   A package that depends on another pins it exactly.
 - **The public surface is held by API reports.** Every change to it shows as
   a diff in the pull request, and CI fails without one (NFR-M-04).
-- **Release tags say what is promised** ([`07-api.md` §1](07-api.md#1-rules-for-the-surface)).
-  Before 1.0, a `@beta` symbol is documented and supported, but a change to
-  it can land in a minor release. An `@alpha` symbol promises nothing. Today
-  `@fhirq/core/view`, `@fhirq/react` and `@fhirq/element` are `@alpha`.
+- **Every export is `@public`** ([`07-api.md` §1](07-api.md#1-rules-for-the-surface)),
+  the presentation model and both renderers included, so from 1.0 all of it
+  is under semver. The API reports hold no `any`, and the surface is at most
+  60 symbols, counted in CI.
 - **A saved snapshot restores on the same format major only.** A change to
   the snapshot format is a major release of `@fhirq/core` (ADR-0010,
   `05-architecture.md` A5). A snapshot is a way to resume a session, not a

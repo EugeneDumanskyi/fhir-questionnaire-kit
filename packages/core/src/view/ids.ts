@@ -14,7 +14,7 @@ export function pathId(path: string): string {
   return out;
 }
 
-/** @alpha */
+/** @public */
 export interface NodeIds {
   readonly control: string;
   readonly label: string;

@@ -9,7 +9,7 @@ import type { NodeIds } from './ids.js';
  * and are each an accepted ADR's own name; `deny-lists.ts` says why.
  */
 
-/** @alpha */
+/** @public */
 export interface ViewOptions {
   /** Prefixes every id, so two forms on one page or one React tree cannot collide. */
   readonly idPrefix: string;
@@ -44,7 +44,7 @@ export interface ViewOptions {
  *   `display` item), `unsupported` (a lenient-mode placeholder, AC-01.3.2).
  * - Structure: `group`, `repeating-group`.
  *
- * @alpha
+ * @public
  */
 export type ControlKind =
   | 'yes-no'
@@ -66,7 +66,7 @@ export type ControlKind =
   | 'repeating-group'
   | 'unsupported';
 
-/** @alpha */
+/** @public */
 export interface ViewIssue {
   /**
    * The rule that raised it: an engine rule, or one of the view's two on text
@@ -81,7 +81,7 @@ export interface ViewIssue {
  * One option of a yes/no, choice or quantity-unit control. `key` is what
  * `set`, `toggle` and `setUnit` take: a string, so it can be a control's value as is.
  *
- * @alpha
+ * @public
  */
 export interface ChoiceView {
   readonly key: string;
@@ -93,7 +93,7 @@ export interface ChoiceView {
  * One instance of a repeating group, in position order. `ids.control` is its
  * remove control's id and `ids.label` its name's.
  *
- * @alpha
+ * @public
  */
 export interface InstanceView {
   /** The instance path (`meds[2]`): the key for identity, React keys and patcher records. */
@@ -120,7 +120,7 @@ export interface InstanceView {
  * `not-a-date` or `not-a-number` (INV-P-06). `value` is the domain value and
  * `display` the same value formatted for reading (ADR-0020).
  *
- * @alpha
+ * @public
  */
 export type ViewNode = {
   /** Item path: the key for identity, React keys and patcher records. */
@@ -230,7 +230,7 @@ export type ViewNode = {
 /**
  * The view node of one control kind: `ControlView<'calendar-date'>`.
  *
- * @alpha
+ * @public
  */
 export type ControlView<K extends ControlKind> = ViewNode & { readonly control: K };
 
@@ -246,7 +246,7 @@ export type ControlView<K extends ControlKind> = ViewNode & { readonly control: 
  * for entry kinds, since a draft is not a value yet (INV-P-06), and an option
  * key for option kinds. The domain value is `node.value`.
  *
- * @alpha
+ * @public
  */
 export interface ControlProps<K extends ControlKind> {
   readonly node: ControlView<K>;
@@ -261,7 +261,7 @@ export interface ControlProps<K extends ControlKind> {
   readonly leave: () => void;
 }
 
-/** @alpha */
+/** @public */
 export interface ErrorSummary {
   readonly id: string;
   readonly headingId: string;
@@ -278,7 +278,7 @@ export interface ErrorSummary {
 /**
  * One coalesced message per cycle (INV-P-03). `cycle` lets a renderer tell a repeat from a re-render.
  *
- * @alpha
+ * @public
  */
 export interface Announcement {
   readonly text: string;
@@ -290,14 +290,14 @@ export interface Announcement {
  * refused completion, a new instance's first control after an add, the
  * neighbouring instance after a removal. A new object means "move now".
  *
- * @alpha
+ * @public
  */
 export interface FocusTarget {
   readonly id: string;
   readonly cycle: number;
 }
 
-/** @alpha */
+/** @public */
 export interface ViewModel {
   readonly completed: boolean;
   readonly requiredMarker: string;
@@ -325,7 +325,7 @@ export interface ViewModel {
  * snapshot and of the text being typed, memoised on both, so it can be handed
  * straight to `useSyncExternalStore`.
  *
- * @alpha
+ * @public
  */
 export interface View {
   readonly subscribe: (listener: () => void) => () => void;

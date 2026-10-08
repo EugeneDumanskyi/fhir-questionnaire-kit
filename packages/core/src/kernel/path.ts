@@ -11,7 +11,7 @@ import { FhirqError } from './error.js';
  * (AC-03.4.1, `04-domain.md` T11). A node computes its path once, when it is
  * created, and the session keys every table on that one string.
  *
- * @beta
+ * @public
  */
 export type ItemPath = string & { readonly __brand: 'ItemPath' };
 
@@ -21,7 +21,7 @@ export type ItemPath = string & { readonly __brand: 'ItemPath' };
  * named just before it. Throws `FhirqError` with `invalid-path` on anything
  * else, since a malformed path is an integration error, not a respondent's.
  *
- * @beta
+ * @public
  */
 export function itemPath(...parts: readonly (string | number)[]): ItemPath {
   let path: ItemPath | null = null;
