@@ -1,8 +1,8 @@
 /**
  * `@fhirq/core`: the DOM-free engine.
  *
- * Exports are `@beta` from M2: documented in `docs/07-api.md` and held by the
- * API report in `etc/core.api.md` (M2 plan D12).
+ * Exports are `@public` from 1.0 (M11 plan D1): documented in `docs/07-api.md`
+ * and held by the API report in `etc/core.api.md` (M2 plan D12).
  */
 
 import type { Answer } from './kernel/answer.js';
@@ -37,7 +37,7 @@ export type { CommandResult, Session, SessionChange, SessionState } from './sess
  * the session's life, and none is in a snapshot, so a restore needs the same
  * ones.
  *
- * @beta
+ * @public
  */
 export interface SessionOptions {
   /** `strict` (the default) rejects a questionnaire with any unsupported construct; `lenient` degrades it with diagnostics. */
@@ -107,7 +107,7 @@ export interface SessionOptions {
  * questionnaire is not loadable in the chosen mode (AC-01.1.3, AC-01.3.1), and
  * with `invalid-options` for options it cannot read.
  *
- * @beta
+ * @public
  */
 export function createSession(questionnaire: Questionnaire, options: SessionOptions = {}): Session {
   const { definition, settings, validate } = open(questionnaire, options);
@@ -126,7 +126,7 @@ export function createSession(questionnaire: Questionnaire, options: SessionOpti
  * Throws `FhirqError` with `unknown-session` for an object that is not a
  * session, and `invalid-options` for an `authored` that is not a `dateTime`.
  *
- * @beta
+ * @public
  */
 export function emitResponse(session: Session, options: { readonly authored?: string } = {}): QuestionnaireResponse {
   return emit(session, options);

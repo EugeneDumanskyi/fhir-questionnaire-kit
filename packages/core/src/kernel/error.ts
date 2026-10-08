@@ -9,7 +9,7 @@ import type { Diagnostic } from './diagnostic.js';
  * request the element's network file made that did not bring back JSON is
  * `request-failed` (ADR-0012 and its M7 note).
  *
- * @beta
+ * @public
  */
 export type FhirqErrorCode =
   | 'definition-rejected'
@@ -27,7 +27,7 @@ export type FhirqErrorCode =
  * (NFR-X-04). `cause`, when there is one, is what failed underneath, verbatim:
  * the platform's error, or the HTTP response that was not a success.
  *
- * @beta
+ * @public
  */
 export class FhirqError extends Error {
   readonly code: FhirqErrorCode;

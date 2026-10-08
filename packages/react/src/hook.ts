@@ -109,7 +109,7 @@ function own(questionnaire: Questionnaire, response: QuestionnaireResponse | und
  * server and client agree (ADR-0020). A new `locale`, `timeZone` or
  * `messages` content builds a new view, which starts without typed drafts.
  *
- * @alpha
+ * @public
  */
 export function useQuestionnaire(
   source: Questionnaire | Session,

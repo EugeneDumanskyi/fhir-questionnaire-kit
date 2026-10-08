@@ -2,39 +2,16 @@ import { existsSync, readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
+import { declared, ENTRY_POINTS, LIMIT, reexports, symbols } from '../check-api.mjs';
+
 /**
  * NFR-U-05: at most 60 public symbols across all packages. Each entry point is
- * counted from its API Extractor report.
- *
- * A re-export of another `@fhirq/*` package's declaration, such as
- * `@fhirq/react`'s `createSession` (ADR-0015), is one symbol under two names,
- * so it is listed but not counted again (M6 plan D5). A report shows it as
- * `export { name }` with `name` imported from that package.
+ * counted from its API Extractor report, by `scripts/check-api.mjs`, which
+ * `pnpm lint` runs and the README's published numbers read.
  */
 
 const root = new URL('../../', import.meta.url);
 const text = (path) => readFileSync(new URL(path, root), 'utf8');
-
-const ENTRY_POINTS = [
-  { name: '@fhirq/core', report: 'packages/core/etc/core.api.md' },
-  { name: '@fhirq/core/view', report: 'packages/core/etc/core-view.api.md' },
-  { name: '@fhirq/core/resume', report: 'packages/core/etc/core-resume.api.md' },
-  { name: '@fhirq/react', report: 'packages/react/etc/react.api.md' },
-  { name: '@fhirq/element', report: 'packages/element/etc/element.api.md' },
-  { name: '@fhirq/themes', report: 'packages/themes/etc/themes.api.md' },
-];
-
-const fromReport = (report) => [...report.matchAll(/^export (?:declare )?(?:abstract )?(?:type|interface|function|class|const|enum|namespace) (\w+)/gm)].map((match) => match[1]);
-
-/** `export { name }` lines, each with the `@fhirq/*` specifier its import names, or null when none does. */
-const reexports = (report) => {
-  const imported = new Map(
-    [...report.matchAll(/^import (?:type )?\{([^}]*)\} from '(@fhirq\/[^']+)';$/gm)].flatMap((match) => match[1].split(',').map((name) => [name.replace(/\btype\b/, '').trim(), match[2]])),
-  );
-  return [...report.matchAll(/^export \{([^}]*)\}/gm)].flatMap((match) => match[1].split(',').map((name) => name.trim()).filter(Boolean)).map((name) => ({ name, from: imported.get(name) ?? null }));
-};
-
-const symbols = (entry) => fromReport(text(entry.report));
 
 describe('the public API surface (NFR-U-05)', () => {
   it('has a report for every entry point', () => {
@@ -42,9 +19,9 @@ describe('the public API surface (NFR-U-05)', () => {
   });
 
   it('reads a re-export from a report without counting it', () => {
-    const report = "import { createSession } from '@fhirq/core';\nimport type { Session } from '@fhirq/core';\n\n// @alpha\nexport function useThing(session: Session): void;\n\nexport { createSession }\n";
+    const report = "import { createSession } from '@fhirq/core';\nimport type { Session } from '@fhirq/core';\n\n// @public\nexport function useThing(session: Session): void;\n\nexport { createSession }\n";
     expect(reexports(report)).toEqual([{ name: 'createSession', from: '@fhirq/core' }]);
-    expect(fromReport(report)).toEqual(['useThing']);
+    expect(declared(report)).toEqual(['useThing']);
   });
 
   it('counts a re-export only where it is declared (M6 plan D5)', () => {
@@ -54,7 +31,7 @@ describe('the public API surface (NFR-U-05)', () => {
   });
 
   it('counts each entry point', () => {
-    expect(Object.fromEntries(ENTRY_POINTS.map((entry) => [entry.name, symbols(entry).length]))).toEqual({
+    expect(Object.fromEntries(Object.entries(symbols()).map(([name, names]) => [name, names.length]))).toEqual({
       '@fhirq/core': 35,
       '@fhirq/core/view': 15,
       '@fhirq/core/resume': 3,
@@ -64,7 +41,8 @@ describe('the public API surface (NFR-U-05)', () => {
     });
   });
 
-  it('exports at most 60 symbols across all packages', () => {
-    expect(ENTRY_POINTS.flatMap(symbols).length).toBeLessThanOrEqual(60);
+  it(`exports at most ${LIMIT} symbols across all packages`, () => {
+    expect(LIMIT).toBe(60);
+    expect(Object.values(symbols()).flat().length).toBeLessThanOrEqual(LIMIT);
   });
 });

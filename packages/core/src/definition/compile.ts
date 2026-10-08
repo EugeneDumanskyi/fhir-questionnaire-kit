@@ -22,7 +22,7 @@ import { buildGraph } from './graph.js';
  * does not support, listing every finding; `lenient` loads it, degrading each
  * construct towards the safe side with a diagnostic (`04-domain.md` §5.1).
  *
- * @beta
+ * @public
  */
 export type LoadMode = 'strict' | 'lenient';
 

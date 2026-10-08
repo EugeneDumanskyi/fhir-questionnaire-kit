@@ -3,7 +3,7 @@
  * item tree (INV-D-02). A plain alias: it documents intent in signatures, and
  * a brand would buy nothing the uniqueness check does not already give.
  *
- * @beta
+ * @public
  */
 export type LinkId = string;
 
@@ -12,7 +12,7 @@ export type LinkId = string;
  * domain concepts here, not R4 codes: an R5 codec would map `coding` plus
  * `answerConstraint` onto them (ADR-0016).
  *
- * @beta
+ * @public
  */
 export type ItemType =
   | 'group'
@@ -55,7 +55,7 @@ export function isItemType(value: string): value is ItemType {
 /**
  * `enableWhen` operators (AC-02.1.3).
  *
- * @beta
+ * @public
  */
 export type Operator = 'exists' | '=' | '!=' | '>' | '<' | '>=' | '<=';
 

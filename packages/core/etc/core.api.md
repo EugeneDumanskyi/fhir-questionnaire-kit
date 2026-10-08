@@ -4,7 +4,7 @@
 
 ```ts
 
-// @beta
+// @public
 export type Answer = {
     readonly kind: 'boolean';
     readonly value: boolean;
@@ -31,10 +31,10 @@ export type Answer = {
     readonly value: Quantity;
 };
 
-// @beta
+// @public
 export type AnswerKind = Answer['kind'];
 
-// @beta
+// @public
 export interface Coding {
     // (undocumented)
     readonly code?: string;
@@ -44,7 +44,7 @@ export interface Coding {
     readonly system?: string;
 }
 
-// @beta
+// @public
 export type Command =
 /** Replaces the node's answers (AC-02.1.1). More than one only on a repeating question. */
     {
@@ -83,7 +83,7 @@ export type Command =
     readonly valueSet: string;
 };
 
-// @beta
+// @public
 export type CommandResult = {
     readonly outcome: 'applied' | 'unchanged' | 'deferred';
 } | {
@@ -91,10 +91,10 @@ export type CommandResult = {
     readonly reason: RefusalReason;
 };
 
-// @beta
+// @public
 export function createSession(questionnaire: Questionnaire, options?: SessionOptions): Session;
 
-// @beta
+// @public
 export interface Diagnostic {
     readonly code: DiagnosticCode;
     readonly detail: string | null;
@@ -106,15 +106,15 @@ export interface Diagnostic {
     readonly severity: Severity;
 }
 
-// @beta
+// @public
 export type DiagnosticCode = 'not-a-questionnaire' | 'not-r4' | 'malformed' | 'modifier-extension' | 'r4-constraint' | 'duplicate-link-id' | 'unsupported-item-type' | 'dangling-condition' | 'dependency-cycle' | 'meaningless-condition' | 'nesting-too-deep' | 'chain-too-deep' | 'no-evaluator' | 'condition-crosses-repeat' | 'condition-on-calculated' | 'unsupported-extension' | 'context-extension-ignored' | 'missing-enable-behavior' | 'items-under-question' | 'initial-value-ignored' | 'unsupported-option-type' | 'inapplicable-constraint' | 'listener-threw' | 'rule-threw' | 'scorer-threw' | 'evaluator-threw' | 'unresolved-options' | 'resolver-failed' | 'no-sanitizer' | 'sanitizer-threw' | 'version-drift' | 'orphan-answer' | 'quarantined-answer' | 'hydrated-answer-disabled' | 'controlled-value-replaced' | 'control-contract';
 
-// @beta
+// @public
 export function emitResponse(session: Session, options?: {
     readonly authored?: string;
 }): QuestionnaireResponse;
 
-// @beta
+// @public
 export interface ExpressionEvaluator {
     evaluate(expression: {
         readonly language: string;
@@ -126,7 +126,7 @@ export interface ExpressionEvaluator {
     }): Answer | undefined;
 }
 
-// @beta
+// @public
 export class FhirqError extends Error {
     constructor(code: FhirqErrorCode, findings?: readonly Diagnostic[], options?: {
         readonly cause?: unknown;
@@ -137,10 +137,10 @@ export class FhirqError extends Error {
     readonly findings: readonly Diagnostic[];
 }
 
-// @beta
+// @public
 export type FhirqErrorCode = 'definition-rejected' | 'response-rejected' | 'snapshot-mismatch' | 'snapshot-format' | 'unknown-session' | 'invalid-path' | 'invalid-options' | 'request-failed';
 
-// @beta
+// @public
 export interface HostIdentity {
     // (undocumented)
     readonly author?: object;
@@ -152,7 +152,7 @@ export interface HostIdentity {
     readonly subject?: object;
 }
 
-// @beta
+// @public
 export interface Issue {
     // (undocumented)
     readonly code: IssueCode;
@@ -165,10 +165,10 @@ export interface Issue {
     readonly severity: 'error' | 'warning';
 }
 
-// @beta
+// @public
 export type IssueCode = 'required' | 'min-occurs' | 'max-occurs' | 'max-length' | 'max-decimal-places' | 'min-value' | 'max-value' | 'unit-missing' | 'rule';
 
-// @beta
+// @public
 export interface ItemDefinition {
     readonly calculated: boolean;
     // (undocumented)
@@ -195,24 +195,24 @@ export interface ItemDefinition {
     readonly xhtml: string | null;
 }
 
-// @beta
+// @public
 export type ItemPath = string & {
     readonly __brand: 'ItemPath';
 };
 
-// @beta
+// @public
 export function itemPath(...parts: readonly (string | number)[]): ItemPath;
 
-// @beta
+// @public
 export type ItemType = 'group' | 'display' | 'boolean' | 'decimal' | 'integer' | 'date' | 'dateTime' | 'string' | 'text' | 'choice' | 'open-choice' | 'quantity';
 
-// @beta
+// @public
 export type LinkId = string;
 
-// @beta
+// @public
 export type LoadMode = 'strict' | 'lenient';
 
-// @beta
+// @public
 export interface NodeState {
     // (undocumented)
     readonly answers: readonly Answer[];
@@ -225,10 +225,10 @@ export interface NodeState {
     readonly surfaced: boolean;
 }
 
-// @beta
+// @public
 export type Operator = 'exists' | '=' | '!=' | '>' | '<' | '>=' | '<=';
 
-// @beta
+// @public
 export type OptionResolver = (valueSet: string, context: {
     readonly signal: AbortSignal;
 }) => PromiseLike<readonly {
@@ -237,7 +237,7 @@ export type OptionResolver = (valueSet: string, context: {
     readonly display?: string;
 }[]>;
 
-// @beta
+// @public
 export interface Quantity {
     // (undocumented)
     readonly code?: string;
@@ -249,7 +249,7 @@ export interface Quantity {
     readonly value: number;
 }
 
-// @beta
+// @public
 export interface Questionnaire {
     // (undocumented)
     readonly approvalDate?: string;
@@ -314,7 +314,7 @@ export interface Questionnaire {
     readonly version?: string;
 }
 
-// @beta
+// @public
 export interface QuestionnaireResponse {
     // (undocumented)
     readonly author?: object;
@@ -356,13 +356,13 @@ export interface QuestionnaireResponse {
     readonly text?: unknown;
 }
 
-// @beta
+// @public
 export type RefusalReason = 'malformed-command' | 'unknown-path' | 'session-completed' | 'node-disabled' | 'node-calculated' | 'not-answerable' | 'empty-answers' | 'too-many-answers' | 'invalid-answer' | 'type-mismatch' | 'not-repeating' | 'at-max-occurs' | 'unknown-instance' | 'validation-errors' | 'options-unresolved' | 'options-not-failed' | 'collaborator-running' | 'disposed';
 
-// @beta
+// @public
 export type RetentionPolicy = 'retain-exclude' | 'discard';
 
-// @beta
+// @public
 export interface Session {
     readonly diagnostics: readonly Diagnostic[];
     readonly dispatch: (command: Command) => CommandResult;
@@ -371,7 +371,7 @@ export interface Session {
     readonly subscribe: (listener: (change: SessionChange) => void) => () => void;
 }
 
-// @beta
+// @public
 export interface SessionChange {
     readonly added: readonly ItemPath[];
     readonly command: Command['type'] | 'OptionsSettled';
@@ -386,7 +386,7 @@ export interface SessionChange {
     readonly surfaced: readonly ItemPath[];
 }
 
-// @beta
+// @public
 export interface SessionOptions {
     readonly evaluator?: ExpressionEvaluator;
     readonly hostIdentity?: HostIdentity;
@@ -407,7 +407,7 @@ export interface SessionOptions {
     }>>;
 }
 
-// @beta
+// @public
 export interface SessionState {
     readonly change: SessionChange | null;
     readonly completionRefused: boolean;
@@ -422,10 +422,10 @@ export interface SessionState {
     readonly status: 'in-progress' | 'completed';
 }
 
-// @beta
+// @public
 export type Severity = 'error' | 'warning' | 'info';
 
-// @beta
+// @public
 export interface VisibleProjection {
     readonly nodes: readonly {
         readonly path: ItemPath;

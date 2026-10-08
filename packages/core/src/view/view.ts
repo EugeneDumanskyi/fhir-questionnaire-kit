@@ -34,7 +34,7 @@ const unitFields = (fields: Readonly<Record<'unit' | 'system' | 'code', string |
  * the view's life; another tier, theme or locale is another view over the
  * same session, which leaves the session untouched (INV-P-01).
  *
- * @alpha
+ * @public
  */
 export function createView(session: Session, options: ViewOptions): View {
   const { idPrefix, locale, timeZone } = options;

@@ -14,7 +14,7 @@ import { isRepeatingGroup, type ItemNode, type Store } from './store.js';
  * Everything a host can ask of a session. Each command runs as one cycle;
  * one that cannot apply is refused with a reason, never thrown.
  *
- * @beta
+ * @public
  */
 export type Command =
   /** Replaces the node's answers (AC-02.1.1). More than one only on a repeating question. */
@@ -36,7 +36,7 @@ export type Command =
  * Why a command was refused. A refusal changes nothing, except that a refused
  * completion surfaces every issue.
  *
- * @beta
+ * @public
  */
 export type RefusalReason =
   | 'malformed-command'

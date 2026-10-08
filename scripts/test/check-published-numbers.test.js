@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { ENTRY_POINTS } from '../check-api.mjs';
 import { check, figures, kilobytes, measure, table } from '../check-published-numbers.mjs';
 
 const base = fileURLToPath(new URL('../../', import.meta.url));
@@ -14,7 +15,7 @@ const value = (rows, label) => rows.find((row) => row.label === label)?.value;
 /** A copy of the files `figures` reads, with `edit` applied to one of them. */
 function repository(path, edit) {
   const copy = mkdtempSync(join(tmpdir(), 'fhirq-numbers-'));
-  for (const file of ['scripts/budgets.json', 'packages/core/src/definition/graph.ts', 'fixtures/bench/ceiling.json', 'packages/core/test/property/ceiling.test.ts']) {
+  for (const file of ['scripts/budgets.json', 'packages/core/src/definition/graph.ts', 'fixtures/bench/ceiling.json', 'packages/core/test/property/ceiling.test.ts', ...ENTRY_POINTS.map(({ report }) => report)]) {
     cpSync(join(base, file), join(copy, file), { recursive: true });
   }
   writeFileSync(join(copy, path), edit(read(path)));
@@ -33,6 +34,7 @@ describe('the published numbers check (M10 AC-8, plan step 7)', () => {
     expect(value(rows, 'Items in one repeat instance')).toBe('20');
     expect(value(rows, 'Groups nested inside one another')).toBe('10');
     expect(value(rows, 'Conditions in one `enableWhen` chain')).toBe('10');
+    expect(value(rows, 'Public symbols, all packages together')).toBe('59 of at most 60');
     expect(check(read('README.md'), rows)).toEqual([]);
   });
 

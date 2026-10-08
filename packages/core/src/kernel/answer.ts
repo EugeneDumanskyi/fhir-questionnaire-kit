@@ -3,7 +3,7 @@ import { parseDate, parseDateTime } from './temporal.js';
 /**
  * A coded value. Compared on `system` and `code`; `display` is for people (M2 plan D3).
  *
- * @beta
+ * @public
  */
 export interface Coding {
   readonly system?: string;
@@ -15,7 +15,7 @@ export interface Coding {
  * A measured amount. Compared only when `system` and `code` are identical: no
  * unit conversion (M2 plan D3).
  *
- * @beta
+ * @public
  */
 export interface Quantity {
   readonly value: number;
@@ -30,7 +30,7 @@ export interface Quantity {
  * whichever kind its options have (M2 plan D4). FHIR `date` and `dateTime`
  * stay distinct strings with their precision as written.
  *
- * @beta
+ * @public
  */
 export type Answer =
   | { readonly kind: 'boolean'; readonly value: boolean }
@@ -45,7 +45,7 @@ export type Answer =
 /**
  * The `kind` tag of an `Answer`.
  *
- * @beta
+ * @public
  */
 export type AnswerKind = Answer['kind'];
 

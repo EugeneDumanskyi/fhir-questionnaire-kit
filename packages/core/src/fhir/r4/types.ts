@@ -10,7 +10,7 @@
  * adding a dozen R4 shapes to the public surface (NFR-U-05). R4 shapes are
  * declared under `fhir/r4/` and nowhere else in core (ADR-0016).
  *
- * @beta
+ * @public
  */
 export interface Questionnaire {
   readonly resourceType: 'Questionnaire';
@@ -53,7 +53,7 @@ export interface Questionnaire {
  * `Identifier`. Stored verbatim and emitted as given (M3); the kit never
  * invents, infers or defaults any of them.
  *
- * @beta
+ * @public
  */
 export interface HostIdentity {
   readonly subject?: object;
@@ -69,7 +69,7 @@ export interface HostIdentity {
  * narrowed from `unknown` at runtime. The kit emits `in-progress` and
  * `completed` only; `amended` is not supported (AC-05.1.4).
  *
- * @beta
+ * @public
  */
 export interface QuestionnaireResponse {
   readonly resourceType: 'QuestionnaireResponse';

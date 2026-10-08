@@ -63,7 +63,8 @@ on a published entry point over its figure. The scale and depth figures are the
 ceiling the engine is tested and benchmarked at, and loading past a depth figure
 is refused. Every figure here is checked in CI against its source, so this
 table cannot drift from what is enforced. The 50 instances are tested headroom,
-not a size drawn from real responses.
+not a size drawn from real responses. The public symbols are counted from the
+API reports, and CI fails past 60.
 
 <!-- numbers:start -->
 | Figure | Published | Source |
@@ -82,6 +83,7 @@ not a size drawn from real responses.
 | Items in one repeat instance | 20 | NFR-P-04, [`ceiling.json`](fixtures/bench/ceiling.json) |
 | Groups nested inside one another | 10 | NFR-P-05, [`graph.ts`](packages/core/src/definition/graph.ts) |
 | Conditions in one `enableWhen` chain | 10 | NFR-P-05, [`graph.ts`](packages/core/src/definition/graph.ts) |
+| Public symbols, all packages together | 59 of at most 60 | NFR-U-05, [`check-api.mjs`](scripts/check-api.mjs) |
 <!-- numbers:end -->
 
 ## Documentation

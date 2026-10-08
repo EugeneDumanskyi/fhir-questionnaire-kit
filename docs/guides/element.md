@@ -52,4 +52,4 @@ The form stores nothing and sends nothing but the requests you configure: the
   [`examples/element-embed`](../../examples/element-embed).
 - Session options the attributes do not reach (rules, scorers, a sanitizer, a
   restored session) go through the `session` property, with a session you make
-  yourself: [`07-api.md` §7](../07-api.md#7-fhirqelement-alpha).
+  yourself: [`07-api.md` §7](../07-api.md#7-fhirqelement).

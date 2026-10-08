@@ -5,7 +5,7 @@ import type { ItemPath } from './path.js';
  * A finding about the respondent's answers (`04-domain.md` §1, BC3): one code
  * per built-in rule, plus `rule` for a host's cross-field rule.
  *
- * @beta
+ * @public
  */
 export type IssueCode =
   | 'required'
@@ -24,7 +24,7 @@ export type IssueCode =
  * (SM-03). Serializable, and it never holds an answer value (NFR-X-04, M3 plan
  * D1): the view adds the entered value when it renders.
  *
- * @beta
+ * @public
  */
 export interface Issue {
   readonly code: IssueCode;

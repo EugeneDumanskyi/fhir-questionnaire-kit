@@ -12,7 +12,7 @@ import { Form } from './ui/form.js';
  * session the host owns (ADR-0015). Never both, and never a session with a
  * `value`.
  *
- * @alpha
+ * @public
  */
 export type QuestionnaireProps = (
   | {
@@ -50,7 +50,7 @@ export type QuestionnaireProps = (
  * view model to markup per docs/08-dom-contract.md and computes nothing
  * itself (M6 AC-2, `test/ui-imports.test.ts`).
  *
- * @alpha
+ * @public
  */
 export function Questionnaire(props: QuestionnaireProps): ReactElement {
   // The props are the hook's options, by name; `questionnaire` and `session` are its source.
