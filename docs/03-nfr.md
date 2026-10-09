@@ -231,10 +231,16 @@ The no-PHI boundary (Brief §3) is a security property, so it is tested like one
 | NFR-X-03 | Telemetry, analytics or phone-home in any published package | 0 | Gate + Published |
 | NFR-X-04 | Answer data written to `console` or thrown in error messages | 0 — diagnostics carry `linkId` and paths, never answer values | Gate |
 | NFR-X-05 | XSS: questionnaire-authored content rendered as HTML without a host-supplied sanitizer | 0 paths; verified by a payload corpus of ≥ 20 known vectors | Gate |
-| NFR-X-06 | Known vulnerabilities in the dependency tree at release | 0 high or critical; 0 of any severity in runtime deps, trivially since there are none | Gate |
+| NFR-X-06 | Known vulnerabilities in the dependency tree at release | 0 high or critical; 0 of any severity in runtime deps, trivially since there are none. **Gated from M11** (2026-10-09): `pnpm audit --audit-level high` in `nightly.yml`, dispatched before each release and blocking it (M11 plan D9; manual only from 2026-10-09), with three dated waivers below | Gate |
 | NFR-X-07 | Release provenance | npm provenance attestation + CycloneDX SBOM + signed tag on 100% of releases | Gate |
 | NFR-X-08 | Security report acknowledgement | ≤ 7 days to acknowledge, ≤ 30 days to patch or publicly document | Published |
 | NFR-X-09 | Playground and docs analytics | **none**: no analytics, telemetry, or third-party scripts, fonts or images; both sites served with a Content Security Policy including `connect-src 'none'`; repo attention measured from GitHub traffic stats only | Gate + Published |
+
+**NFR-X-06, read 2026-10-09 (M11 plan step 6).** The first audit found 2 critical and 7 high advisories, all in the development toolchain. Pinning a patched release through `overrides` in `pnpm-workspace.yaml` cleared six of them: tinypool 2.2.0 (both criticals, through vitest), source-map-js 1.2.2, http-cache-semantics 4.3.0, basic-ftp 6.2.1 and tmp 0.2.7. The other three have no fixed release, and the maintainer waived them on 2026-10-09 in `auditConfig.ignoreGhsas`, because neither package sees untrusted input here:
+- braces 3.0.3, GHSA-vfj7-8cjw-p6xm: deeply nested patterns exhaust the stack. It is reached through micromatch in Changesets, stylelint and fast-glob, on this repo's own globs.
+- extract-zip 2.0.1, GHSA-jmr9-qjv8-65gv and GHSA-7pqw-9j4j-h8q3: symlink entries escape the target directory. It is reached only through Lighthouse's puppeteer browser downloader, and lhci runs the runner's installed Chrome, so it never downloads one.
+
+A waiver comes off the list when a fix ships, and so does an override once the package that pulls it in requires the fixed range itself. Any other high or critical advisory fails that run. 7 moderate advisories remain, which NFR-X-06 does not count.
 
 **ASSUMPTION: NFR-X-05's corpus size and NFR-X-08's windows.** **NFR-X-09 decided on 2026-09-15 (`05-architecture.md` §9 AT4): no analytics at all.** Any analytics on a page that renders clinical forms is a claim surface. Denying all connections in the CSP makes AC-12.3.2 something the browser enforces rather than a promise. The brief's repo-attention metric is served by GitHub's own traffic stats.
 

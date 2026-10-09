@@ -153,8 +153,8 @@ jobs:
   # module, S2's relief for K1: every module is still mutated, and each shard
   # holds the 80 % on its own (scripts/mutation-shard.mjs). Each shard's
   # incremental file travels in the Actions cache, keyed per shard and branch
-  # with main as the fallback, and the nightly full run refreshes main's
-  # (ADR-0018, A6).
+  # with main as the fallback, which each push to main refreshes, as does the
+  # full run in nightly.yml before a release (ADR-0018, A6).
   mutation-shard:
     name: Mutation, incremental (${{ matrix.shard }})
     runs-on: ubuntu-latest
@@ -571,7 +571,7 @@ jobs:
   # the script tag. Each page renders the demonstration form in Chromium and
   # answers its conditional question (scripts/consumers.mjs). Every project
   # runs on Node 22, the floor `engines` names, and the Node project again on
-  # 24. The full matrix on both runs nightly.
+  # 24. The full matrix on both runs before a release, in nightly.yml.
   consumer-smoke:
     name: Consumer smoke
     runs-on: ubuntu-latest

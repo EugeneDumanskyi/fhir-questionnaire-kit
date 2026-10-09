@@ -13,3 +13,27 @@ packages:
 allowBuilds:
   esbuild: true
   libxmljs2: false
+
+# NFR-X-06: 0 high or critical advisories in the dependency tree. Each override
+# pins a patched release of a package that only the dev toolchain reaches; drop
+# it once the package that pulls it in requires the fixed range itself.
+overrides:
+  tinypool: 2.2.0 # GHSA-5gmw-xhrv-c9v3, GHSA-85c8-ppgw-ccpr, through vitest
+  source-map-js: 1.2.2 # GHSA-68fv-2mgg-jv7q, through postcss
+  http-cache-semantics: 4.3.0 # GHSA-ch52-4w7c-c8xp, through @cyclonedx/cyclonedx-npm
+  basic-ftp: 6.2.1 # GHSA-c475-qrg2-pj4r, through @lhci/cli
+  tmp: 0.2.7 # GHSA-ph9p-34f9-6g65, GHSA-7c78-jf6q-g5cm, through @lhci/cli
+
+# Waived, 2026-10-09: high advisories with no fixed release, in tooling that
+# never sees untrusted input. Each is recorded in 03-nfr.md under NFR-X-06 and
+# comes off this list when a fix ships. Anything else high or critical fails.
+auditConfig:
+  ignoreGhsas:
+    # braces 3.0.3: deeply nested patterns exhaust the stack. Reached through
+    # micromatch in changesets, stylelint and fast-glob, on this repo's globs.
+    - GHSA-vfj7-8cjw-p6xm
+    # extract-zip 2.0.1: symlink entries escape the target directory. Reached
+    # only through lighthouse's puppeteer browser downloader; lhci runs the
+    # runner's installed Chrome and never downloads one.
+    - GHSA-jmr9-qjv8-65gv
+    - GHSA-7pqw-9j4j-h8q3
