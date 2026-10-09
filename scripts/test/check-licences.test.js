@@ -29,7 +29,7 @@ function workspace(name) {
 }
 
 describe('the licence gate (NFR-S-07, M11 AC-4)', () => {
-  it('passes allowlisted licences, MPL-2.0 for a development tool, and an expression one of whose alternatives fits', () => {
+  it('passes allowlisted licences, MPL-2.0 for a development tool, and an expression one of whose alternatives fits; a consumer project\'s transitive packages are not gated', () => {
     expect(problems(workspace('clean'))).toEqual([]);
   });
 
@@ -40,10 +40,12 @@ describe('the licence gate (NFR-S-07, M11 AC-4)', () => {
     ]);
   });
 
-  it('fails a development dependency outside the allowlist, naming who declares it', () => {
+  it('fails a development dependency outside the allowlist, naming who declares it, a consumer project\'s too, read from its lockfile', () => {
     expect(problems(workspace('gpl-dev'))).toEqual([
       "the root, @fhirq/themes: develops with copyleft@2.0.0, GPL-3.0, outside NFR-S-07's allowlist",
       "@fhirq/themes: develops with linter@1.0.0, (MIT AND LGPL-2.1), outside NFR-S-07's allowlist",
+      "tests/consumers/bundler: smoke-tests with bundler@8.0.0, GPL-2.0-only, outside NFR-S-07's allowlist",
+      'tests/consumers/bundler: smoke-tests with unlocked@?, which its package-lock.json does not name; run node scripts/consumers.mjs --update',
     ]);
   });
 

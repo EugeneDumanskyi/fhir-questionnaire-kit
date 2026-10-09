@@ -1,0 +1,10 @@
+{
+  "name": "fhirq-consumer-node",
+  "private": true,
+  "description": "Node ESM and CommonJS, on the packed @fhirq tarballs (NFR-C-02). Run by scripts/consumers.mjs.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

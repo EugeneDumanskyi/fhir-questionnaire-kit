@@ -1,0 +1,14 @@
+{
+  "name": "fhirq-consumer-webpack-react18",
+  "private": true,
+  "description": "webpack 5, React 18: the shared browser app, built for production on the packed @fhirq tarballs (NFR-C-02, NFR-C-03). Run by scripts/consumers.mjs.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "webpack": "5.111.1"
+  }
+}

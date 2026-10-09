@@ -1,0 +1,15 @@
+{
+  "name": "fhirq-consumer-types",
+  "private": true,
+  "description": "TypeScript consumers under node16 resolution (ESM and CommonJS) and bundler resolution, on the packed @fhirq tarballs (NFR-C-02, NFR-C-06). Run by scripts/consumers.mjs.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.9.3"
+  }
+}

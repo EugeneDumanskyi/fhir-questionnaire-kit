@@ -6,5 +6,7 @@
   "node_modules/tool/package.json": { "name": "tool", "license": "MIT" },
   "packages/themes/package.json": { "name": "@fhirq/themes", "license": "Apache-2.0", "devDependencies": { "copyleft": "2.0.0", "linter": "1.0.0" } },
   "packages/themes/node_modules/copyleft/package.json": { "name": "copyleft", "license": "GPL-3.0" },
-  "packages/themes/node_modules/linter/package.json": { "name": "linter", "license": "(MIT AND LGPL-2.1)" }
+  "packages/themes/node_modules/linter/package.json": { "name": "linter", "license": "(MIT AND LGPL-2.1)" },
+  "tests/consumers/bundler/package.json": { "name": "fhirq-consumer-bundler", "private": true, "dependencies": { "framework": "19.0.0" }, "devDependencies": { "bundler": "8.0.0", "unlocked": "1.0.0" } },
+  "tests/consumers/bundler/package-lock.json": { "lockfileVersion": 3, "packages": { "": {}, "node_modules/framework": { "version": "19.0.0", "license": "MIT" }, "node_modules/bundler": { "version": "8.0.0", "license": "GPL-2.0-only" } } }
 }

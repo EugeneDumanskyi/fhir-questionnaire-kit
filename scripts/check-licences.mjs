@@ -12,6 +12,11 @@
  * to install and are not gated; transitive development packages are not
  * either (ADR-0018).
  *
+ * The consumer smoke projects in `tests/consumers/` sit outside the workspace
+ * (ADR-0018, M11 plan D3). Their direct dependencies are gated on the same
+ * list, read from each project's committed `package-lock.json`, so no install
+ * is needed; their transitive packages are not, as for the workspace.
+ *
  * What is development-only, and how a licence is read, are the inventory's
  * (`scripts/inventory.mjs`): the table in `docs/adoption.md` and this gate
  * judge the same entries.
@@ -22,7 +27,7 @@
  *   node scripts/check-licences.mjs    exit 1 naming each package and its licence
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -55,6 +60,30 @@ function verdict(id, list, published) {
   return `${id}, outside NFR-S-07's allowlist`;
 }
 
+/**
+ * Each consumer project's direct dependencies under `base`, with the licence
+ * its lockfile records: `not locked` when the lockfile does not name it.
+ */
+export function consumers(base = root) {
+  const dir = join(base, 'tests', 'consumers');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(join(dir, entry.name, 'package.json')))
+    .map((entry) => entry.name)
+    .sort()
+    .flatMap((project) => {
+      const manifest = JSON.parse(readFileSync(join(dir, project, 'package.json'), 'utf8'));
+      const lock = join(dir, project, 'package-lock.json');
+      const locked = existsSync(lock) ? JSON.parse(readFileSync(lock, 'utf8')).packages ?? {} : {};
+      return Object.keys({ ...manifest.dependencies, ...manifest.devDependencies })
+        .sort()
+        .map((name) => {
+          const entry = locked[`node_modules/${name}`];
+          return { project: `tests/consumers/${project}`, name, version: entry?.version ?? '?', licence: entry === undefined ? 'not locked' : licence(entry) };
+        });
+    });
+}
+
 /** Every licence problem in the workspace at `base`; empty when there is none. */
 export function problems(base = root) {
   const found = [];
@@ -69,6 +98,10 @@ export function problems(base = root) {
     const reason = verdict(id, [...ALLOWED, ...DEV_ONLY], false);
     if (reason !== null) found.push(`${by.join(', ')}: develops with ${name}@${version}, ${reason}`);
   }
+  for (const { project, name, version, licence: id } of consumers(base)) {
+    const reason = id === 'not locked' ? 'which its package-lock.json does not name; run node scripts/consumers.mjs --update' : verdict(id, [...ALLOWED, ...DEV_ONLY], false);
+    if (reason !== null) found.push(`${project}: smoke-tests with ${name}@${version}, ${reason}`);
+  }
   return found;
 }
 
@@ -80,5 +113,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   const { development } = inventory();
   const tools = development.filter(({ licence: id }) => !fits(id, ALLOWED)).length;
-  console.log(`licences: ${development.length} development dependencies on NFR-S-07's allowlist, ${tools} of them MPL-2.0 tools; no published package depends on a licence outside it`);
+  const smoke = new Set(consumers().map(({ name, version }) => `${name}@${version}`)).size;
+  console.log(`licences: ${development.length} development dependencies on NFR-S-07's allowlist, ${tools} of them MPL-2.0 tools, and ${smoke} consumer smoke-test packages; no published package depends on a licence outside it`);
 }

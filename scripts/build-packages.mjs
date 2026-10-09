@@ -13,11 +13,16 @@
  *   consumer two copies of a class and an `instanceof` that fails across them.
  *   Every import stays an import; a relative one is rewritten to `.cjs` in the
  *   CJS files. `process.env.NODE_ENV` is left for the consumer's bundler.
+ * - core, react and themes: a `.d.cts` beside each `.d.ts`, with its relative
+ *   imports rewritten to `.cjs` in the same way, which `exports` names under
+ *   `require`. Under `"type": "module"` a `.d.ts` types an ES module, so
+ *   without these a CommonJS consumer under `node16` resolution is told it
+ *   cannot `require` the package (TS1479; M11 plan step 5).
  * - themes: `base.css` and `default.css`, copied as authored.
  * - the element: `scripts/build-element.mjs`, unchanged (ESM only, M7 D9).
  */
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -123,13 +128,36 @@ export async function packageBuilds(dir, { outdir = `${dir}/dist`, base = root }
   }));
 }
 
+/** A relative specifier ending `.js`, after `from`, `import` or `import(`. */
+const RELATIVE = /((?:\bfrom|\bimport)\s*\(?\s*)(['"])(\.{1,2}\/[^'"]+)\.js\2/g;
+
+/** A `.d.ts` file's text as the `.d.cts` beside it: relative imports name the `.cjs` files, and the map comment, whose map is not published, is dropped. */
+export const ctsDeclaration = (text) => text.replace(RELATIVE, '$1$2$3.cjs$2').replace(/^\/\/# sourceMappingURL=.*\n?/m, '');
+
+/** Every `.d.ts` under `dir`, as paths relative to the repository root. */
+function declarations(dir, base) {
+  if (!existsSync(join(base, dir))) return [];
+  return readdirSync(join(base, dir), { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.d.ts'))
+    .map((entry) => join(entry.parentPath, entry.name).slice(join(base).length).replace(/^\//, ''))
+    .sort();
+}
+
 /** Builds every package; with `write: false` the files are returned, not written, and no stylesheet is copied. */
 export async function buildPackages({ write = true, base = root } = {}) {
   const outputs = [];
   for (const { dir, css } of PACKAGES) {
-    for (const options of await packageBuilds(dir, { base })) {
+    const builds = await packageBuilds(dir, { base });
+    for (const options of builds) {
       const result = await build({ ...options, write });
       outputs.push(...Object.keys(result.metafile.outputs));
+    }
+    if (builds.some(({ format }) => format === 'cjs')) {
+      for (const path of declarations(`${dir}/dist`, base)) {
+        const cts = path.replace(/\.d\.ts$/, '.d.cts');
+        if (write) writeFileSync(join(base, cts), ctsDeclaration(readFileSync(join(base, path), 'utf8')));
+        outputs.push(cts);
+      }
     }
     for (const file of css) {
       if (write) {

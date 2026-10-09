@@ -17,6 +17,7 @@
     "build:sbom": "node scripts/sbom.mjs",
     "packed:check": "node scripts/pack.mjs && node scripts/check-packed.mjs",
     "dependencies:check": "node scripts/pack.mjs && node scripts/check-dependencies.mjs",
+    "consumers": "node scripts/pack.mjs && node scripts/consumers.mjs",
     "docs:snippets": "node scripts/docs-snippets.mjs --write",
     "test": "vitest run",
     "test:watch": "vitest",
