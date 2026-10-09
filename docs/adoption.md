@@ -65,7 +65,7 @@ each installed package declares. `pnpm lint` fails when it is out of step
 | `@fhirq/react` | Apache-2.0 | 0 | 0 | `@fhirq/core` | `react ^18.2.0 || ^19.0.0`, `react-dom ^18.2.0 || ^19.0.0` |
 | `@fhirq/themes` | Apache-2.0 | 0 | 0 | none | none |
 
-**Development dependencies.** 30 entries, by name and version: MIT 22, Apache-2.0 7, MPL-2.0 1. None of them ships in a published package. `pnpm-lock.yaml` resolves 954 third-party packages, every one of them through these.
+**Development dependencies.** 30 entries, by name and version: MIT 22, Apache-2.0 7, MPL-2.0 1. None of them ships in a published package. `pnpm-lock.yaml` resolves 951 third-party packages, every one of them through these.
 
 | Package | Version | Licence | NFR-S-07 | Declared by |
 |---|---|---|---|---|

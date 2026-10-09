@@ -136,3 +136,14 @@ It runs over `packages/themes/src/*.css` in `pnpm lint`, so in the fast lane. Th
   - `pnpm audit --audit-level high` (NFR-X-06).
 
   The audit does not run on PRs. An advisory published against an unchanged lockfile says nothing about the PR in hand, and the nightly sees it within a day.
+
+  *Outcome, 2026-10-09 (plan step 6):* `nightly.yml` holds the three jobs beside the mutation run.
+  - **Properties at 10×.** Each file runs at ten times its own default: 10,000 round-trips, 3,000 incremental and restore cases, and 2,000 leak cases. The leak suite's default is 200, so D10's "3,000 for the others" over-read it by one file. The four files took under a minute locally, well inside the timeout, so the 5× fallback is not used.
+  - **The consumer matrix.** It runs every environment on Node 22 and on Node 24.
+  - **The audit.** Its first run found 2 critical and 7 high advisories, all in the development toolchain. Overrides in `pnpm-workspace.yaml` pin patched releases for six of them. The maintainer waived the other three on 2026-10-09, because no fixed release exists and neither package sees untrusted input: braces (GHSA-vfj7-8cjw-p6xm) and extract-zip (GHSA-jmr9-qjv8-65gv, GHSA-7pqw-9j4j-h8q3). They are listed in `auditConfig.ignoreGhsas` and recorded under NFR-X-06 in `03-nfr.md`.
+
+  The audit covers the workspace lockfile. The consumer projects' own lockfiles are not audited: their packages run only in CI, and nothing published contains them.
+
+  *Amended 2026-10-09 by the maintainer:* `nightly.yml` has no schedule and runs only when dispatched. After 1.0.0 the repo changes rarely, and a run every night over an unchanged `main` finds nothing new. The jobs, and the rule that a release needs a green run on exactly its commit (D11), are unchanged, so "nightly" in this ADR and in A6 now means "the pre-release run". The run is dispatched on the commit to be tagged. Two things change:
+  - a new advisory against an unchanged lockfile is found at the next release, not within a day. Between releases, GitHub's own dependency alerts report it;
+  - a change that weakens tests in an unchanged file is caught at the next release, not the next morning. That was already the release gate (A6). `main`'s incremental mutation file is still refreshed by every push to `main`.

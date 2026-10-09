@@ -1,8 +1,11 @@
 name: Nightly
 
+# The release blockers (ADR-0018). Started by hand, not on a schedule: the
+# maintainer decided on 2026-10-09 that once 1.0.0 ships the repo changes
+# rarely, and a nightly run over an unchanged main finds nothing. Dispatch it on
+# the commit to be tagged; release.yml requires a green run of this workflow on
+# exactly that commit (M11 plan D11). The name stays, as the docs and D11 use it.
 on:
-  schedule:
-    - cron: '17 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -10,10 +13,11 @@ permissions:
 
 jobs:
   # The full mutation run (NFR-Q-03, A6). Pull requests run incrementally; this
-  # runs every mutant against main, and its score is the score of record: a
+  # runs every mutant against the dispatched commit, and its score is the score of record: a
   # loaded developer machine counts timeouts as kills (00-s2-mutation-cost.md
-  # §5). It blocks a release, not a merge. It also refreshes main's incremental
-  # file per shard, which pull requests fall back to. Sharded as the pull-request
+  # §5). It blocks a release, not a merge. Run on main, it also refreshes main's
+  # incremental file per shard, which pull requests fall back to; pushes to main
+  # refresh it too (ci.yml). Sharded as the pull-request
   # lane is (scripts/mutation-shard.mjs).
   mutation-full:
     name: Mutation, full run (${{ matrix.shard }})
@@ -69,3 +73,135 @@ jobs:
           name: mutation-full-${{ matrix.shard }}
           path: reports/stryker/
           retention-days: 90
+
+  # The property suites at 10x their pull-request counts (ADR-0018 note, M11
+  # plan D10). Each file's default is its pull-request count: 1,000
+  # round-trips, 300 incremental and restore cases, 200 leak cases. The whole
+  # run took under a minute locally, so D10's 5x fallback is not needed. No
+  # per-test timeout: the job's own timeout bounds it.
+  properties:
+    name: Properties, 10x
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Round trip, 10,000 sessions
+        run: pnpm exec vitest run --project core packages/core/test/property/roundtrip.test.ts --testTimeout=0
+        env:
+          FHIRQ_PROPERTY_RUNS: '10000'
+
+      - name: Incremental settle and the recompute set, 3,000 cases
+        run: pnpm exec vitest run --project core packages/core/test/property/incremental.test.ts --testTimeout=0
+        env:
+          FHIRQ_PROPERTY_RUNS: '3000'
+
+      - name: Restore, 3,000 cases
+        run: pnpm exec vitest run --project core packages/core/test/property/restore.test.ts --testTimeout=0
+        env:
+          FHIRQ_PROPERTY_RUNS: '3000'
+
+      - name: No answer value leaks, 2,000 cases
+        run: pnpm exec vitest run --project core packages/core/test/property/leak.test.ts --testTimeout=0
+        env:
+          FHIRQ_PROPERTY_RUNS: '2000'
+
+  # Every consumer environment on both LTS lines (NFR-C-02). Pull requests run
+  # the full set on Node 22 and only the node project on Node 24.
+  consumers:
+    name: Consumers, Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build and pack the packages
+        run: |
+          pnpm build
+          node scripts/pack.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: tests/consumers/*/package-lock.json
+
+      - name: Consumers on Node ${{ matrix.node }}, every environment
+        run: node scripts/consumers.mjs
+
+  # Known vulnerabilities, high or critical, in the whole dependency tree
+  # (NFR-X-06, M11 plan D9). Not on pull requests: an advisory published against
+  # an unchanged lockfile says nothing about the change in hand. The overrides
+  # and the dated waivers are in pnpm-workspace.yaml and 03-nfr.md.
+  audit:
+    name: Audit, high and critical
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Audit the lockfile
+        run: pnpm audit --audit-level high
