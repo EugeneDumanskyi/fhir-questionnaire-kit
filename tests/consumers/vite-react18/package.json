@@ -1,0 +1,14 @@
+{
+  "name": "fhirq-consumer-vite-react18",
+  "private": true,
+  "description": "Vite, React 18: the shared browser app, built for production on the packed @fhirq tarballs (NFR-C-02, NFR-C-03). Run by scripts/consumers.mjs.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "vite": "8.3.4"
+  }
+}

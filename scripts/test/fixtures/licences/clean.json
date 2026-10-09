@@ -10,5 +10,7 @@
   "packages/core/node_modules/tool/package.json": { "name": "tool", "license": "MIT" },
   "packages/react/package.json": { "name": "@fhirq/react", "license": "Apache-2.0", "dependencies": { "@fhirq/core": "workspace:0.0.0" }, "peerDependencies": { "react": "^19.0.0" } },
   "apps/playground/package.json": { "name": "@fhirq/playground", "private": true, "dependencies": { "@fhirq/react": "workspace:0.0.0", "bundler": "5.0.0" } },
-  "apps/playground/node_modules/bundler/package.json": { "name": "bundler", "license": "BSD-3-Clause AND MIT" }
+  "apps/playground/node_modules/bundler/package.json": { "name": "bundler", "license": "BSD-3-Clause AND MIT" },
+  "tests/consumers/bundler/package.json": { "name": "fhirq-consumer-bundler", "private": true, "dependencies": { "framework": "19.0.0" }, "devDependencies": { "bundler": "8.0.0" } },
+  "tests/consumers/bundler/package-lock.json": { "lockfileVersion": 3, "packages": { "": {}, "node_modules/framework": { "version": "19.0.0", "license": "MIT" }, "node_modules/bundler": { "version": "8.0.0", "license": "MIT" }, "node_modules/deep": { "version": "1.0.0", "license": "LGPL-3.0-or-later" } } }
 }

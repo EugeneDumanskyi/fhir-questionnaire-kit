@@ -1,0 +1,16 @@
+{
+  // A Node project: `esm.mts` is an ES module and `cjs.cts` a CommonJS one, each
+  // resolved through the `import` or `require` condition. skipLibCheck is off,
+  // so the published declarations are checked too.
+  "compilerOptions": {
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "types": [],
+    "strict": true,
+    "skipLibCheck": false,
+    "noEmit": true
+  },
+  "files": ["esm.mts", "cjs.cts"]
+}

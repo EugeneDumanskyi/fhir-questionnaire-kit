@@ -4,12 +4,19 @@
   "description": "Structural stylesheet and token presets for the FHIR Questionnaire Kit",
   "license": "Apache-2.0",
   "type": "module",
-  "sideEffects": ["*.css"],
+  "sideEffects": [
+    "*.css"
+  ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./base.css": "./dist/base.css",
     "./default.css": "./dist/default.css",
@@ -26,6 +33,6 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": ">=22"
   }
 }

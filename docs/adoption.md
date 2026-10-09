@@ -113,7 +113,12 @@ gate fails on any byte from `node_modules` in a published bundle
 fails `pnpm lint` on a development dependency whose licence is outside the
 allowlist or undeclared, and on MPL-2.0 in anything a published package
 depends on, naming the package and its licence (NFR-S-07,
-[`check-licences.mjs`](../scripts/check-licences.mjs)).
+[`check-licences.mjs`](../scripts/check-licences.mjs)). It reads the consumer
+smoke projects' direct dependencies too, from their lockfiles: Vite, webpack,
+Next.js, React, its types and TypeScript, all MIT or Apache-2.0. Some of their
+own dependencies carry other licences (the image library Next.js may load,
+LGPL-3.0-or-later; a CSS parser in Vite, MPL-2.0; browser data, CC-BY-4.0).
+Those run only in CI and nothing published contains them.
 
 ## SBOM
 
@@ -160,6 +165,22 @@ What CI runs is narrower than that target, and this table says where:
 | The previous major of each | Not run. CI tests the engine versions Playwright pins |
 
 React 18 and 19 are both tested (NFR-C-03).
+
+Outside the browser, the packages need Node 22 or later. CI installs the
+packed tarballs into a project of each kind an adopter has, outside the
+repository's workspace, and builds, runs or renders each one (NFR-C-02,
+[`tests/consumers`](../tests/consumers/README.md)):
+
+- Node 22 and 24, through `import` and `require`;
+- TypeScript, with `node16` resolution (an ES module and a CommonJS one) and
+  with `bundler` resolution;
+- Vite and webpack 5, each on React 18 and 19;
+- the Next.js App Router, on React 19: the engine in a server component and
+  the form in a client one;
+- a plain page with the script tag.
+
+`@fhirq/element` is a browser module and ships as ESM only, so it is
+imported, never `require`d.
 
 ## Versioning and deprecation
 

@@ -1,10 +1,10 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { build } from 'esbuild';
 import { describe, expect, it } from 'vitest';
 
-import { buildPackages, manifestTargets, missingTargets, packageBuilds, PUBLISHED } from '../build-packages.mjs';
+import { buildPackages, ctsDeclaration, manifestTargets, missingTargets, packageBuilds, PUBLISHED } from '../build-packages.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const fixtures = fileURLToPath(new URL('./fixtures/package-build/', import.meta.url));
@@ -20,7 +20,7 @@ describe('build-packages', () => {
   /** What a build plus `tsc` leaves: this build's outputs, and a declaration for every source module. */
   const wouldExist = (outputs) => (path) =>
     outputs.includes(path) ||
-    (path.endsWith('.d.ts') && ['.ts', '.tsx'].some((extension) => existsSync(`${root}${path.replace('/dist/', '/src/').replace(/\.d\.ts$/, extension)}`)));
+    (/\.d\.c?ts$/.test(path) && ['.ts', '.tsx'].some((extension) => existsSync(`${root}${path.replace('/dist/', '/src/').replace(/\.d\.c?ts$/, extension)}`)));
 
   it('builds every target the published manifests name: exports, main, module and types', async () => {
     expect(missingTargets(PUBLISHED, wouldExist(await built))).toEqual([]);
@@ -61,6 +61,48 @@ describe('build-packages', () => {
       expect.arrayContaining(['packages/themes/dist/base.css', 'packages/themes/dist/default.css', 'packages/element/dist/index.js', 'packages/element/dist/fhirq-element.js']),
     );
     expect((await built).filter((path) => path.startsWith('packages/element/') && path.endsWith('.cjs'))).toEqual([]);
+  });
+
+  it('types each format apart: `import` names a .d.ts, `require` a .d.cts, an ESM-only entry its .d.ts (M11 step 5)', () => {
+    for (const dir of PUBLISHED) {
+      const { exports } = JSON.parse(readFileSync(`${root}${dir}/package.json`, 'utf8'));
+      for (const [entry, target] of Object.entries(exports).filter(([, value]) => typeof value === 'object')) {
+        if (target.require === undefined) {
+          // ESM only, as the element is (M7 D9): one declaration serves.
+          expect([target.types, target.import], `${dir} ${entry}`).toEqual([expect.stringMatching(/\.d\.ts$/), expect.stringMatching(/\.js$/)]);
+          continue;
+        }
+        expect(target.import.types, `${dir} ${entry}`).toMatch(/\.d\.ts$/);
+        expect(target.import.default, `${dir} ${entry}`).toMatch(/\.js$/);
+        expect(target.require.types, `${dir} ${entry}`).toBe(target.import.types.replace(/\.d\.ts$/, '.d.cts'));
+        expect(target.require.default, `${dir} ${entry}`).toMatch(/\.cjs$/);
+      }
+    }
+  });
+
+  it('writes each .d.cts from its .d.ts: relative imports name the .cjs files, packages stay as they are, the map comment goes', () => {
+    const declaration = [
+      "import { type Session } from '@fhirq/core';",
+      "import { type ControlKind } from '@fhirq/core/view';",
+      "export { open } from './open.js';",
+      "export * from '../kernel/error.js';",
+      "export type Lazy = typeof import('./lazy.js');",
+      "import './side-effect.js';",
+      'export declare const note = "./not-a-path.js";',
+      '//# sourceMappingURL=index.d.ts.map',
+    ].join('\n');
+    expect(ctsDeclaration(declaration)).toBe(
+      [
+        "import { type Session } from '@fhirq/core';",
+        "import { type ControlKind } from '@fhirq/core/view';",
+        "export { open } from './open.cjs';",
+        "export * from '../kernel/error.cjs';",
+        "export type Lazy = typeof import('./lazy.cjs');",
+        "import './side-effect.cjs';",
+        'export declare const note = "./not-a-path.js";',
+        '',
+      ].join('\n'),
+    );
   });
 
   it('publishes no module an entry point does not reach', async () => {

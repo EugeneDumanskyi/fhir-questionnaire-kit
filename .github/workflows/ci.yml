@@ -562,6 +562,70 @@ jobs:
             playwright-report/
           retention-days: 30
 
+  # The consumer smoke tests, from M11 (NFR-C-02, NFR-C-03, plan step 5). The
+  # packages are built and packed once; each project in tests/consumers then
+  # installs the tarballs as an adopter's would, outside the workspace, with
+  # `npm ci` against its own lockfile, and typechecks, builds or runs: Node ESM
+  # and CommonJS, TypeScript under node16 and bundler resolution, Vite and
+  # webpack 5 on React 18 and 19, the Next.js App Router, and a plain page with
+  # the script tag. Each page renders the demonstration form in Chromium and
+  # answers its conditional question (scripts/consumers.mjs). Every project
+  # runs on Node 22, the floor `engines` names, and the Node project again on
+  # 24. The full matrix on both runs nightly.
+  consumer-smoke:
+    name: Consumer smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable pnpm
+        run: |
+          npm install --global corepack@latest
+          corepack enable pnpm
+          pnpm --version
+
+      - name: Locate the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build and pack the packages
+        run: |
+          pnpm build
+          node scripts/pack.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/consumers/*/package-lock.json
+
+      - name: Consumers on Node 22, every environment
+        run: node scripts/consumers.mjs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Consumers on Node 24, ESM and CommonJS
+        run: node scripts/consumers.mjs node
+
   # Keystroke to paint (NFR-P-03), report only: React 18 and 19 and the
   # element in Chromium, on one worker in a job of its own, so no other spec
   # runs beside the reading. Every other spec of the retired spike-proofs job

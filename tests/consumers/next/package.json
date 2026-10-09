@@ -1,0 +1,12 @@
+{
+  "name": "fhirq-consumer-next",
+  "private": true,
+  "description": "Next.js App Router, React 19: the engine in a server component, the React form in a client one, built for production and served, on the packed @fhirq tarballs (NFR-C-02). Run by scripts/consumers.mjs.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

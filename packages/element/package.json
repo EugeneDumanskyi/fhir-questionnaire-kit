@@ -4,7 +4,10 @@
   "description": "<fhir-questionnaire>, a dependency-free custom element over @fhirq/core",
   "license": "Apache-2.0",
   "type": "module",
-  "sideEffects": ["./dist/define.js", "./dist/fhirq-element.js"],
+  "sideEffects": [
+    "./dist/define.js",
+    "./dist/fhirq-element.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -32,6 +35,6 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": ">=22"
   }
 }

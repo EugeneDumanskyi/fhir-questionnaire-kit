@@ -1,0 +1,15 @@
+{
+  // An app built by a bundler, as Vite and Next.js scaffold it.
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2022",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "types": [],
+    "strict": true,
+    "skipLibCheck": false,
+    "noEmit": true
+  },
+  "files": ["app.tsx"]
+}

@@ -341,4 +341,21 @@ export default tseslint.config(
     files: ['**/*.config.{js,ts}', 'eslint.config.js'],
     rules: { 'no-restricted-syntax': 'off' },
   },
+
+  {
+    /* The consumer smoke projects (M11 step 5) are adopters' code, run against
+       the packed tarballs by scripts/consumers.mjs: Node scripts, a browser app,
+       and a Next.js app, whose pages are default exports by Next's contract. */
+    files: ['tests/consumers/**/*.{js,mjs}'],
+    languageOptions: { globals: { console: 'readonly', process: 'readonly', URL: 'readonly', document: 'readonly' } },
+  },
+  {
+    files: ['tests/consumers/**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs', globals: { console: 'readonly', process: 'readonly', require: 'readonly', __dirname: 'readonly' } },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
+    files: ['tests/consumers/next/**/*.{js,mjs}'],
+    rules: { 'no-restricted-syntax': 'off' },
+  },
 );

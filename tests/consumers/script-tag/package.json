@@ -1,0 +1,6 @@
+{
+  "name": "fhirq-consumer-script-tag",
+  "private": true,
+  "description": "A plain page with one script tag: the element's script-tag build, taken from the packed @fhirq/element tarball (NFR-C-02). Run by scripts/consumers.mjs.",
+  "license": "Apache-2.0"
+}

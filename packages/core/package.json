@@ -7,19 +7,34 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./view": {
-      "types": "./dist/view/index.d.ts",
-      "import": "./dist/view/index.js",
-      "require": "./dist/view/index.cjs"
+      "import": {
+        "types": "./dist/view/index.d.ts",
+        "default": "./dist/view/index.js"
+      },
+      "require": {
+        "types": "./dist/view/index.d.cts",
+        "default": "./dist/view/index.cjs"
+      }
     },
     "./resume": {
-      "types": "./dist/resume.d.ts",
-      "import": "./dist/resume.js",
-      "require": "./dist/resume.cjs"
+      "import": {
+        "types": "./dist/resume.d.ts",
+        "default": "./dist/resume.js"
+      },
+      "require": {
+        "types": "./dist/resume.d.cts",
+        "default": "./dist/resume.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -34,6 +49,6 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": ">=22"
   }
 }
